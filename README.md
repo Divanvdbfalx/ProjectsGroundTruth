@@ -24,6 +24,8 @@ Generated artifacts (for example Mermaid outputs in `artifacts/`) are views, not
 - `data/`: product graph + task ground truth JSON
 - `local_tool/query.py`: CLI for querying and rendering views from ground truth
 - `node_app/`: local UI editor for nodes and relationships
+- `user/`: user-first context/task/journal tracking workspace
+- `knowledge_base/`: persistent wiki scaffold (`raw/`, `wiki/`, `schema/`) for accumulated LLM-maintained knowledge
 
 ## CLI Usage
 
@@ -92,8 +94,8 @@ http://localhost:4311
 
 Editor behavior:
 
-- Edits nodes in `entities.json`
-- Edits relationships in `relationships.json`
+- Edits nodes in `knowledge_base/raw/sources/src_data_entities.json`
+- Edits relationships in `knowledge_base/raw/sources/src_data_relationships.json`
 - Deletes a node and removes linked relationships/tasks
 - Prompts to save when leaving a node with unsaved changes
 - Node form is ordered for content-first editing:

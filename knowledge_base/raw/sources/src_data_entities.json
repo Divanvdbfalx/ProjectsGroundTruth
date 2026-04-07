@@ -1,0 +1,725 @@
+[
+  {
+    "id": "prd_pzero",
+    "type": "product",
+    "name": "P-Zerø",
+    "product_id": "prd_pzero",
+    "category_id": null,
+    "parent_id": null,
+    "health": "yellow",
+    "current_state": "P-Zerø is operational end-to-end: training uses a stacked-ensemble workflow (parallel XGB/LGBM families), inference is deployed on AWS Lambda via SAM/CloudFormation with dev/prod environments plus local SAM emulation, outputs are queryable through inference datalake tooling, and operators have dedicated utilities for weather extraction, Athena QA, submission diagnostics, and SHAP explainability. Product maturity is still uneven: critical controls for immutable data/model lineage, standardized experiment and tool conventions, schedule activation and automation discipline, deployment/config consistency, and full commercial/operational governance are not yet uniformly enforced across the lifecycle.",
+    "target_state": "Reproducible, observable, and commercially scalable forecasting platform.",
+    "full_context": {
+      "product": "P-Zerø",
+      "description": "P-Zerø is an end-to-end wind power forecasting product operating across data ingestion, feature engineering, model training, deployment, inference delivery, monitoring, evaluation, and customer-facing business operations. The current platform combines stacked-ensemble modeling (parallel XGB/LGBM families), SAM-based serverless deployment (local emulation plus dev/prod cloud stacks), multi-path inference execution (API and scheduler-driven runs), inference datalake storage, and a practical tooling suite for Meteomatics extraction, Athena inspection, submission quality checks, and SHAP explainability diagnostics. The architecture is functional in production and supports real operational workflows, but product maturity remains uneven in governance-critical areas: immutable data/model lineage, standardized experiment and tooling contracts, schedule/automation rigor, deployment configuration consistency, and fully integrated commercial controls. This node should be read as the product-level synthesis of those subsystem states: strong delivery capability with clear scalability headroom dependent on tightening lifecycle controls and cross-layer standardization.",
+      "current_problem": "Infrastructure and lifecycle practices are fragmented.",
+      "impact": "Scaling and reproducibility are constrained.",
+      "target": "Single product intelligence source of truth.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_infra",
+    "type": "category",
+    "name": "Infrastructure & Deployment",
+    "product_id": "prd_pzero",
+    "category_id": "cat_infra",
+    "parent_id": "prd_pzero",
+    "health": "green",
+    "current_state": "Serverless runtime for forecasting that happens in AWS Lambda instances. These instances are created from the site repos in the sylvan github account and uses AWS SAM to build and deploy to AWS Infrastructure account. Additional deployment context: developer mode runs local SAM emulation (`sam local invoke`) with event/env files; cloud deployment uses one parameterized SAM template with `DeploymentEnv` restricted to `dev` and `prod`; post-deploy runtime supports API (`POST /forecast`) plus scheduled daily and weekly inference paths through Step Functions to Lambda.",
+    "target_state": "Unified and reliable deployment foundations.",
+    "full_context": {
+      "description": "The method used to deliver forecasts accurately and reliably to the customer/ESKOM/NTCSA. Strengths include clear dev/prod stack separation, shared IaC template usage across environments, image-based Lambda packaging for heavy Python dependencies, and multiple invocation patterns in one stack. Current limitations include only two deployment environments, schedule triggers disabled by default, manual deployment flow, and configuration inconsistencies that increase operational risk."
+    }
+  },
+  {
+    "id": "cat_data",
+    "type": "category",
+    "name": "Data Management",
+    "product_id": "prd_pzero",
+    "category_id": "cat_data",
+    "parent_id": "prd_pzero",
+    "health": "red",
+    "current_state": "Inference data works; versioning and lineage are weak. The inference side is fed by API and scheduled execution modes from SAM-deployed infrastructure, and datalake access is supported by Athena tooling, but tighter lineage and environment-aware partitioning conventions are still needed.",
+    "target_state": "Versioned and traceable data lifecycle.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Data Management",
+      "description": "Data storage, versioning, and lineage across model lifecycle. Scope includes inference datalake outputs from API and scheduled inference jobs, training data storage, and the governance controls required to trace data end-to-end across dev/prod operations.",
+      "current_problem": "No robust dataset versioning or lineage.",
+      "impact": "Experimentation and reproducibility blocked.",
+      "target": "Immutable, traceable dataset lifecycle.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_modeling",
+    "type": "category",
+    "name": "Modeling & Training",
+    "product_id": "prd_pzero",
+    "category_id": "cat_modeling",
+    "parent_id": "prd_pzero",
+    "health": "yellow",
+    "current_state": "Model training is operationalized as a stacked-ensemble workflow with parallel XGB and LGBM families, but lifecycle controls (feature activation discipline, version lineage, and standardized experiment governance) are still uneven.",
+    "target_state": "Governed and versioned model lifecycle.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "description": "End-to-end model training and forecasting lifecycle built around weather-model-specific base learners and a meta-learner ensemble, with shared preprocessing, time-ordered validation, diagnostics, artifact packaging, and deployment promotion flow.",
+      "current_problem": "Model artifacts not consistently versioned.",
+      "impact": "Rollback and comparison risk.",
+      "target": "Model registry and reproducible training.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_experiment",
+    "type": "category",
+    "name": "Experimentation & Development",
+    "product_id": "prd_pzero",
+    "category_id": "cat_experiment",
+    "parent_id": "prd_pzero",
+    "health": "red",
+    "current_state": "Experimentation now has an active temporal-CV harness for site eims_castle (mix vs ncep-gfs), but architecture is split between the new experiments runner and a legacy production-style pipeline. The benchmarking path is reproducible but still incomplete: train+valid drives selection while test is not integrated into runner decisions, some config keys are not consumed, and fold semantics differ between holdout and CV artifacts.",
+    "target_state": "Unified and documented experimentation platform with strict temporal CV, explicit test-stage promotion, consistent artifact semantics, and repeatable cross-site model evaluation.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "description": "Primary experimentation system for comparing weather-source-specific models and ML baselines under time-ordered validation. Active entrypoint is run_experiments.py with experiments/ modules (temporal_cv, feature_builder, scoring, diagnostics), while pipeline.py and run_baseline_validation.py remain legacy but operationally relevant.",
+      "current_problem": "Parallel experiment architectures and partial runner gaps create decision friction (test split not wired into selection, config/features drift, inconsistent fold-definition semantics, and environment setup quirks like PYTHONPATH-dependent tests).",
+      "impact": "Model conclusions can diverge between holdout and CV regimes, slowing confident promotion decisions and reducing comparability across experiments.",
+      "target": "Single governed experimentation framework with standardized data contracts, consistent CV/test flow, registry-quality metadata, and extensible roadmap support (source fusion, stacking, residual diagnostics, and richer temporal features).",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_monitoring",
+    "type": "category",
+    "name": "Monitoring & Observability",
+    "product_id": "prd_pzero",
+    "category_id": "cat_monitoring",
+    "parent_id": "prd_pzero",
+    "health": "red",
+    "current_state": "Dashboards exist but active response is weak.",
+    "target_state": "Always-on monitoring with alerts and ownership.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "description": "Operational visibility and anomaly response.",
+      "current_problem": "Signals are underused.",
+      "impact": "Delayed incident detection.",
+      "target": "Proactive alerting and triage loops.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_performance",
+    "type": "category",
+    "name": "Performance & Evaluation",
+    "product_id": "prd_pzero",
+    "category_id": "cat_performance",
+    "parent_id": "prd_pzero",
+    "health": "red",
+    "current_state": "Evaluation exists; historical tracking incomplete.",
+    "target_state": "Continuous performance intelligence.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "description": "Forecast quality measurement and trend analysis.",
+      "current_problem": "History is fragmented.",
+      "impact": "Regressions are harder to detect.",
+      "target": "Full historical performance tracking.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_tooling",
+    "type": "category",
+    "name": "Tooling Ecosystem",
+    "product_id": "prd_pzero",
+    "category_id": "cat_tooling",
+    "parent_id": "prd_pzero",
+    "health": "yellow",
+    "current_state": "PZERO-tooling is actively used as an operations-focused Streamlit toolbox across the wind forecasting lifecycle: weather extraction, Athena datalake querying, submission QA, and SHAP-based prediction diagnostics. The tools are functional and cover core day-to-day workflows, but user experience, shared conventions, and configuration patterns still vary across apps.",
+    "target_state": "Standardized tooling interfaces and ownership.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Tooling Ecosystem",
+      "description": "Collection of lightweight operational utilities that support forecast data ingestion, data-quality validation, datalake exploration, submission behavior diagnostics, and model explainability. The ecosystem is intentionally modular and app-centric, with each tool solving a specific workflow step while sharing the same product context.",
+      "current_problem": "Inconsistent standards.",
+      "impact": "Maintenance overhead.",
+      "target": "Unified tool conventions.",
+      "importance": "Medium"
+    }
+  },
+  {
+    "id": "cat_business",
+    "type": "category",
+    "name": "Business Layer",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "prd_pzero",
+    "health": "red",
+    "current_state": "Customers exist but pricing and payments are immature.",
+    "target_state": "Stable commercial operating system.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "description": "Pricing, payment, contracts, customer value.",
+      "current_problem": "No structured pricing/payment system.",
+      "impact": "Revenue scalability risk.",
+      "target": "Repeatable commercial model.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "cat_docs",
+    "type": "category",
+    "name": "Documentation & Knowledge",
+    "product_id": "prd_pzero",
+    "category_id": "cat_docs",
+    "parent_id": "prd_pzero",
+    "health": "yellow",
+    "current_state": "Docs exist, visibility map is partial.",
+    "target_state": "Living and complete product map.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Documentation & Knowledge",
+      "description": "Knowledge management and product visibility.",
+      "current_problem": "Incomplete unified visibility.",
+      "impact": "Prioritization misalignment.",
+      "target": "Continuous single source of truth.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_aws_lambda",
+    "type": "subcategory",
+    "name": "AWS Lambda Deployment",
+    "product_id": "prd_pzero",
+    "category_id": "cat_infra",
+    "parent_id": "cat_infra",
+    "health": "green",
+    "current_state": "AWS Lambda is sufficient for reliable and stable deployments. Deployment currently uses SAM + CloudFormation with container-image Lambdas and explicit dev/prod stack separation; non-prod runtime is configured for more verbose logs and internal email routing behavior.",
+    "target_state": "None",
+    "full_context": {
+      "description": "The method used to deliver forecasts accurately and reliably to the customer/ESKOM/NTCSA. Invocation paths include API Gateway `POST /forecast` (API key protected) and Step Functions-triggered daily/weekly inference Lambda runs, with schedules currently requiring explicit enablement."
+    }
+  },
+  {
+    "id": "sub_sam_repo",
+    "type": "subcategory",
+    "name": "Deployment Repository (AWS SAM)",
+    "product_id": "prd_pzero",
+    "category_id": "cat_infra",
+    "parent_id": "cat_infra",
+    "health": "green",
+    "current_state": "Currently the sylvan GitHub account with repositories for each site/customer\n\nhttps://github.com/sylvan-falx. Deploy workflow uses `sam deploy --config-env dev` and `sam deploy --config-env prod`, with local developer emulation via `sam local invoke`; SAM config defines separate dev/prod stacks from the same parameterized template.",
+    "target_state": "Still need to decide between a unified repo for the deployment and repo per site.",
+    "full_context": {
+      "description": "The account/repositories/version control for the deployment framework. Known operational risks include runtime/config drift (for example Python version mismatch between Dockerfile and template metadata), cross-repo naming inconsistencies (`aurora` references in some config artifacts), and weak secret hygiene where API keys appear directly in documentation scripts."
+    }
+  },
+  {
+    "id": "sub_inference_datalake",
+    "type": "subcategory",
+    "name": "Inference Datalake",
+    "product_id": "prd_pzero",
+    "category_id": "cat_data",
+    "parent_id": "cat_data",
+    "health": "green",
+    "current_state": "Inference datalake is operational and on the FALX AWS Infrastructure account, where it is partitioned and easily accessable by quering the datalake with the Datalake Tool. Data arrivals are tied to deployed inference execution modes (API and scheduler-driven runs), while scheduled daily/weekly triggers remain disabled until explicitly turned on.",
+    "target_state": "None",
+    "full_context": {
+      "description": "Inference data storage and access. This node is the operational sink for deployed forecasting outputs and needs to stay query-friendly for Athena-based QA, submission checks, and cross-environment (dev/prod) traceability."
+    }
+  },
+  {
+    "id": "sub_training_storage",
+    "type": "subcategory",
+    "name": "Training Data Storage",
+    "product_id": "prd_pzero",
+    "category_id": "cat_data",
+    "parent_id": "cat_data",
+    "health": "yellow",
+    "current_state": "Training data is on the FALX AWS Main account, stored in S3 when training a model. The production and meteo data is currently split. This remains separate from inference datalake storage, which increases friction when tracing deployed inference behavior back to exact training snapshots and feature states.",
+    "target_state": "Version controlled datasets with easy linking between meteo and production data",
+    "full_context": {
+      "description": "Storage for training datasets. Requires stronger linkage to inference datalake partitions and deployment-environment metadata so training-to-inference reproducibility is auditable."
+    }
+  },
+  {
+    "id": "sub_data_versioning",
+    "type": "subcategory",
+    "name": "Data Versioning",
+    "product_id": "prd_pzero",
+    "category_id": "cat_data",
+    "parent_id": "cat_data",
+    "health": "red",
+    "current_state": "Version control for datasets in the AWS platform. Training datasets get overwritten when training a new model and old datasets are lost.",
+    "target_state": "Immutable versioned dataset snapshots in AWS with dates and possible concatenation of datasets to create a more complete training data set.",
+    "full_context": {
+      "description": "Version control for datasets in the AWS platform, which is curre"
+    }
+  },
+  {
+    "id": "sub_legacy_metalearner",
+    "type": "subcategory",
+    "name": "Legacy Metalearner (XGBoost/LightGBM)",
+    "product_id": "prd_pzero",
+    "category_id": "cat_modeling",
+    "parent_id": "cat_modeling",
+    "health": "yellow",
+    "current_state": "The active training flow is a stacked ensemble: for each configured weather source (for example mix, ncep-gfs) a base learner is trained, then a meta-learner is trained on base predictions to produce final site forecasts. Two parallel model families (XGB and LGBM) implement the same workflow and output conventions. Preprocessing is consistent across families: production and meteo are timezone-normalized and resampled, meteo intervals are left-aligned, merged rows with missing values are dropped, a common overlap window is enforced across weather sources, and train/validation uses a time-ordered 80/20 split. Wind-speed anomaly detection is run in configured rounds, with behavior controlled by anomaly_handling_mode (visualize-only or remove-for-training).",
+    "target_state": "Governed and benchmarked lifecycle.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Legacy Metalearner (XGBoost/LightGBM)",
+      "description": "Legacy metalearner node captures the current operational stacked-ensemble architecture and its historical evolution. The repo contains earlier generations under older/ (v0.0.0 and v0.0.1) with prior XGBoost and polynomial power-curve paths, while top-level scripts represent a cleaner operational evolution with URI-based I/O, stronger artifact handling, standardized model-family suffixing, and integration into deployment/test flows.",
+      "current_problem": "Upgrade path is unclear.",
+      "impact": "Maintainability risk.",
+      "target": "Controlled evolution.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_feature_engineering",
+    "type": "subcategory",
+    "name": "Feature Engineering",
+    "product_id": "prd_pzero",
+    "category_id": "cat_modeling",
+    "parent_id": "cat_modeling",
+    "health": "green",
+    "current_state": "Feature engineering capability is broad in code but partially active in runtime. Implemented blocks include time features, cyclical encodings, Fourier terms, wind-vector decomposition (u/v), lag features, rolling statistics, and interaction features. In current LGBM/XGB training scripts, many transforms in transform() are intentionally disabled/commented, so the effective feature set is primarily cleaned/resampled meteo inputs from settings plus explicit downstream additions where configured.",
+    "target_state": "Keep expanding tested features.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Feature Engineering",
+      "description": "Feature engineering layer transforms raw meteo and site signals into model-ready predictors, while diagnostics support feature understanding through lag-correlation analysis, feature-vs-production plots, and feature-importance outputs. Current operational emphasis is reliability and comparability over maximal feature complexity, with richer transforms available for controlled reactivation during experimentation.",
+      "current_problem": "Needs ongoing drift checks.",
+      "impact": "Core driver of accuracy.",
+      "target": "Scalable and explainable feature pipeline.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_weather_benchmark",
+    "type": "subcategory",
+    "name": "Weather Data Benchmarking",
+    "product_id": "prd_pzero",
+    "category_id": "cat_modeling",
+    "parent_id": "cat_modeling",
+    "health": "green",
+    "current_state": "Weather benchmarking is implemented through per-weather-model base learners trained in parallel for each configured source. Each source logs model-specific metrics (MAE, RMSE, nMAE, nRMSE, R2, penalty), and lag-correlation diagnostics provide pre-training signal comparisons. The meta-learner then benchmarks combined value by learning weighted/nonlinear combinations of base outputs. Practical caveat: ClearML captures detailed per-model metrics, while metrics.csv is currently focused mainly on final ensemble summaries.",
+    "target_state": "Automated benchmark scorecards.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Weather Data Benchmarking",
+      "description": "Benchmarking node represents implicit competitive evaluation of weather data providers via model performance, not only static data QA. It measures source-level predictive contribution and incremental value in the stacked ensemble, enabling evidence-based weather-source selection and blend strategy decisions at site level.",
+      "current_problem": "Cadence not fully automated.",
+      "impact": "Source choice speed reduced.",
+      "target": "Automated benchmarking loop.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_model_versioning",
+    "type": "subcategory",
+    "name": "Model Versioning",
+    "product_id": "prd_pzero",
+    "category_id": "cat_modeling",
+    "parent_id": "cat_modeling",
+    "health": "red",
+    "current_state": "Versioning is artifact-centric and model-family-aware but not yet a full registry. Outputs are suffixed by family (_xgb, _lgbm), stored in site-scoped artifact folders (models, plots, metrics), and uploaded to suffixed S3 paths. Pipeline binaries are exported with site+family naming conventions, environment snapshots are tracked via pip freeze artifacts, and SHAP background datasets/metadata are versioned as separate artifacts. Promotion to dev is explicit through push_to_dev.py by copying selected family artifacts to dev_uri with optional API validation, and older/ provides historical code snapshots.",
+    "target_state": "Formal model registry.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Model Versioning",
+      "description": "Model versioning currently manages provenance through structured artifacts, suffix conventions, site-scoped storage, and controlled promotion scripts. The missing piece is a formal immutable registry that unifies model artifact identifiers with exact dataset versions, feature configuration, training metadata, and comparable performance records across releases.",
+      "current_problem": "No immutable model history.",
+      "impact": "Rollback/comparison risk.",
+      "target": "Registry with data+metrics linkage.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_codex_cli",
+    "type": "subcategory",
+    "name": "CODEX CLI Setup",
+    "product_id": "prd_pzero",
+    "category_id": "cat_experiment",
+    "parent_id": "cat_experiment",
+    "health": "red",
+    "current_state": "Codex CLI experimentation flow is active around run_experiments.py and experiments/* for eims_castle. It currently runs temporal CV with expanding windows and evaluates baseline + ML models (linear regression, random forest, lightgbm, xgboost, mlp) with composite scoring. Tests are valid but depend on environment bootstrapping (PYTHONPATH=. pytest -q).",
+    "target_state": "Reliable Codex CLI workflow with stable environment setup, reproducible run contracts, and automation-friendly interfaces for model search, diagnostics, and promotion decisions.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "CODEX CLI Setup",
+      "description": "CLI-centric experimentation setup spanning run_experiments.py, splitter.py, pipeline.py context, and experiments modules. Runtime dependencies are containerized (pandas, numpy, scikit-learn, lightgbm, xgboost, plotly, optuna, dill), but local consistency and test invocation conventions still need hardening.",
+      "current_problem": "CLI orchestration is useful but not yet fully standardized across data splits, config interpretation, test execution, and result-registry provenance.",
+      "impact": "Higher operational overhead and avoidable rerun/debug cycles during model benchmarking.",
+      "target": "Documented and deterministic CLI experiment lifecycle from data load through CV scoring, diagnostics, and model-selection handoff."
+    }
+  },
+  {
+    "id": "sub_cross_site_exp",
+    "type": "subcategory",
+    "name": "Cross-Site Experimentation",
+    "product_id": "prd_pzero",
+    "category_id": "cat_experiment",
+    "parent_id": "cat_experiment",
+    "health": "red",
+    "current_state": "Current experiments are single-site (eims_castle) with intra-site weather-source comparison (mix vs ncep-gfs) using temporal CV. Canonical split artifacts exist and CV currently yields 2 folds per source. Latest results show CV can materially change winner selection versus single holdout (mix switched from baseline winner in holdout to xgboost winner in CV).",
+    "target_state": "Generalized multi-site experimentation with consistent data contracts, source-level and fused-source benchmarking, and test-backed promotion criteria.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "Cross-Site Experimentation",
+      "description": "Temporal CV experiment flow currently benchmarked on eims_castle with source-specific tracks for mix and ncep-gfs. Data splits are pre-materialized (train/valid/test), OOF predictions and fold metrics are persisted, and summary ranking is available per source.",
+      "current_problem": "Cross-site generalization is not yet implemented; active runner does not consume test split for model selection and several roadmap capabilities (source fusion, stacking/residual layers, expanded lag/rolling diagnostics) are pending.",
+      "impact": "Findings are strong for local source comparison but cannot yet provide robust multi-site transferability claims.",
+      "target": "Scalable cross-site experimentation layer with unified fold semantics, explicit test-stage evaluation, and comparable multi-site performance diagnostics."
+    }
+  },
+  {
+    "id": "sub_monitoring_dashboards",
+    "type": "subcategory",
+    "name": "Monitoring Dashboards",
+    "product_id": "prd_pzero",
+    "category_id": "cat_monitoring",
+    "parent_id": "cat_monitoring",
+    "health": "yellow",
+    "current_state": "Dashboards exist but action loops are weak.",
+    "target_state": "Actionable dashboards with ownership.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Monitoring Dashboards",
+      "description": "Observability views for ops and model health.",
+      "current_problem": "Insufficient usage discipline.",
+      "impact": "Delayed response.",
+      "target": "Routine operational usage.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_active_monitoring",
+    "type": "subcategory",
+    "name": "Active Monitoring",
+    "product_id": "prd_pzero",
+    "category_id": "cat_monitoring",
+    "parent_id": "cat_monitoring",
+    "health": "red",
+    "current_state": "Signals are not actively managed daily.",
+    "target_state": "Owner-based active monitoring cadence.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Active Monitoring",
+      "description": "Human-in-the-loop monitoring process.",
+      "current_problem": "No consistent monitoring ownership.",
+      "impact": "Incidents detected late.",
+      "target": "Reliable daily monitoring routine.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_alerts_anomaly",
+    "type": "subcategory",
+    "name": "Alerts & Anomaly Detection",
+    "product_id": "prd_pzero",
+    "category_id": "cat_monitoring",
+    "parent_id": "cat_monitoring",
+    "health": "red",
+    "current_state": "Alerting is incomplete/noisy.",
+    "target_state": "Reliable low-noise alerts and escalation.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Alerts & Anomaly Detection",
+      "description": "Automated anomaly detection and alerting.",
+      "current_problem": "Poor precision and routing.",
+      "impact": "Missed critical issues.",
+      "target": "High-signal alert pipeline.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_eval_tool",
+    "type": "subcategory",
+    "name": "Evaluation Tool",
+    "product_id": "prd_pzero",
+    "category_id": "cat_performance",
+    "parent_id": "cat_performance",
+    "health": "yellow",
+    "current_state": "Evaluation tooling exists but not fully operationalized.",
+    "target_state": "Integrated evaluation-driven prioritization.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "subcategory": "Evaluation Tool",
+      "description": "Forecast quality analysis tooling.",
+      "current_problem": "Outputs not consistently used for decisions.",
+      "impact": "Slower prioritization.",
+      "target": "Decision-centric evaluation loop.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_ground_truth",
+    "type": "subcategory",
+    "name": "Ground Truth Integration",
+    "product_id": "prd_pzero",
+    "category_id": "cat_performance",
+    "parent_id": "cat_performance",
+    "health": "green",
+    "current_state": "Ground truth ingestion is working.",
+    "target_state": "Automated QA around ground truth quality.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "subcategory": "Ground Truth Integration",
+      "description": "Observed outcome integration for validation.",
+      "current_problem": "Needs stronger reconciliation automation.",
+      "impact": "Evaluation confidence risk.",
+      "target": "Auditable automated integration.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_historical_perf",
+    "type": "subcategory",
+    "name": "Historical Performance Tracking",
+    "product_id": "prd_pzero",
+    "category_id": "cat_performance",
+    "parent_id": "cat_performance",
+    "health": "red",
+    "current_state": "Long-term performance history is fragmented.",
+    "target_state": "Queryable longitudinal performance history.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "subcategory": "Historical Performance Tracking",
+      "description": "Trend analysis over models/releases/sites.",
+      "current_problem": "No centralized historical warehouse.",
+      "impact": "Regression/ROI visibility is weak.",
+      "target": "Complete history with release markers.",
+      "importance": "Critical"
+    }
+  },
+  {
+    "id": "sub_meteomatics",
+    "type": "subcategory",
+    "name": "MeteoMatics Downloader",
+    "product_id": "prd_pzero",
+    "category_id": "cat_tooling",
+    "parent_id": "cat_tooling",
+    "health": "green",
+    "current_state": "Meteomatics Extractor is operational as the weather-input preparation tool. It allows in-app editing of YAML extraction settings (project, history range, resolution, timezone, models, features), supports both polygon and single-point extraction modes, authenticates via MM_USERNAME/MM_PASSWORD, chunks API requests by feature groups and date window limits, writes one CSV per weather model to data/{project}_{model}_meteo_data.csv, and can skip or overwrite existing outputs. It also loads generated files for normalized multi-model time-series plotting inside the UI.",
+    "target_state": "Maintain reliability and standards alignment.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Tooling Ecosystem",
+      "subcategory": "MeteoMatics Downloader",
+      "description": "Streamlit weather extraction utility for Meteomatics-driven model inputs. It manages extraction configuration, geospatial selection, batched API retrieval, deterministic CSV output naming, and quick visual verification of generated weather time series before downstream training or analysis.",
+      "current_problem": "Needs standards alignment.",
+      "impact": "Data input quality dependency.",
+      "target": "Stable standardized ingestion tooling.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_datalake_tools",
+    "type": "subcategory",
+    "name": "Datalake Tools",
+    "product_id": "prd_pzero",
+    "category_id": "cat_tooling",
+    "parent_id": "cat_tooling",
+    "health": "green",
+    "current_state": "Datalake tooling is split into two operational apps. basic/datalake_inspector provides lightweight Athena browsing (database/table discovery, starter SQL generation, editable query execution, result preview, CSV download) with awswrangler+boto3 and fixed AWS profile/region defaults. datalake_submissions extends this into a unified workflow by combining Athena querying, schema/column inspection, datetime-aware filtering, column profiling (approx_distinct), and direct submission QA using mapped production/weather/issue/valid datetime fields with overlay charting and forecast diagnostics. These tools are also the primary inspection path for outputs generated by deployed API and scheduled inference modes across environments.",
+    "target_state": "Increase interface consistency.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Tooling Ecosystem",
+      "subcategory": "Datalake Tools",
+      "description": "Athena-centric datalake operations toolkit used to query production datasets and immediately inspect forecast-submission behavior. It bridges raw table access and applied QA, reducing context switching between data retrieval and operational validation tasks. In deployment context, it is the operational verification layer for SAM-deployed inference outputs and environment-specific run behavior.",
+      "current_problem": "Convention variance.",
+      "impact": "Integration overhead.",
+      "target": "Unified tool contracts.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_shapely_inspector",
+    "type": "subcategory",
+    "name": "Shapely Inspector",
+    "product_id": "prd_pzero",
+    "category_id": "cat_tooling",
+    "parent_id": "cat_tooling",
+    "health": "green",
+    "current_state": "Shapley Inspector is an upload-driven explainability UI that runs shap_inference_waterfall.py as a subprocess with isolated run directories under shapley_inspector/artifacts/shap_ui_runs/<timestamp>/. It accepts required pipeline pickle + meteo CSV and optional inference/background datasets, supports base/meta/end_to_end/lambda_faithful explanation levels, and outputs SHAP waterfall artifacts (combined or per-timestep), optional normalized time-series and average-waterfall plots, optional reconstructed inference-aligned CSVs, and strict-compare diagnostics with tolerance checks. Current implementation constraint: parser limits --model-type to xgb.",
+    "target_state": "Integrate outputs into standard workflows.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Tooling Ecosystem",
+      "subcategory": "Shapely Inspector",
+      "description": "Model explainability and reconstruction-validation tool for forecast pipelines. It generates interpretable SHAP artifacts and consistency checks against inference outputs so operators can diagnose prediction behavior, investigate feature contribution patterns, and validate end-to-end model reconstruction assumptions.",
+      "current_problem": "Workflow integration gaps.",
+      "impact": "Slower diagnostics in some paths.",
+      "target": "Standardized diagnostics output.",
+      "importance": "Medium"
+    }
+  },
+  {
+    "id": "sub_tool_standardization",
+    "type": "subcategory",
+    "name": "Tool Standardization",
+    "product_id": "prd_pzero",
+    "category_id": "cat_tooling",
+    "parent_id": "cat_tooling",
+    "health": "yellow",
+    "current_state": "Tooling conventions remain partially inconsistent across utility apps: configuration surfaces differ (YAML edit in-app vs hardcoded AWS profile/region vs upload-driven execution), output structures vary by tool, and operational UX patterns are not yet standardized. Despite strong functional coverage, shared norms for auth/config management, output schemas, CLI parity, and cross-tool navigation are still maturing.",
+    "target_state": "Shared standards across internal tooling.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Tooling Ecosystem",
+      "subcategory": "Tool Standardization",
+      "description": "Cross-tool standardization layer for Streamlit utilities and companion scripts. Focus areas include consistent configuration strategy, predictable artifact/output contracts, shared metric/report conventions, reusable QA primitives, and common interface patterns so operators can move between tools with minimal cognitive overhead.",
+      "current_problem": "No consistent standards baseline.",
+      "impact": "Maintenance and onboarding drag.",
+      "target": "Clear tool standards and ownership.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_customers",
+    "type": "subcategory",
+    "name": "Customers",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "cat_business",
+    "health": "yellow",
+    "current_state": "Active customers validate product utility.",
+    "target_state": "Scale customer success with measurable value.\n\nThe customers also need to be captured in a mindmap where we can see the status of where we are with our customers models/trials",
+    "full_context": {
+      "description": "Customer footprint and delivery relationships. Out current customers include Anthem, EDF, G7 and Total Energies"
+    }
+  },
+  {
+    "id": "sub_pricing",
+    "type": "subcategory",
+    "name": "Pricing System",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "cat_business",
+    "health": "blue",
+    "current_state": "Pricing is not standardized.",
+    "target_state": "Tiered value-linked pricing framework.",
+    "full_context": {
+      "description": "Pricing model definition and execution.\n\nDifferent pricing strategies for international and local energy farms"
+    }
+  },
+  {
+    "id": "sub_payment",
+    "type": "subcategory",
+    "name": "Payment System",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "cat_business",
+    "health": "blue",
+    "current_state": "No integrated billing/payment workflow.",
+    "target_state": "Automated invoicing and payment operations.",
+    "full_context": {
+      "description": "Billing, collections, reconciliation."
+    }
+  },
+  {
+    "id": "sub_contracts_slas",
+    "type": "subcategory",
+    "name": "Contracts / SLAs",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "cat_business",
+    "health": "yellow",
+    "current_state": "Contracts exist, SLA operations vary.",
+    "target_state": "SLA catalog tied to monitoring evidence.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "Contracts / SLAs",
+      "description": "Contract and service-level governance.",
+      "current_problem": "SLA enforcement is inconsistent.",
+      "impact": "Delivery expectation risk.",
+      "target": "Consistent measurable SLAs.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_documentation",
+    "type": "subcategory",
+    "name": "Documentation",
+    "product_id": "prd_pzero",
+    "category_id": "cat_docs",
+    "parent_id": "cat_docs",
+    "health": "green",
+    "current_state": "Documentation baseline is healthy.",
+    "target_state": "Maintain freshness and explicit linkage to execution.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Documentation & Knowledge",
+      "subcategory": "Documentation",
+      "description": "Technical and operational docs.",
+      "current_problem": "Requires ongoing updates.",
+      "impact": "Alignment quality.",
+      "target": "Living documentation system.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_proposals",
+    "type": "subcategory",
+    "name": "Proposals",
+    "product_id": "prd_pzero",
+    "category_id": "cat_docs",
+    "parent_id": "cat_docs",
+    "health": "green",
+    "current_state": "Proposals support planning well.",
+    "target_state": "Tie proposals to measurable outcomes.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Documentation & Knowledge",
+      "subcategory": "Proposals",
+      "description": "Strategic planning artifacts.",
+      "current_problem": "Execution linkage is variable.",
+      "impact": "Priority drift risk.",
+      "target": "Outcome-linked proposal lifecycle.",
+      "importance": "Medium"
+    }
+  },
+  {
+    "id": "sub_visibility_map",
+    "type": "subcategory",
+    "name": "System Visibility / Product Map",
+    "product_id": "prd_pzero",
+    "category_id": "cat_docs",
+    "parent_id": "cat_docs",
+    "health": "yellow",
+    "current_state": "Product map visibility is partial.",
+    "target_state": "Unified and queryable product intelligence map.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Documentation & Knowledge",
+      "subcategory": "System Visibility / Product Map",
+      "description": "Single view of product state and dependencies.",
+      "current_problem": "Context is spread across sources.",
+      "impact": "Slower and weaker prioritization.",
+      "target": "Continuously updated visibility map.",
+      "importance": "Critical"
+    }
+  }
+]

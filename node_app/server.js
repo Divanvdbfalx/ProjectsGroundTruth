@@ -4,20 +4,19 @@ const path = require('path');
 const { URL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT, 'data');
-const USER_DIR = path.join(ROOT, 'user');
+const KB_RAW_SOURCES_DIR = path.join(ROOT, 'knowledge_base', 'raw', 'sources');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 4311);
 
 const DATA_FILES = {
-  entities: path.join(DATA_DIR, 'entities.json'),
-  relationships: path.join(DATA_DIR, 'relationships.json'),
-  tasks: path.join(DATA_DIR, 'tasks.json')
+  entities: path.join(KB_RAW_SOURCES_DIR, 'src_data_entities.json'),
+  relationships: path.join(KB_RAW_SOURCES_DIR, 'src_data_relationships.json'),
+  tasks: path.join(KB_RAW_SOURCES_DIR, 'src_data_tasks.json')
 };
 
 const USER_FILES = {
-  tasks: path.join(USER_DIR, 'tasks.md'),
-  context: path.join(USER_DIR, 'current_context.md')
+  tasks: path.join(KB_RAW_SOURCES_DIR, 'src_user_tasks.md'),
+  context: path.join(KB_RAW_SOURCES_DIR, 'src_user_current_context.md')
 };
 
 function safeReadText(filePath) {
