@@ -13,11 +13,11 @@ Experimentation now has an active temporal-CV harness for site eims_castle (mix 
 
 ## Current State
 
-- Experimentation now has an active temporal-CV harness for site eims_castle (mix vs ncep-gfs), but architecture is split between the new experiments runner and a legacy production-style pipeline. The benchmarking path is reproducible but still incomplete: train+valid drives selection while test is not integrated into runner decisions, some config keys are not consumed, and fold semantics differ between holdout and CV artifacts.
+- Experimentation is transitioning from single-site validation to a governed multi-site platform. The active stream is cross-site data ingestion and cleanup, followed by standardized evaluation protocol definition. Near-term execution is focused on closing open Codex CLI and Pzero implementation tickets and aligning phased delivery with stakeholders. Platform hardening is still in progress: cross-site metric standards and site abstraction are not yet complete, so behavior remains partly fragmented across runner and legacy paths.
 
 ## Target State
 
-- Unified and documented experimentation platform with strict temporal CV, explicit test-stage promotion, consistent artifact semantics, and repeatable cross-site model evaluation.
+- A unified experimentation platform where multi-site datasets follow consistent contracts, evaluation is protocol-driven with shared metric definitions, experiment logic is site-agnostic through abstraction layers, and model promotion uses explicit temporal-CV and test-stage gates. Run artifacts and promotion decisions are reproducible and auditable end to end.
 
 ## Children
 

@@ -45,3 +45,15 @@ Files Touched:
 - `user/journal.md`
 - `knowledge_base/raw/sources/src_user_journal.md`
 - `knowledge_base/wiki/sources/src_user_journal.md`
+
+## [2026-04-07] archive | Transfer data/user into KB sources and archive originals
+
+Type: archive  
+Summary: Synced all `data/` and `user/` files into `knowledge_base/raw/sources/`, moved original directories to `archive/2026-04-07/`, and left symlinks at `data` and `user` for compatibility.  
+Files Touched:
+- `knowledge_base/raw/sources/src_data_*.json`
+- `knowledge_base/raw/sources/src_user_*.md`
+- `archive/2026-04-07/data/*`
+- `archive/2026-04-07/user/*`
+- `data` (symlink)
+- `user` (symlink)
