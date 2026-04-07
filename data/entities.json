@@ -80,15 +80,15 @@
     "category_id": "cat_experiment",
     "parent_id": "prd_pzero",
     "health": "red",
-    "current_state": "Experiment workflows are ad-hoc.",
-    "target_state": "Standardized, repeatable experimentation.",
+    "current_state": "Experimentation now has an active temporal-CV harness for site eims_castle (mix vs ncep-gfs), but architecture is split between the new experiments runner and a legacy production-style pipeline. The benchmarking path is reproducible but still incomplete: train+valid drives selection while test is not integrated into runner decisions, some config keys are not consumed, and fold semantics differ between holdout and CV artifacts.",
+    "target_state": "Unified and documented experimentation platform with strict temporal CV, explicit test-stage promotion, consistent artifact semantics, and repeatable cross-site model evaluation.",
     "full_context": {
       "product": "P-Zerø",
       "category": "Experimentation & Development",
-      "description": "Controlled experiments and dev enablement.",
-      "current_problem": "No shared experiment framework.",
-      "impact": "Slow learning loops.",
-      "target": "Template-driven, comparable experiments.",
+      "description": "Primary experimentation system for comparing weather-source-specific models and ML baselines under time-ordered validation. Active entrypoint is run_experiments.py with experiments/ modules (temporal_cv, feature_builder, scoring, diagnostics), while pipeline.py and run_baseline_validation.py remain legacy but operationally relevant.",
+      "current_problem": "Parallel experiment architectures and partial runner gaps create decision friction (test split not wired into selection, config/features drift, inconsistent fold-definition semantics, and environment setup quirks like PYTHONPATH-dependent tests).",
+      "impact": "Model conclusions can diverge between holdout and CV regimes, slowing confident promotion decisions and reducing comparability across experiments.",
+      "target": "Single governed experimentation framework with standardized data contracts, consistent CV/test flow, registry-quality metadata, and extensible roadmap support (source fusion, stacking, residual diagnostics, and richer temporal features).",
       "importance": "Critical"
     }
   },
@@ -354,10 +354,16 @@
     "category_id": "cat_experiment",
     "parent_id": "cat_experiment",
     "health": "red",
-    "current_state": "Codex CLI is in the very early stages and requires some experimentation to get right.",
-    "target_state": "Consistent and documented experiment setup that has an AI abstraction layer that is used to automate the model finding and finetuning process.",
+    "current_state": "Codex CLI experimentation flow is active around run_experiments.py and experiments/* for eims_castle. It currently runs temporal CV with expanding windows and evaluates baseline + ML models (linear regression, random forest, lightgbm, xgboost, mlp) with composite scoring. Tests are valid but depend on environment bootstrapping (PYTHONPATH=. pytest -q).",
+    "target_state": "Reliable Codex CLI workflow with stable environment setup, reproducible run contracts, and automation-friendly interfaces for model search, diagnostics, and promotion decisions.",
     "full_context": {
-      "description": "Developer local tooling setup."
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "CODEX CLI Setup",
+      "description": "CLI-centric experimentation setup spanning run_experiments.py, splitter.py, pipeline.py context, and experiments modules. Runtime dependencies are containerized (pandas, numpy, scikit-learn, lightgbm, xgboost, plotly, optuna, dill), but local consistency and test invocation conventions still need hardening.",
+      "current_problem": "CLI orchestration is useful but not yet fully standardized across data splits, config interpretation, test execution, and result-registry provenance.",
+      "impact": "Higher operational overhead and avoidable rerun/debug cycles during model benchmarking.",
+      "target": "Documented and deterministic CLI experiment lifecycle from data load through CV scoring, diagnostics, and model-selection handoff."
     }
   },
   {
@@ -368,10 +374,16 @@
     "category_id": "cat_experiment",
     "parent_id": "cat_experiment",
     "health": "red",
-    "current_state": "Site-to-site comparisons are non existent.",
-    "target_state": "Training data from multiple sites are used in the experiment platform to aid in the optimization and evaluation of different models",
+    "current_state": "Current experiments are single-site (eims_castle) with intra-site weather-source comparison (mix vs ncep-gfs) using temporal CV. Canonical split artifacts exist and CV currently yields 2 folds per source. Latest results show CV can materially change winner selection versus single holdout (mix switched from baseline winner in holdout to xgboost winner in CV).",
+    "target_state": "Generalized multi-site experimentation with consistent data contracts, source-level and fused-source benchmarking, and test-backed promotion criteria.",
     "full_context": {
-      "description": "Repeatable experiments across sites."
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "Cross-Site Experimentation",
+      "description": "Temporal CV experiment flow currently benchmarked on eims_castle with source-specific tracks for mix and ncep-gfs. Data splits are pre-materialized (train/valid/test), OOF predictions and fold metrics are persisted, and summary ranking is available per source.",
+      "current_problem": "Cross-site generalization is not yet implemented; active runner does not consume test split for model selection and several roadmap capabilities (source fusion, stacking/residual layers, expanded lag/rolling diagnostics) are pending.",
+      "impact": "Findings are strong for local source comparison but cannot yet provide robust multi-site transferability claims.",
+      "target": "Scalable cross-site experimentation layer with unified fold semantics, explicit test-stage evaluation, and comparable multi-site performance diagnostics."
     }
   },
   {

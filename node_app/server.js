@@ -5,6 +5,7 @@ const { URL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
+const USER_DIR = path.join(ROOT, 'user');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 4311);
 
@@ -13,6 +14,127 @@ const DATA_FILES = {
   relationships: path.join(DATA_DIR, 'relationships.json'),
   tasks: path.join(DATA_DIR, 'tasks.json')
 };
+
+const USER_FILES = {
+  tasks: path.join(USER_DIR, 'tasks.md'),
+  context: path.join(USER_DIR, 'current_context.md')
+};
+
+function safeReadText(filePath) {
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+function normalizeStatus(raw) {
+  const value = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+  if (value === 'inprogress') return 'in_progress';
+  if (value === 'in_progress' || value === 'todo' || value === 'blocked' || value === 'done') {
+    return value;
+  }
+  return value || 'todo';
+}
+
+function splitMarkdownRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|')) return [];
+  const noStart = trimmed.startsWith('|') ? trimmed.slice(1) : trimmed;
+  const noEnd = noStart.endsWith('|') ? noStart.slice(0, -1) : noStart;
+  return noEnd.split('|').map(part => part.trim());
+}
+
+function parseUserTasksMarkdown(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const headerIndex = lines.findIndex(line => line.includes('| ID |') && line.includes('Linked Entity'));
+  if (headerIndex < 0 || !lines[headerIndex + 1]) return [];
+
+  const headers = splitMarkdownRow(lines[headerIndex]);
+  if (!headers.length) return [];
+
+  const tasks = [];
+  for (let i = headerIndex + 2; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.trim().startsWith('|')) break;
+    if (line.includes('|---')) continue;
+    const cols = splitMarkdownRow(line);
+    if (!cols.length) continue;
+
+    const row = {};
+    headers.forEach((header, idx) => {
+      row[header] = cols[idx] || '';
+    });
+
+    const status = normalizeStatus(row.Status);
+    tasks.push({
+      id: row.ID || '',
+      title: row.Task || '',
+      linkedEntity: row['Linked Entity'] || '',
+      groundTruthTask: row['Ground-Truth Task'] || '',
+      status,
+      priority: (row.Priority || '').toLowerCase(),
+      createdDate: row['Created (Date)'] || '',
+      updatedDate: row['Updated (Date)'] || '',
+      completedDate: row['Completed (Date)'] || '',
+      estHours: Number.parseFloat(row['Est (h)']),
+      actualHours: Number.parseFloat(row['Actual (h)']),
+      owner: row.Owner || '',
+      description: row.Notes || row['Ground-Truth Task'] || ''
+    });
+  }
+
+  return tasks.map(task => ({
+    ...task,
+    estHours: Number.isFinite(task.estHours) ? task.estHours : null,
+    actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null
+  }));
+}
+
+function sectionBullets(markdown, sectionTitle) {
+  const escaped = sectionTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`##\\s+${escaped}\\s*\\n([\\s\\S]*?)(?:\\n##\\s+|$)`);
+  const match = markdown.match(regex);
+  if (!match) return [];
+  return match[1]
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.startsWith('- '))
+    .map(line => line.replace(/^- /, '').trim())
+    .filter(Boolean);
+}
+
+function parseUserContextMarkdown(markdown) {
+  const lastUpdatedMatch = markdown.match(/^Last Updated:\s*(.+)$/m);
+  const contextDateMatch = markdown.match(/^Context Date:\s*(.+)$/m);
+  const contextVersionMatch = markdown.match(/^Context Version:\s*(.+)$/m);
+  const linkedEntityMatch = markdown.match(/Linked Entity ID:\s*`([^`]*)`/);
+  const linkedTaskMatch = markdown.match(/Linked Task ID:\s*`([^`]*)`/);
+
+  return {
+    lastUpdated: lastUpdatedMatch ? lastUpdatedMatch[1].trim() : '',
+    contextDate: contextDateMatch ? contextDateMatch[1].trim() : '',
+    contextVersion: contextVersionMatch ? contextVersionMatch[1].trim() : '',
+    linkedEntityId: linkedEntityMatch ? linkedEntityMatch[1].trim() : '',
+    linkedTaskId: linkedTaskMatch ? linkedTaskMatch[1].trim() : '',
+    busyNow: sectionBullets(markdown, 'What I Am Busy With Now'),
+    sessionGoal: sectionBullets(markdown, 'Session Goal'),
+    nextAction: sectionBullets(markdown, 'Next Action'),
+    notes: sectionBullets(markdown, 'Notes')
+  };
+}
+
+function readUserWorkspace() {
+  const tasksMarkdown = safeReadText(USER_FILES.tasks);
+  const contextMarkdown = safeReadText(USER_FILES.context);
+  return {
+    tasks: parseUserTasksMarkdown(tasksMarkdown),
+    context: parseUserContextMarkdown(contextMarkdown)
+  };
+}
 
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -137,6 +259,11 @@ function validateRelationship(rel, entitiesById) {
 async function handleApi(req, res, pathname) {
   const segments = pathname.split('/').filter(Boolean);
   try {
+    if (req.method === 'GET' && pathname === '/api/user-workspace') {
+      sendJson(res, 200, readUserWorkspace());
+      return;
+    }
+
     if (req.method === 'GET' && pathname === '/api/data') {
       sendJson(res, 200, readData());
       return;

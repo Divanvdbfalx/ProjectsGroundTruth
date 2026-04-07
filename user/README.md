@@ -24,6 +24,12 @@ It is intended to be edited directly by a person in plain text/Markdown, without
 3. `tasks.md` is cross-day and persistent. Every task should track `Created (Date)`, `Updated (Date)`, and `Completed (Date)` when done.
 4. Always update `Last Updated` timestamps when editing files.
 
+## Linked Entity Rules
+
+1. `Linked Entity` must use a real ID from `data/entities.json` (category or subcategory node), not free-text names.
+2. For new epics, propose the best-fit entity placement and confirm with the user before finalizing if ambiguous.
+3. If an existing task uses a non-node linked entity, remap it to the closest valid node ID.
+
 ## Notes
 
 - Use explicit timestamps (for example `2026-04-07 10:10 SAST`).

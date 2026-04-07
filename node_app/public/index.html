@@ -31,6 +31,17 @@
       </header>
       <div id="toast" class="toast"></div>
       <div class="canvas-wrap">
+        <div class="left-task-filter">
+          <label class="compact-control">Task View
+            <select id="userTaskFilter">
+              <option value="all">All</option>
+              <option value="in_progress">In Progress</option>
+              <option value="todo">Todo</option>
+              <option value="blocked">Blocked</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+        </div>
         <div id="tooltip" class="tooltip"></div>
         <svg id="map" viewBox="-1600 -1100 3200 2200" aria-label="Mindmap canvas">
           <defs>
@@ -50,6 +61,18 @@
     </section>
 
     <aside class="panel">
+      <section class="workspace-overview">
+        <div class="section-head">
+          <h2>User Context</h2>
+        </div>
+        <div id="contextSummary" class="context-summary"></div>
+
+        <div class="section-head task-glance-head">
+          <h2>Tasks At A Glance</h2>
+        </div>
+        <ul id="userTaskList" class="user-task-list"></ul>
+      </section>
+
       <div class="tabs">
         <button class="tab active" data-tab="entity">Node</button>
         <button class="tab" data-tab="relationship">Connection</button>

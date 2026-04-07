@@ -101,6 +101,13 @@ button.danger:hover {
   -webkit-user-select: none;
 }
 
+.left-task-filter {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 25;
+}
+
 svg {
   width: 100%;
   height: calc(100vh - 138px);
@@ -147,6 +154,12 @@ svg.dragging {
   stroke: #d7e9ff;
   stroke-width: 3.3;
   filter: drop-shadow(0 0 12px rgba(157, 202, 255, 0.45));
+}
+
+.node.in-progress circle {
+  stroke: #8fd6ff;
+  stroke-width: 3.2;
+  filter: drop-shadow(0 0 11px rgba(143, 214, 255, 0.45));
 }
 
 .edge {
@@ -203,6 +216,103 @@ svg.dragging {
   overflow: auto;
   background:
     linear-gradient(180deg, rgba(20, 36, 60, 0.97), rgba(12, 22, 38, 0.98));
+}
+
+.workspace-overview {
+  margin-bottom: 12px;
+  border: 1px solid #365982;
+  border-radius: 10px;
+  background: rgba(16, 35, 58, 0.78);
+  padding: 10px;
+}
+
+.task-glance-head {
+  margin-top: 8px;
+}
+
+.context-summary {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.context-row {
+  margin: 0;
+  font-size: 12px;
+  color: #c3d4eb;
+}
+
+.context-row strong {
+  color: #e7f1ff;
+}
+
+.context-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #9eb3d6;
+}
+
+.user-task-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.user-task-list li {
+  margin: 0;
+}
+
+.user-task-btn {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  background: #132947;
+  border-color: #345780;
+}
+
+.user-task-btn:hover {
+  background: #173459;
+}
+
+.user-task-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.user-task-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.task-status-pill {
+  border: 1px solid #4a6991;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #d3e3f9;
+}
+
+.task-status-pill.in_progress {
+  border-color: #76c6f3;
+  color: #8fd6ff;
+}
+
+.task-status-pill.blocked {
+  border-color: #f3a479;
+  color: #ffd0ad;
+}
+
+.task-status-pill.done {
+  border-color: #68d29a;
+  color: #9aefbe;
 }
 
 .compact-control {

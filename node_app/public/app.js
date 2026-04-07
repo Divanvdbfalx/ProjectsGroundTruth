@@ -1,5 +1,7 @@
 const state = {
   data: null,
+  userWorkspace: null,
+  userWorkspaceError: null,
   selectedEntityId: null,
   selectedRelationshipId: null,
   entityFormBaseline: null,
@@ -22,6 +24,9 @@ const entityListSection = document.getElementById('entityListSection');
 const relationshipListSection = document.getElementById('relationshipListSection');
 const toggleEntityListBtn = document.getElementById('toggleEntityListBtn');
 const toggleRelationshipListBtn = document.getElementById('toggleRelationshipListBtn');
+const contextSummaryEl = document.getElementById('contextSummary');
+const userTaskFilterEl = document.getElementById('userTaskFilter');
+const userTaskListEl = document.getElementById('userTaskList');
 
 const entityTab = document.getElementById('entityTab');
 const relationshipTab = document.getElementById('relationshipTab');
@@ -45,6 +50,121 @@ async function api(path, options = {}) {
 
 function byIdMap() {
   return new Map(state.data.entities.map(entity => [entity.id, entity]));
+}
+
+function normalizeStatus(status) {
+  const value = String(status || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+  if (value === 'inprogress') return 'in_progress';
+  if (value === 'in_progress' || value === 'todo' || value === 'blocked' || value === 'done') {
+    return value;
+  }
+  return value || 'todo';
+}
+
+function statusLabel(status) {
+  if (status === 'in_progress') return 'In Progress';
+  if (status === 'todo') return 'Todo';
+  if (status === 'blocked') return 'Blocked';
+  if (status === 'done') return 'Done';
+  return status || 'Unknown';
+}
+
+function normalizeKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function tokenize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(/\s+/)
+    .filter(token => token.length >= 3);
+}
+
+function resolveEntityIdFromLinkedEntity(linkedEntity, entities) {
+  const raw = String(linkedEntity || '').trim();
+  if (!raw) return null;
+
+  const byId = new Map(entities.map(entity => [entity.id, entity.id]));
+  if (byId.has(raw)) return raw;
+
+  const normalizedRaw = normalizeKey(raw);
+  const normalizedRawFlat = normalizedRaw.replace(/_/g, '');
+
+  for (const entity of entities) {
+    const idKey = normalizeKey(entity.id);
+    const nameKey = normalizeKey(entity.name);
+    if (normalizedRaw === idKey || normalizedRaw === nameKey) {
+      return entity.id;
+    }
+    if (normalizedRawFlat && (idKey.replace(/_/g, '') === normalizedRawFlat || nameKey.replace(/_/g, '') === normalizedRawFlat)) {
+      return entity.id;
+    }
+  }
+
+  const rawTokens = tokenize(raw);
+  if (!rawTokens.length) return null;
+
+  let bestId = null;
+  let bestScore = 0;
+  for (const entity of entities) {
+    const entityTokens = new Set([...tokenize(entity.id), ...tokenize(entity.name)]);
+    if (!entityTokens.size) continue;
+
+    let overlap = 0;
+    rawTokens.forEach(token => {
+      if (entityTokens.has(token)) overlap += 1;
+      else {
+        const partial = [...entityTokens].some(entityToken =>
+          entityToken.includes(token) || token.includes(entityToken)
+        );
+        if (partial) overlap += 0.6;
+      }
+    });
+
+    if (overlap > bestScore) {
+      bestScore = overlap;
+      bestId = entity.id;
+    }
+  }
+
+  return bestScore >= 0.8 ? bestId : null;
+}
+
+function inProgressEntityIds() {
+  const entities = state.data?.entities || [];
+  const entityIds = new Set(entities.map(entity => entity.id));
+  const inProgressIds = new Set();
+
+  (state.data?.tasks || []).forEach(task => {
+    if (normalizeStatus(task.status) !== 'in_progress') return;
+    if (entityIds.has(task.entity_id)) {
+      inProgressIds.add(task.entity_id);
+    }
+  });
+
+  (state.userWorkspace?.tasks || []).forEach(task => {
+    if (normalizeStatus(task.status) !== 'in_progress') return;
+    const resolved = resolveEntityIdFromLinkedEntity(task.linkedEntity, entities);
+    if (resolved) inProgressIds.add(resolved);
+  });
+
+  const context = state.userWorkspace?.context;
+  if (context?.linkedEntityId) {
+    const resolved = resolveEntityIdFromLinkedEntity(context.linkedEntityId, entities);
+    const linkedTask = (state.userWorkspace?.tasks || []).find(task => task.id === context.linkedTaskId);
+    if (resolved && linkedTask && normalizeStatus(linkedTask.status) === 'in_progress') {
+      inProgressIds.add(resolved);
+    }
+  }
+
+  return inProgressIds;
 }
 
 function healthColor(health) {
@@ -730,13 +850,16 @@ function drawGraph(options = {}) {
   });
   resolveLabelOverlaps(labelConfigs, nodeCircles);
   const labelsById = new Map(labelConfigs.map(item => [item.id, item]));
+  const activeInProgressIds = inProgressEntityIds();
 
   entities.forEach(entity => {
     const position = positions[entity.id];
     if (!position) return;
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    const selectedClass = state.selectedEntityId === entity.id ? ' selected' : '';
-    group.setAttribute('class', `node${selectedClass}`);
+    const classes = ['node'];
+    if (state.selectedEntityId === entity.id) classes.push('selected');
+    if (activeInProgressIds.has(entity.id)) classes.push('in-progress');
+    group.setAttribute('class', classes.join(' '));
     group.setAttribute('transform', `translate(${position.x}, ${position.y})`);
     group.addEventListener('mouseenter', evt => {
       const desc = entity.full_context?.description || entity.current_state || '';
@@ -794,6 +917,122 @@ function drawGraph(options = {}) {
   }
 }
 
+function renderContextSummary() {
+  if (!contextSummaryEl) return;
+  contextSummaryEl.innerHTML = '';
+
+  if (state.userWorkspaceError) {
+    const empty = document.createElement('p');
+    empty.className = 'context-empty';
+    empty.textContent = `User workspace unavailable (${state.userWorkspaceError}). Restart the Node server to load user context.`;
+    contextSummaryEl.appendChild(empty);
+    return;
+  }
+
+  const context = state.userWorkspace?.context;
+  if (!context) {
+    const empty = document.createElement('p');
+    empty.className = 'context-empty';
+    empty.textContent = 'No user context found.';
+    contextSummaryEl.appendChild(empty);
+    return;
+  }
+
+  const rows = [
+    ['Context Date', context.contextDate || 'N/A'],
+    ['Version', context.contextVersion || 'N/A'],
+    ['Linked Task', context.linkedTaskId || 'N/A'],
+    ['Linked Entity', context.linkedEntityId || 'N/A']
+  ];
+
+  rows.forEach(([label, value]) => {
+    const row = document.createElement('p');
+    row.className = 'context-row';
+    const strong = document.createElement('strong');
+    strong.textContent = `${label}: `;
+    const text = document.createTextNode(value);
+    row.appendChild(strong);
+    row.appendChild(text);
+    contextSummaryEl.appendChild(row);
+  });
+}
+
+async function focusEntityById(entityId) {
+  if (!entityId) return;
+  const entity = state.data?.entities?.find(item => item.id === entityId);
+  if (!entity) return;
+  if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
+  if (!(await confirmSaveBeforeLeavingNode())) return;
+  state.selectedEntityId = entity.id;
+  state.selectedRelationshipId = null;
+  setEntityForm(entity);
+  setActiveTab('entity');
+  renderLists();
+  drawGraph();
+}
+
+function renderUserTaskList() {
+  if (!userTaskListEl) return;
+  userTaskListEl.innerHTML = '';
+
+  if (state.userWorkspaceError) {
+    const empty = document.createElement('li');
+    empty.className = 'context-empty';
+    empty.textContent = 'User tasks unavailable. Restart server and reload.';
+    userTaskListEl.appendChild(empty);
+    return;
+  }
+
+  const allTasks = state.userWorkspace?.tasks || [];
+  const selectedFilter = userTaskFilterEl?.value || 'all';
+  const tasks = selectedFilter === 'all'
+    ? allTasks
+    : allTasks.filter(task => normalizeStatus(task.status) === selectedFilter);
+
+  if (!tasks.length) {
+    const empty = document.createElement('li');
+    empty.className = 'context-empty';
+    empty.textContent = 'No tasks for this filter.';
+    userTaskListEl.appendChild(empty);
+    return;
+  }
+
+  tasks.forEach(task => {
+    const status = normalizeStatus(task.status);
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'user-task-btn';
+    const description = task.description || task.groundTruthTask || 'No description';
+    button.title = description;
+
+    const resolvedEntityId = resolveEntityIdFromLinkedEntity(task.linkedEntity, state.data.entities);
+    if (resolvedEntityId) {
+      button.addEventListener('click', () => focusEntityById(resolvedEntityId));
+    } else {
+      button.disabled = true;
+    }
+
+    const title = document.createElement('span');
+    title.className = 'user-task-title';
+    title.textContent = task.title || task.id || 'Untitled task';
+
+    const pill = document.createElement('span');
+    pill.className = `task-status-pill ${status}`;
+    pill.textContent = statusLabel(status);
+
+    button.appendChild(title);
+    button.appendChild(pill);
+    li.appendChild(button);
+    userTaskListEl.appendChild(li);
+  });
+}
+
+function renderWorkspaceOverview() {
+  renderContextSummary();
+  renderUserTaskList();
+}
+
 function renderLists() {
   entityList.innerHTML = '';
   relationshipList.innerHTML = '';
@@ -841,10 +1080,25 @@ function renderLists() {
 }
 
 async function loadData() {
-  state.data = await api('/api/data');
+  const mapData = await api('/api/data');
+  let workspaceData = null;
+  let workspaceError = null;
+  try {
+    workspaceData = await api('/api/user-workspace');
+  } catch (error) {
+    workspaceError = error?.message || 'endpoint unavailable';
+  }
+  state.data = mapData;
+  state.userWorkspace = workspaceData;
+  state.userWorkspaceError = workspaceError;
+  renderWorkspaceOverview();
   renderLists();
   drawGraph({ fit: true });
-  showToast('Loaded latest data from data/*.json');
+  if (workspaceData && !workspaceError) {
+    showToast('Loaded latest data and user workspace context');
+  } else {
+    showToast(`Loaded map data. User workspace unavailable (${workspaceError || 'unknown error'}). Restart server.`);
+  }
 }
 
 function formToEntity() {
@@ -1049,6 +1303,12 @@ nodeSizeRange.addEventListener('input', () => {
   state.nodeScale = Number(nodeSizeRange.value);
   drawGraph();
 });
+
+if (userTaskFilterEl) {
+  userTaskFilterEl.addEventListener('change', () => {
+    renderUserTaskList();
+  });
+}
 
 function setSectionCollapsed(sectionEl, buttonEl, collapsed) {
   sectionEl.classList.toggle('collapsed', collapsed);
