@@ -1,0 +1,258 @@
+[
+  {
+    "id": "task_data_versioning_1",
+    "entity_id": "sub_data_versioning",
+    "title": "Enforce immutable dataset snapshots",
+    "description": "Create dataset version IDs + manifests.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Data Management",
+      "subcategory": "Data Versioning",
+      "problem": "Datasets are overwritten.",
+      "solution": "Immutable snapshot policy.",
+      "expected_impact": "Reproducible experiments."
+    }
+  },
+  {
+    "id": "task_data_versioning_2",
+    "entity_id": "sub_data_versioning",
+    "title": "Attach dataset version to training runs",
+    "description": "Require version IDs in training metadata.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Data Management",
+      "subcategory": "Data Versioning",
+      "problem": "Model runs cannot be traced to exact data.",
+      "solution": "Validation gate in training config.",
+      "expected_impact": "End-to-end traceability."
+    }
+  },
+  {
+    "id": "task_model_versioning_1",
+    "entity_id": "sub_model_versioning",
+    "title": "Create model registry spec",
+    "description": "Store artifact URI, config hash, dataset version, metrics.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Model Versioning",
+      "problem": "No standard model registry.",
+      "solution": "Registry schema + required fields.",
+      "expected_impact": "Safer deploy and rollback."
+    }
+  },
+  {
+    "id": "task_model_versioning_2",
+    "entity_id": "sub_model_versioning",
+    "title": "Gate deploys on model registry entry",
+    "description": "Block release if registry metadata is incomplete.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Modeling & Training",
+      "subcategory": "Model Versioning",
+      "problem": "Untracked models can be deployed.",
+      "solution": "Release guardrails.",
+      "expected_impact": "Higher production confidence."
+    }
+  },
+  {
+    "id": "task_cross_site_exp_1",
+    "entity_id": "sub_cross_site_exp",
+    "title": "Define cross-site metric pack",
+    "description": "Shared metrics and normalization across sites.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "Cross-Site Experimentation",
+      "problem": "Metrics vary by site.",
+      "solution": "Single metric protocol.",
+      "expected_impact": "Comparable site evaluations."
+    }
+  },
+  {
+    "id": "task_cross_site_exp_2",
+    "entity_id": "sub_cross_site_exp",
+    "title": "Build site abstraction layer",
+    "description": "Decouple site-specific parameters from experiment logic.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Experimentation & Development",
+      "subcategory": "Cross-Site Experimentation",
+      "problem": "Site assumptions are hardcoded.",
+      "solution": "Reusable site profile abstraction.",
+      "expected_impact": "Faster rollout of winning experiments."
+    }
+  },
+  {
+    "id": "task_active_monitoring_1",
+    "entity_id": "sub_active_monitoring",
+    "title": "Assign monitoring ownership rota",
+    "description": "Daily owner + escalation runbook.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Active Monitoring",
+      "problem": "No clear owner for daily monitoring.",
+      "solution": "Rota with escalation protocol.",
+      "expected_impact": "Earlier incident detection."
+    }
+  },
+  {
+    "id": "task_active_monitoring_2",
+    "entity_id": "sub_active_monitoring",
+    "title": "Automate daily health digest",
+    "description": "Generate summary of quality, failures, anomalies.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Active Monitoring",
+      "problem": "Signal review is inconsistent.",
+      "solution": "Daily automated digest.",
+      "expected_impact": "Consistent operational awareness."
+    }
+  },
+  {
+    "id": "task_alerts_anomaly_1",
+    "entity_id": "sub_alerts_anomaly",
+    "title": "Set baseline anomaly thresholds",
+    "description": "Per-site/model thresholds and false-positive tracking.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Alerts & Anomaly Detection",
+      "problem": "Alerts are noisy or missing.",
+      "solution": "Calibrated thresholds.",
+      "expected_impact": "Higher signal-to-noise in alerts."
+    }
+  },
+  {
+    "id": "task_alerts_anomaly_2",
+    "entity_id": "sub_alerts_anomaly",
+    "title": "Implement routing + acknowledgements",
+    "description": "Route to owners with ack/escalation states.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Monitoring & Observability",
+      "subcategory": "Alerts & Anomaly Detection",
+      "problem": "Alerts don't reliably reach owners.",
+      "solution": "Owner-based routing and ack flow.",
+      "expected_impact": "Faster response times."
+    }
+  },
+  {
+    "id": "task_historical_perf_1",
+    "entity_id": "sub_historical_perf",
+    "title": "Backfill historical performance store",
+    "description": "Consolidate prior metrics by model/site/release.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "subcategory": "Historical Performance Tracking",
+      "problem": "History is fragmented.",
+      "solution": "Central historical dataset.",
+      "expected_impact": "Regression detection and ROI tracking."
+    }
+  },
+  {
+    "id": "task_historical_perf_2",
+    "entity_id": "sub_historical_perf",
+    "title": "Create trend dashboards",
+    "description": "Visualize long-term quality trends and release markers.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Performance & Evaluation",
+      "subcategory": "Historical Performance Tracking",
+      "problem": "No common trend view.",
+      "solution": "Longitudinal dashboards.",
+      "expected_impact": "Faster strategic decisions."
+    }
+  },
+  {
+    "id": "task_pricing_1",
+    "entity_id": "sub_pricing",
+    "title": "Define tiered pricing model",
+    "description": "Price by site count, SLA tier, support level.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "Pricing System",
+      "problem": "Pricing is inconsistent.",
+      "solution": "Standard tier model.",
+      "expected_impact": "Predictable margins and sales process."
+    }
+  },
+  {
+    "id": "task_pricing_2",
+    "entity_id": "sub_pricing",
+    "title": "Link pricing to measured value",
+    "description": "Tie pricing narrative to performance/business KPIs.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "Pricing System",
+      "problem": "Weak value-based pricing evidence.",
+      "solution": "Performance-to-value KPI mapping.",
+      "expected_impact": "Stronger customer negotiations."
+    }
+  },
+  {
+    "id": "task_payment_1",
+    "entity_id": "sub_payment",
+    "title": "Select billing/payment stack",
+    "description": "Choose invoicing/payment tooling and integration path.",
+    "status": "todo",
+    "priority": "critical",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "Payment System",
+      "problem": "Manual payment operations.",
+      "solution": "Integrated billing system.",
+      "expected_impact": "Reliable collections and reduced admin load."
+    }
+  },
+  {
+    "id": "task_payment_2",
+    "entity_id": "sub_payment",
+    "title": "Add monthly reconciliation workflow",
+    "description": "Track invoices, payments, and exceptions with status.",
+    "status": "todo",
+    "priority": "high",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "Payment System",
+      "problem": "No standard reconciliation loop.",
+      "solution": "Operational finance workflow.",
+      "expected_impact": "Lower leakage and better financial visibility."
+    }
+  }
+]

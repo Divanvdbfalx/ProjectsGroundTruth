@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P-Zerø Mindmap Editor</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <section class="board">
+      <header class="toolbar">
+        <h1>P-Zerø Mindmap Editor</h1>
+        <div class="toolbar-actions">
+          <button id="reloadBtn" type="button">Reload</button>
+          <button id="fitViewBtn" type="button">Fit View</button>
+          <button id="zoomOutBtn" type="button">-</button>
+          <button id="zoomInBtn" type="button">+</button>
+          <label class="compact-control">Layout
+            <select id="layoutSelect">
+              <option value="radial">Radial</option>
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+              <option value="optimized">Optimized</option>
+            </select>
+          </label>
+          <label class="compact-control">Node Size
+            <input id="nodeSizeRange" type="range" min="0.9" max="2.2" step="0.05" value="2.2" />
+          </label>
+        </div>
+      </header>
+      <div id="toast" class="toast"></div>
+      <div class="canvas-wrap">
+        <div id="tooltip" class="tooltip"></div>
+        <svg id="map" viewBox="-1600 -1100 3200 2200" aria-label="Mindmap canvas">
+          <defs>
+            <marker id="arrowHead" markerWidth="9" markerHeight="7" refX="7" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#8bb3e8"></polygon>
+            </marker>
+          </defs>
+          <g id="viewport"></g>
+        </svg>
+      </div>
+      <footer class="legend">
+        <span><b>Drag:</b> pan</span>
+        <span><b>Wheel:</b> zoom</span>
+        <span><b>Fit View:</b> auto-zoom</span>
+        <span><b>Click node/edge:</b> edit</span>
+      </footer>
+    </section>
+
+    <aside class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="entity">Node</button>
+        <button class="tab" data-tab="relationship">Connection</button>
+      </div>
+
+      <section id="entityTab" class="tab-panel active">
+        <div class="section-head">
+          <h2>Node Editor</h2>
+          <div class="small-actions">
+            <button id="newEntityBtn" type="button">New</button>
+            <button id="deleteEntityBtn" class="danger" type="button">Delete</button>
+          </div>
+        </div>
+        <form id="entityForm">
+          <button type="submit">Save Node</button>
+          <label>Current State <textarea name="current_state" rows="2"></textarea></label>
+          <label>Target State <textarea name="target_state" rows="2"></textarea></label>
+          <label>Description <textarea name="description" rows="3"></textarea></label>
+          <label>ID <input name="id" required /></label>
+          <label>Parent ID <input name="parent_id" /></label>
+          <label>Category ID <input name="category_id" /></label>
+          <label>Product ID <input name="product_id" /></label>
+          <label>Name <input name="name" required /></label>
+          <label>Type
+            <select name="type">
+              <option value="product">product</option>
+              <option value="category">category</option>
+              <option value="subcategory">subcategory</option>
+            </select>
+          </label>
+          <label>Health
+            <select name="health">
+              <option value="green">green</option>
+              <option value="yellow">yellow</option>
+              <option value="red">red</option>
+              <option value="blue">blue (unknown)</option>
+            </select>
+          </label>
+        </form>
+      </section>
+
+      <section id="relationshipTab" class="tab-panel">
+        <div class="section-head">
+          <h2>Connection Editor</h2>
+          <div class="small-actions">
+            <button id="newRelationshipBtn" type="button">New</button>
+            <button id="deleteRelationshipBtn" class="danger" type="button">Delete</button>
+          </div>
+        </div>
+        <form id="relationshipForm">
+          <label>ID <input name="id" required /></label>
+          <label>From ID <input name="from_id" required /></label>
+          <label>To ID <input name="to_id" required /></label>
+          <label>Type
+            <select name="type">
+              <option value="blocks">blocks</option>
+              <option value="enables">enables</option>
+              <option value="impacts">impacts</option>
+              <option value="depends_on">depends_on</option>
+            </select>
+          </label>
+          <label>Description <textarea name="description" rows="3"></textarea></label>
+          <button type="submit">Save Connection</button>
+        </form>
+      </section>
+
+      <section class="list-section collapsed" id="entityListSection">
+        <div class="list-head">
+          <h3>Nodes</h3>
+          <button id="toggleEntityListBtn" class="collapse-btn" type="button" aria-expanded="false">Expand</button>
+        </div>
+        <ul id="entityList"></ul>
+      </section>
+      <section class="list-section collapsed" id="relationshipListSection">
+        <div class="list-head">
+          <h3>Connections</h3>
+          <button id="toggleRelationshipListBtn" class="collapse-btn" type="button" aria-expanded="false">Expand</button>
+        </div>
+        <ul id="relationshipList"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

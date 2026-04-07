@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P-Zerø Data Mindmap</title>
+  <style>
+    :root {
+      --bg: #0b1320;
+      --panel: #111d31;
+      --text: #e8eef8;
+      --muted: #9fb2cf;
+      --line: #2a3a55;
+      --green: #28c76f;
+      --yellow: #ffb020;
+      --red: #ea5455;
+      --link-blocks: #f66;
+      --link-enables: #4cc38a;
+      --link-impacts: #6fb5ff;
+      --link-depends: #ffb86b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 10%, #13213a 0%, var(--bg) 52%);
+      color: var(--text);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      height: 100vh;
+    }
+    .canvas-wrap {
+      position: relative;
+      border-right: 1px solid var(--line);
+    }
+    .controls {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(10, 18, 30, 0.84);
+      border: 1px solid #2d4263;
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .controls button {
+      border: 1px solid #36537c;
+      background: #1a2b45;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .controls button:hover {
+      background: #223a5f;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    svg.dragging {
+      cursor: grabbing;
+    }
+    .node {
+      cursor: pointer;
+      transition: opacity 120ms ease;
+    }
+    .node circle {
+      stroke: #0f1726;
+      stroke-width: 1.2;
+    }
+    .node.task circle {
+      stroke-width: 0.9;
+    }
+    .node text {
+      fill: var(--text);
+      font-size: 11px;
+      paint-order: stroke;
+      stroke: #0a1321;
+      stroke-width: 2;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .edge {
+      stroke: #3b5b83;
+      stroke-width: 1.2;
+      fill: none;
+      opacity: 0.5;
+    }
+    .edge.rel {
+      stroke-width: 1.8;
+      stroke-dasharray: 5 4;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+    .side {
+      background: linear-gradient(180deg, rgba(17,29,49,0.96), rgba(9,16,28,0.96));
+      padding: 14px;
+      overflow: auto;
+    }
+    .side h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: #87a0c7;
+      text-transform: uppercase;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+    .text {
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 0;
+    }
+    .chip {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+    }
+    .chip.green { color: #0d2b18; background: #6be49b; border-color: #59d88c; }
+    .chip.yellow { color: #3f2a02; background: #ffd27a; border-color: #f5c363; }
+    .chip.red { color: #3b0d0f; background: #ff9d9d; border-color: #f48b8b; }
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      z-index: 50;
+      max-width: 320px;
+      background: rgba(12, 21, 36, 0.95);
+      border: 1px solid #355177;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text);
+      display: none;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="canvas-wrap">
+      <div class="controls">
+        <button id="resetView">Reset View</button>
+        <span>Drag to pan, scroll to zoom, hover nodes for descriptions</span>
+      </div>
+      <div class="tooltip" id="tooltip"></div>
+      <svg id="map" viewBox="-1300 -900 2600 1800" aria-label="P-Zerø mindmap">
+        <g id="viewport"></g>
+      </svg>
+    </div>
+    <aside class="side" id="detail"></aside>
+  </div>
+
+  <script>
+    const DATA = {"entities": [{"id": "prd_pzero", "type": "product", "name": "P-Zerø", "product_id": "prd_pzero", "category_id": null, "parent_id": null, "health": "yellow", "current_state": "Production forecasting works, but scale maturity is limited.", "target_state": "Reproducible, observable, and commercially scalable forecasting platform.", "full_context": {"product": "P-Zerø", "description": "Wind power forecasting product combining physics and ML.", "current_problem": "Infrastructure and lifecycle practices are fragmented.", "impact": "Scaling and reproducibility are constrained.", "target": "Single product intelligence source of truth.", "importance": "Critical"}}, {"id": "cat_infra", "type": "category", "name": "Infrastructure & Deployment", "product_id": "prd_pzero", "category_id": "cat_infra", "parent_id": "prd_pzero", "health": "yellow", "current_state": "Core deployment works but fragmentation exists.", "target_state": "Unified and reliable deployment foundations.", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "description": "Deployment runtime and operational backbone.", "current_problem": "Account and pipeline consistency gaps.", "impact": "Operational friction.", "target": "Governed, stable infrastructure.", "importance": "Critical"}}, {"id": "cat_data", "type": "category", "name": "Data Management", "product_id": "prd_pzero", "category_id": "cat_data", "parent_id": "prd_pzero", "health": "red", "current_state": "Inference data works; versioning and lineage are weak.", "target_state": "Versioned and traceable data lifecycle.", "full_context": {"product": "P-Zerø", "category": "Data Management", "description": "Data storage, versioning, and lineage across model lifecycle.", "current_problem": "No robust dataset versioning or lineage.", "impact": "Experimentation and reproducibility blocked.", "target": "Immutable, traceable dataset lifecycle.", "importance": "Critical"}}, {"id": "cat_modeling", "type": "category", "name": "Modeling & Training", "product_id": "prd_pzero", "category_id": "cat_modeling", "parent_id": "prd_pzero", "health": "yellow", "current_state": "Modeling is strong but version control is weak.", "target_state": "Governed and versioned model lifecycle.", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "description": "Feature, training, and model lifecycle management.", "current_problem": "Model artifacts not consistently versioned.", "impact": "Rollback and comparison risk.", "target": "Model registry and reproducible training.", "importance": "Critical"}}, {"id": "cat_experiment", "type": "category", "name": "Experimentation & Development", "product_id": "prd_pzero", "category_id": "cat_experiment", "parent_id": "prd_pzero", "health": "red", "current_state": "Experiment workflows are ad-hoc.", "target_state": "Standardized, repeatable experimentation.", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "description": "Controlled experiments and dev enablement.", "current_problem": "No shared experiment framework.", "impact": "Slow learning loops.", "target": "Template-driven, comparable experiments.", "importance": "Critical"}}, {"id": "cat_monitoring", "type": "category", "name": "Monitoring & Observability", "product_id": "prd_pzero", "category_id": "cat_monitoring", "parent_id": "prd_pzero", "health": "red", "current_state": "Dashboards exist but active response is weak.", "target_state": "Always-on monitoring with alerts and ownership.", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "description": "Operational visibility and anomaly response.", "current_problem": "Signals are underused.", "impact": "Delayed incident detection.", "target": "Proactive alerting and triage loops.", "importance": "Critical"}}, {"id": "cat_performance", "type": "category", "name": "Performance & Evaluation", "product_id": "prd_pzero", "category_id": "cat_performance", "parent_id": "prd_pzero", "health": "red", "current_state": "Evaluation exists; historical tracking incomplete.", "target_state": "Continuous performance intelligence.", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "description": "Forecast quality measurement and trend analysis.", "current_problem": "History is fragmented.", "impact": "Regressions are harder to detect.", "target": "Full historical performance tracking.", "importance": "Critical"}}, {"id": "cat_tooling", "type": "category", "name": "Tooling Ecosystem", "product_id": "prd_pzero", "category_id": "cat_tooling", "parent_id": "prd_pzero", "health": "yellow", "current_state": "Useful tools exist but standards vary.", "target_state": "Standardized tooling interfaces and ownership.", "full_context": {"product": "P-Zerø", "category": "Tooling Ecosystem", "description": "Supporting operational tools.", "current_problem": "Inconsistent standards.", "impact": "Maintenance overhead.", "target": "Unified tool conventions.", "importance": "Medium"}}, {"id": "cat_business", "type": "category", "name": "Business Layer", "product_id": "prd_pzero", "category_id": "cat_business", "parent_id": "prd_pzero", "health": "red", "current_state": "Customers exist but pricing and payments are immature.", "target_state": "Stable commercial operating system.", "full_context": {"product": "P-Zerø", "category": "Business Layer", "description": "Pricing, payment, contracts, customer value.", "current_problem": "No structured pricing/payment system.", "impact": "Revenue scalability risk.", "target": "Repeatable commercial model.", "importance": "Critical"}}, {"id": "cat_docs", "type": "category", "name": "Documentation & Knowledge", "product_id": "prd_pzero", "category_id": "cat_docs", "parent_id": "prd_pzero", "health": "yellow", "current_state": "Docs exist, visibility map is partial.", "target_state": "Living and complete product map.", "full_context": {"product": "P-Zerø", "category": "Documentation & Knowledge", "description": "Knowledge management and product visibility.", "current_problem": "Incomplete unified visibility.", "impact": "Prioritization misalignment.", "target": "Continuous single source of truth.", "importance": "High"}}, {"id": "sub_aws_lambda", "type": "subcategory", "name": "AWS Lambda Deployment", "product_id": "prd_pzero", "category_id": "cat_infra", "parent_id": "cat_infra", "health": "green", "current_state": "Stable production runtime.", "target_state": "Maintain reliability with stronger controls.", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "AWS Lambda Deployment", "description": "Serverless runtime for forecasting.", "current_problem": "Needs stronger release controls.", "impact": "Affects uptime.", "target": "Predictable operations.", "importance": "High"}}, {"id": "sub_sam_repo", "type": "subcategory", "name": "Deployment Repository (AWS SAM)", "product_id": "prd_pzero", "category_id": "cat_infra", "parent_id": "cat_infra", "health": "green", "current_state": "SAM repo supports deployment flow.", "target_state": "Add stronger CI gates.", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "Deployment Repository (AWS SAM)", "description": "IaC deployment repository.", "current_problem": "Limited gating depth.", "impact": "Release confidence risk.", "target": "Fully gated deployment pipeline.", "importance": "High"}}, {"id": "sub_multi_account", "type": "subcategory", "name": "Multi-Account AWS Setup", "product_id": "prd_pzero", "category_id": "cat_infra", "parent_id": "cat_infra", "health": "red", "current_state": "Multi-account setup is fragmented.", "target_state": "Clear governance and account boundaries.", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "Multi-Account AWS Setup", "description": "Cross-account governance and operations.", "current_problem": "Inconsistent controls and ownership.", "impact": "Security and delivery friction.", "target": "Unified account operating model.", "importance": "Critical"}}, {"id": "sub_pipeline_orchestration", "type": "subcategory", "name": "Pipeline Orchestration", "product_id": "prd_pzero", "category_id": "cat_infra", "parent_id": "cat_infra", "health": "yellow", "current_state": "Pipelines run but orchestration is uneven.", "target_state": "Deterministic orchestration with retries/ownership.", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "Pipeline Orchestration", "description": "Workflow sequencing and control.", "current_problem": "Failure handling not uniform.", "impact": "Operational delays.", "target": "Reliable orchestration.", "importance": "High"}}, {"id": "sub_inference_datalake", "type": "subcategory", "name": "Inference Datalake", "product_id": "prd_pzero", "category_id": "cat_data", "parent_id": "cat_data", "health": "green", "current_state": "Inference datalake is operational.", "target_state": "Improve metadata quality and governance.", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Inference Datalake", "description": "Inference data storage and access.", "current_problem": "Metadata completeness can improve.", "impact": "Affects discoverability.", "target": "Well-governed inference storage.", "importance": "High"}}, {"id": "sub_training_storage", "type": "subcategory", "name": "Training Data Storage", "product_id": "prd_pzero", "category_id": "cat_data", "parent_id": "cat_data", "health": "yellow", "current_state": "Training data exists with inconsistent conventions.", "target_state": "Standardized storage contracts.", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Training Data Storage", "description": "Storage for training datasets.", "current_problem": "Inconsistent retention and structure.", "impact": "Harder experiment repeatability.", "target": "Uniform training storage model.", "importance": "Critical"}}, {"id": "sub_data_versioning", "type": "subcategory", "name": "Data Versioning", "product_id": "prd_pzero", "category_id": "cat_data", "parent_id": "cat_data", "health": "red", "current_state": "Datasets get overwritten.", "target_state": "Immutable versioned dataset snapshots.", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Versioning", "description": "Version control for datasets.", "current_problem": "Training data overwrites previous versions.", "impact": "Blocks experimentation and reproducibility.", "target": "Full data versioning + retention policy.", "importance": "Critical"}}, {"id": "sub_data_lineage", "type": "subcategory", "name": "Data Lineage", "product_id": "prd_pzero", "category_id": "cat_data", "parent_id": "cat_data", "health": "red", "current_state": "Data transformations are not fully traceable.", "target_state": "End-to-end lineage graph.", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Lineage", "description": "Traceability from source to model inputs.", "current_problem": "Missing lineage metadata.", "impact": "Audit/debugging is slow.", "target": "Queryable lineage across pipelines.", "importance": "Critical"}}, {"id": "sub_legacy_metalearner", "type": "subcategory", "name": "Legacy Metalearner (XGBoost/LightGBM)", "product_id": "prd_pzero", "category_id": "cat_modeling", "parent_id": "cat_modeling", "health": "yellow", "current_state": "Metalearner works but lifecycle is uneven.", "target_state": "Governed and benchmarked lifecycle.", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Legacy Metalearner (XGBoost/LightGBM)", "description": "Ensemble layer for forecast quality.", "current_problem": "Upgrade path is unclear.", "impact": "Maintainability risk.", "target": "Controlled evolution.", "importance": "High"}}, {"id": "sub_feature_engineering", "type": "subcategory", "name": "Feature Engineering", "product_id": "prd_pzero", "category_id": "cat_modeling", "parent_id": "cat_modeling", "health": "green", "current_state": "Strong feature engineering capability.", "target_state": "Keep expanding tested features.", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Feature Engineering", "description": "Transform weather/physics into model features.", "current_problem": "Needs ongoing drift checks.", "impact": "Core driver of accuracy.", "target": "Scalable and explainable feature pipeline.", "importance": "Critical"}}, {"id": "sub_weather_benchmark", "type": "subcategory", "name": "Weather Data Benchmarking", "product_id": "prd_pzero", "category_id": "cat_modeling", "parent_id": "cat_modeling", "health": "green", "current_state": "MIX vs NCEP-GFS benchmarking active.", "target_state": "Automated benchmark scorecards.", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Weather Data Benchmarking", "description": "Benchmark weather input sources.", "current_problem": "Cadence not fully automated.", "impact": "Source choice speed reduced.", "target": "Automated benchmarking loop.", "importance": "High"}}, {"id": "sub_model_versioning", "type": "subcategory", "name": "Model Versioning", "product_id": "prd_pzero", "category_id": "cat_modeling", "parent_id": "cat_modeling", "health": "red", "current_state": "Model artifacts lack consistent versioning.", "target_state": "Formal model registry.", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Model Versioning", "description": "Model version/provenance management.", "current_problem": "No immutable model history.", "impact": "Rollback/comparison risk.", "target": "Registry with data+metrics linkage.", "importance": "Critical"}}, {"id": "sub_experiment_framework", "type": "subcategory", "name": "Experimentation Framework", "product_id": "prd_pzero", "category_id": "cat_experiment", "parent_id": "cat_experiment", "health": "red", "current_state": "Experiments are ad-hoc.", "target_state": "Template-driven experiment framework.", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Experimentation Framework", "description": "Standardized experimentation process.", "current_problem": "No shared experiment structure.", "impact": "Low repeatability.", "target": "Controlled comparable experiments.", "importance": "Critical"}}, {"id": "sub_codex_cli", "type": "subcategory", "name": "CODEX CLI Setup", "product_id": "prd_pzero", "category_id": "cat_experiment", "parent_id": "cat_experiment", "health": "yellow", "current_state": "CLI setup is partly manual.", "target_state": "Consistent and documented developer setup.", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "CODEX CLI Setup", "description": "Developer local tooling setup.", "current_problem": "Onboarding variance.", "impact": "Slower iteration.", "target": "One-command setup.", "importance": "Medium"}}, {"id": "sub_cross_site_exp", "type": "subcategory", "name": "Cross-Site Experimentation", "product_id": "prd_pzero", "category_id": "cat_experiment", "parent_id": "cat_experiment", "health": "red", "current_state": "Site-to-site comparisons are inconsistent.", "target_state": "Comparable cross-site experiment templates.", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Cross-Site Experimentation", "description": "Repeatable experiments across sites.", "current_problem": "Site assumptions are embedded ad-hoc.", "impact": "Scaling insights is hard.", "target": "Shared cross-site protocol.", "importance": "Critical"}}, {"id": "sub_monitoring_dashboards", "type": "subcategory", "name": "Monitoring Dashboards", "product_id": "prd_pzero", "category_id": "cat_monitoring", "parent_id": "cat_monitoring", "health": "yellow", "current_state": "Dashboards exist but action loops are weak.", "target_state": "Actionable dashboards with ownership.", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Monitoring Dashboards", "description": "Observability views for ops and model health.", "current_problem": "Insufficient usage discipline.", "impact": "Delayed response.", "target": "Routine operational usage.", "importance": "High"}}, {"id": "sub_active_monitoring", "type": "subcategory", "name": "Active Monitoring", "product_id": "prd_pzero", "category_id": "cat_monitoring", "parent_id": "cat_monitoring", "health": "red", "current_state": "Signals are not actively managed daily.", "target_state": "Owner-based active monitoring cadence.", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Active Monitoring", "description": "Human-in-the-loop monitoring process.", "current_problem": "No consistent monitoring ownership.", "impact": "Incidents detected late.", "target": "Reliable daily monitoring routine.", "importance": "Critical"}}, {"id": "sub_alerts_anomaly", "type": "subcategory", "name": "Alerts & Anomaly Detection", "product_id": "prd_pzero", "category_id": "cat_monitoring", "parent_id": "cat_monitoring", "health": "red", "current_state": "Alerting is incomplete/noisy.", "target_state": "Reliable low-noise alerts and escalation.", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Alerts & Anomaly Detection", "description": "Automated anomaly detection and alerting.", "current_problem": "Poor precision and routing.", "impact": "Missed critical issues.", "target": "High-signal alert pipeline.", "importance": "Critical"}}, {"id": "sub_eval_tool", "type": "subcategory", "name": "Evaluation Tool", "product_id": "prd_pzero", "category_id": "cat_performance", "parent_id": "cat_performance", "health": "yellow", "current_state": "Evaluation tooling exists but not fully operationalized.", "target_state": "Integrated evaluation-driven prioritization.", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "subcategory": "Evaluation Tool", "description": "Forecast quality analysis tooling.", "current_problem": "Outputs not consistently used for decisions.", "impact": "Slower prioritization.", "target": "Decision-centric evaluation loop.", "importance": "High"}}, {"id": "sub_ground_truth", "type": "subcategory", "name": "Ground Truth Integration", "product_id": "prd_pzero", "category_id": "cat_performance", "parent_id": "cat_performance", "health": "green", "current_state": "Ground truth ingestion is working.", "target_state": "Automated QA around ground truth quality.", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "subcategory": "Ground Truth Integration", "description": "Observed outcome integration for validation.", "current_problem": "Needs stronger reconciliation automation.", "impact": "Evaluation confidence risk.", "target": "Auditable automated integration.", "importance": "Critical"}}, {"id": "sub_historical_perf", "type": "subcategory", "name": "Historical Performance Tracking", "product_id": "prd_pzero", "category_id": "cat_performance", "parent_id": "cat_performance", "health": "red", "current_state": "Long-term performance history is fragmented.", "target_state": "Queryable longitudinal performance history.", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "subcategory": "Historical Performance Tracking", "description": "Trend analysis over models/releases/sites.", "current_problem": "No centralized historical warehouse.", "impact": "Regression/ROI visibility is weak.", "target": "Complete history with release markers.", "importance": "Critical"}}, {"id": "sub_meteomatics", "type": "subcategory", "name": "MeteoMatics Downloader", "product_id": "prd_pzero", "category_id": "cat_tooling", "parent_id": "cat_tooling", "health": "green", "current_state": "Tool is operational and useful.", "target_state": "Maintain reliability and standards alignment.", "full_context": {"product": "P-Zerø", "category": "Tooling Ecosystem", "subcategory": "MeteoMatics Downloader", "description": "Weather data retrieval tool.", "current_problem": "Needs standards alignment.", "impact": "Data input quality dependency.", "target": "Stable standardized ingestion tooling.", "importance": "High"}}, {"id": "sub_datalake_tools", "type": "subcategory", "name": "Datalake Tools", "product_id": "prd_pzero", "category_id": "cat_tooling", "parent_id": "cat_tooling", "health": "green", "current_state": "Datalake tools are functioning.", "target_state": "Increase interface consistency.", "full_context": {"product": "P-Zerø", "category": "Tooling Ecosystem", "subcategory": "Datalake Tools", "description": "Utility toolkit for datalake operations.", "current_problem": "Convention variance.", "impact": "Integration overhead.", "target": "Unified tool contracts.", "importance": "High"}}, {"id": "sub_shapely_inspector", "type": "subcategory", "name": "Shapely Inspector", "product_id": "prd_pzero", "category_id": "cat_tooling", "parent_id": "cat_tooling", "health": "green", "current_state": "Spatial inspection tool is valuable.", "target_state": "Integrate outputs into standard workflows.", "full_context": {"product": "P-Zerø", "category": "Tooling Ecosystem", "subcategory": "Shapely Inspector", "description": "Spatial diagnostics helper.", "current_problem": "Workflow integration gaps.", "impact": "Slower diagnostics in some paths.", "target": "Standardized diagnostics output.", "importance": "Medium"}}, {"id": "sub_tool_standardization", "type": "subcategory", "name": "Tool Standardization", "product_id": "prd_pzero", "category_id": "cat_tooling", "parent_id": "cat_tooling", "health": "yellow", "current_state": "Tool conventions vary by contributor.", "target_state": "Shared standards across internal tooling.", "full_context": {"product": "P-Zerø", "category": "Tooling Ecosystem", "subcategory": "Tool Standardization", "description": "Conventions for CLI/config/logging.", "current_problem": "No consistent standards baseline.", "impact": "Maintenance and onboarding drag.", "target": "Clear tool standards and ownership.", "importance": "High"}}, {"id": "sub_customers", "type": "subcategory", "name": "Customers", "product_id": "prd_pzero", "category_id": "cat_business", "parent_id": "cat_business", "health": "green", "current_state": "Active customers validate product utility.", "target_state": "Scale customer success with measurable value.", "full_context": {"description": "Customer footprint and delivery relationships. Out current customers include Anthem, EDF, G7 and Total Energies"}}, {"id": "sub_pricing", "type": "subcategory", "name": "Pricing System", "product_id": "prd_pzero", "category_id": "cat_business", "parent_id": "cat_business", "health": "blue", "current_state": "Pricing is not standardized.", "target_state": "Tiered value-linked pricing framework.", "full_context": {"description": "Pricing model definition and execution.\n\nDifferent pricing strategies for international and local energy farms"}}, {"id": "sub_payment", "type": "subcategory", "name": "Payment System", "product_id": "prd_pzero", "category_id": "cat_business", "parent_id": "cat_business", "health": "blue", "current_state": "No integrated billing/payment workflow.", "target_state": "Automated invoicing and payment operations.", "full_context": {"description": "Billing, collections, reconciliation."}}, {"id": "sub_contracts_slas", "type": "subcategory", "name": "Contracts / SLAs", "product_id": "prd_pzero", "category_id": "cat_business", "parent_id": "cat_business", "health": "yellow", "current_state": "Contracts exist, SLA operations vary.", "target_state": "SLA catalog tied to monitoring evidence.", "full_context": {"product": "P-Zerø", "category": "Business Layer", "subcategory": "Contracts / SLAs", "description": "Contract and service-level governance.", "current_problem": "SLA enforcement is inconsistent.", "impact": "Delivery expectation risk.", "target": "Consistent measurable SLAs.", "importance": "High"}}, {"id": "sub_documentation", "type": "subcategory", "name": "Documentation", "product_id": "prd_pzero", "category_id": "cat_docs", "parent_id": "cat_docs", "health": "green", "current_state": "Documentation baseline is healthy.", "target_state": "Maintain freshness and explicit linkage to execution.", "full_context": {"product": "P-Zerø", "category": "Documentation & Knowledge", "subcategory": "Documentation", "description": "Technical and operational docs.", "current_problem": "Requires ongoing updates.", "impact": "Alignment quality.", "target": "Living documentation system.", "importance": "High"}}, {"id": "sub_proposals", "type": "subcategory", "name": "Proposals", "product_id": "prd_pzero", "category_id": "cat_docs", "parent_id": "cat_docs", "health": "green", "current_state": "Proposals support planning well.", "target_state": "Tie proposals to measurable outcomes.", "full_context": {"product": "P-Zerø", "category": "Documentation & Knowledge", "subcategory": "Proposals", "description": "Strategic planning artifacts.", "current_problem": "Execution linkage is variable.", "impact": "Priority drift risk.", "target": "Outcome-linked proposal lifecycle.", "importance": "Medium"}}, {"id": "sub_visibility_map", "type": "subcategory", "name": "System Visibility / Product Map", "product_id": "prd_pzero", "category_id": "cat_docs", "parent_id": "cat_docs", "health": "yellow", "current_state": "Product map visibility is partial.", "target_state": "Unified and queryable product intelligence map.", "full_context": {"product": "P-Zerø", "category": "Documentation & Knowledge", "subcategory": "System Visibility / Product Map", "description": "Single view of product state and dependencies.", "current_problem": "Context is spread across sources.", "impact": "Slower and weaker prioritization.", "target": "Continuously updated visibility map.", "importance": "Critical"}}], "relationships": [{"id": "rel_data_versioning_blocks_experimentation", "from_id": "sub_data_versioning", "to_id": "sub_experiment_framework", "type": "blocks", "description": "Data versioning gaps block reproducible experiments.", "full_context": {"product": "P-Zerø", "from": "Data Versioning", "to": "Experimentation Framework", "relationship": "blocks", "reason": "Ad-hoc datasets prevent experiment replay.", "impact": "Low experiment confidence"}}, {"id": "rel_data_versioning_blocks_model_versioning", "from_id": "sub_data_versioning", "to_id": "sub_model_versioning", "type": "blocks", "description": "Data versioning blocks trustworthy model versioning.", "full_context": {"product": "P-Zerø", "from": "Data Versioning", "to": "Model Versioning", "relationship": "blocks", "reason": "Model versions require immutable data references.", "impact": "Registry quality reduced"}}, {"id": "rel_model_versioning_enables_perf_tracking", "from_id": "sub_model_versioning", "to_id": "sub_historical_perf", "type": "enables", "description": "Model versioning enables historical performance comparisons.", "full_context": {"product": "P-Zerø", "from": "Model Versioning", "to": "Historical Performance Tracking", "relationship": "enables", "reason": "Performance trends need stable model identifiers.", "impact": "Reliable trend diagnostics"}}, {"id": "rel_experiment_enables_model_improvement", "from_id": "sub_experiment_framework", "to_id": "cat_modeling", "type": "enables", "description": "Experimentation framework enables faster model improvements.", "full_context": {"product": "P-Zerø", "from": "Experimentation Framework", "to": "Modeling & Training", "relationship": "enables", "reason": "Standard experiments improve signal quality.", "impact": "Faster model learning loops"}}, {"id": "rel_monitoring_enables_perf_awareness", "from_id": "cat_monitoring", "to_id": "cat_performance", "type": "enables", "description": "Monitoring enables continuous performance awareness.", "full_context": {"product": "P-Zerø", "from": "Monitoring & Observability", "to": "Performance & Evaluation", "relationship": "enables", "reason": "Ops signals contextualize quality changes.", "impact": "Earlier regression detection"}}, {"id": "rel_infra_fragmentation_impacts_data_mgmt", "from_id": "sub_multi_account", "to_id": "cat_data", "type": "impacts", "description": "Infrastructure fragmentation impacts data management consistency.", "full_context": {"product": "P-Zerø", "from": "Multi-Account AWS Setup", "to": "Data Management", "relationship": "impacts", "reason": "Inconsistent account patterns create divergent data handling.", "impact": "Data governance instability"}}, {"id": "rel_perf_tracking_enables_business_value", "from_id": "sub_historical_perf", "to_id": "cat_business", "type": "enables", "description": "Performance tracking enables business value measurement.", "full_context": {"product": "P-Zerø", "from": "Historical Performance Tracking", "to": "Business Layer", "relationship": "enables", "reason": "Commercial proof needs quality trends.", "impact": "Stronger pricing and renewals"}}, {"id": "rel_business_depends_on_performance", "from_id": "cat_business", "to_id": "cat_performance", "type": "depends_on", "description": "Business outcomes depend on measurable forecasting performance.", "full_context": {"product": "P-Zerø", "from": "Business Layer", "to": "Performance & Evaluation", "relationship": "depends_on", "reason": "Commercial sustainability requires demonstrable value.", "impact": "Revenue quality tied to forecast quality"}}], "tasks": [{"id": "task_multi_account_1", "entity_id": "sub_multi_account", "title": "Define target account topology", "description": "Specify prod/stage/dev/shared boundaries and owners.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "Multi-Account AWS Setup", "problem": "Account ownership/control is inconsistent.", "solution": "Adopt one agreed account model.", "expected_impact": "Lower security and ops friction."}}, {"id": "task_multi_account_2", "entity_id": "sub_multi_account", "title": "Centralize cross-account observability", "description": "Aggregate logs/metrics/traces with account tags.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Infrastructure & Deployment", "subcategory": "Multi-Account AWS Setup", "problem": "Fragmented incident visibility.", "solution": "Shared observability plane.", "expected_impact": "Faster triage."}}, {"id": "task_data_versioning_1", "entity_id": "sub_data_versioning", "title": "Enforce immutable dataset snapshots", "description": "Create dataset version IDs + manifests.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Versioning", "problem": "Datasets are overwritten.", "solution": "Immutable snapshot policy.", "expected_impact": "Reproducible experiments."}}, {"id": "task_data_versioning_2", "entity_id": "sub_data_versioning", "title": "Attach dataset version to training runs", "description": "Require version IDs in training metadata.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Versioning", "problem": "Model runs cannot be traced to exact data.", "solution": "Validation gate in training config.", "expected_impact": "End-to-end traceability."}}, {"id": "task_data_lineage_1", "entity_id": "sub_data_lineage", "title": "Define lineage metadata contract", "description": "Add source/transform/sink lineage fields in every stage.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Lineage", "problem": "Lineage metadata is missing.", "solution": "Mandatory lineage schema.", "expected_impact": "Faster audits and root-cause analysis."}}, {"id": "task_data_lineage_2", "entity_id": "sub_data_lineage", "title": "Publish lineage lookup view", "description": "Build queryable lineage map from source to model input.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Data Management", "subcategory": "Data Lineage", "problem": "Users cannot answer data origin quickly.", "solution": "Lineage index and retrieval API/CLI output.", "expected_impact": "Faster debugging."}}, {"id": "task_model_versioning_1", "entity_id": "sub_model_versioning", "title": "Create model registry spec", "description": "Store artifact URI, config hash, dataset version, metrics.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Model Versioning", "problem": "No standard model registry.", "solution": "Registry schema + required fields.", "expected_impact": "Safer deploy and rollback."}}, {"id": "task_model_versioning_2", "entity_id": "sub_model_versioning", "title": "Gate deploys on model registry entry", "description": "Block release if registry metadata is incomplete.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Modeling & Training", "subcategory": "Model Versioning", "problem": "Untracked models can be deployed.", "solution": "Release guardrails.", "expected_impact": "Higher production confidence."}}, {"id": "task_experiment_framework_1", "entity_id": "sub_experiment_framework", "title": "Standardize experiment template", "description": "Hypothesis, dataset version, model version, metrics, acceptance.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Experimentation Framework", "problem": "Experiments are not comparable.", "solution": "Single experiment template.", "expected_impact": "Higher learning speed."}}, {"id": "task_experiment_framework_2", "entity_id": "sub_experiment_framework", "title": "Create experiment registry", "description": "Store experiments, outcomes, and decisions in one place.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Experimentation Framework", "problem": "Results are scattered.", "solution": "Central experiment catalog.", "expected_impact": "Less duplicate work."}}, {"id": "task_cross_site_exp_1", "entity_id": "sub_cross_site_exp", "title": "Define cross-site metric pack", "description": "Shared metrics and normalization across sites.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Cross-Site Experimentation", "problem": "Metrics vary by site.", "solution": "Single metric protocol.", "expected_impact": "Comparable site evaluations."}}, {"id": "task_cross_site_exp_2", "entity_id": "sub_cross_site_exp", "title": "Build site abstraction layer", "description": "Decouple site-specific parameters from experiment logic.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Experimentation & Development", "subcategory": "Cross-Site Experimentation", "problem": "Site assumptions are hardcoded.", "solution": "Reusable site profile abstraction.", "expected_impact": "Faster rollout of winning experiments."}}, {"id": "task_active_monitoring_1", "entity_id": "sub_active_monitoring", "title": "Assign monitoring ownership rota", "description": "Daily owner + escalation runbook.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Active Monitoring", "problem": "No clear owner for daily monitoring.", "solution": "Rota with escalation protocol.", "expected_impact": "Earlier incident detection."}}, {"id": "task_active_monitoring_2", "entity_id": "sub_active_monitoring", "title": "Automate daily health digest", "description": "Generate summary of quality, failures, anomalies.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Active Monitoring", "problem": "Signal review is inconsistent.", "solution": "Daily automated digest.", "expected_impact": "Consistent operational awareness."}}, {"id": "task_alerts_anomaly_1", "entity_id": "sub_alerts_anomaly", "title": "Set baseline anomaly thresholds", "description": "Per-site/model thresholds and false-positive tracking.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Alerts & Anomaly Detection", "problem": "Alerts are noisy or missing.", "solution": "Calibrated thresholds.", "expected_impact": "Higher signal-to-noise in alerts."}}, {"id": "task_alerts_anomaly_2", "entity_id": "sub_alerts_anomaly", "title": "Implement routing + acknowledgements", "description": "Route to owners with ack/escalation states.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Monitoring & Observability", "subcategory": "Alerts & Anomaly Detection", "problem": "Alerts don't reliably reach owners.", "solution": "Owner-based routing and ack flow.", "expected_impact": "Faster response times."}}, {"id": "task_historical_perf_1", "entity_id": "sub_historical_perf", "title": "Backfill historical performance store", "description": "Consolidate prior metrics by model/site/release.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "subcategory": "Historical Performance Tracking", "problem": "History is fragmented.", "solution": "Central historical dataset.", "expected_impact": "Regression detection and ROI tracking."}}, {"id": "task_historical_perf_2", "entity_id": "sub_historical_perf", "title": "Create trend dashboards", "description": "Visualize long-term quality trends and release markers.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Performance & Evaluation", "subcategory": "Historical Performance Tracking", "problem": "No common trend view.", "solution": "Longitudinal dashboards.", "expected_impact": "Faster strategic decisions."}}, {"id": "task_pricing_1", "entity_id": "sub_pricing", "title": "Define tiered pricing model", "description": "Price by site count, SLA tier, support level.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Business Layer", "subcategory": "Pricing System", "problem": "Pricing is inconsistent.", "solution": "Standard tier model.", "expected_impact": "Predictable margins and sales process."}}, {"id": "task_pricing_2", "entity_id": "sub_pricing", "title": "Link pricing to measured value", "description": "Tie pricing narrative to performance/business KPIs.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Business Layer", "subcategory": "Pricing System", "problem": "Weak value-based pricing evidence.", "solution": "Performance-to-value KPI mapping.", "expected_impact": "Stronger customer negotiations."}}, {"id": "task_payment_1", "entity_id": "sub_payment", "title": "Select billing/payment stack", "description": "Choose invoicing/payment tooling and integration path.", "status": "todo", "priority": "critical", "full_context": {"product": "P-Zerø", "category": "Business Layer", "subcategory": "Payment System", "problem": "Manual payment operations.", "solution": "Integrated billing system.", "expected_impact": "Reliable collections and reduced admin load."}}, {"id": "task_payment_2", "entity_id": "sub_payment", "title": "Add monthly reconciliation workflow", "description": "Track invoices, payments, and exceptions with status.", "status": "todo", "priority": "high", "full_context": {"product": "P-Zerø", "category": "Business Layer", "subcategory": "Payment System", "problem": "No standard reconciliation loop.", "solution": "Operational finance workflow.", "expected_impact": "Lower leakage and better financial visibility."}}]};
+    const svg = document.getElementById("map");
+    const viewport = document.getElementById("viewport");
+    const detail = document.getElementById("detail");
+    const tooltip = document.getElementById("tooltip");
+    const resetBtn = document.getElementById("resetView");
+
+    const healthColor = { green: "#28c76f", yellow: "#ffb020", red: "#ea5455" };
+    const relColor = {
+      blocks: "var(--link-blocks)",
+      enables: "var(--link-enables)",
+      impacts: "var(--link-impacts)",
+      depends_on: "var(--link-depends)"
+    };
+
+    const entitiesById = Object.fromEntries(DATA.entities.map(e => [e.id, e]));
+    const tasksByEntity = DATA.tasks.reduce((acc, t) => {
+      if (!acc[t.entity_id]) acc[t.entity_id] = [];
+      acc[t.entity_id].push(t);
+      return acc;
+    }, {});
+    Object.values(tasksByEntity).forEach(arr => arr.sort((a, b) => (a.priority + a.title).localeCompare(b.priority + b.title)));
+
+    const root = DATA.entities.find(e => e.type === "product");
+    const categories = DATA.entities.filter(e => e.parent_id === root.id).sort((a, b) => a.name.localeCompare(b.name));
+    const subcatsByCategory = {};
+    categories.forEach(cat => {
+      subcatsByCategory[cat.id] = DATA.entities.filter(e => e.parent_id === cat.id).sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    function mkEl(name, attrs = {}, parent = null) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+      if (parent) parent.appendChild(el);
+      return el;
+    }
+
+    function polar(r, deg) {
+      const rad = deg * Math.PI / 180;
+      return { x: Math.cos(rad) * r, y: Math.sin(rad) * r };
+    }
+
+    const nodes = [];
+    const treeEdges = [];
+    const positions = {};
+    const nodeMeta = {};
+    const interaction = { x: 0, y: 0, scale: 1 };
+
+    function addNode(meta, x, y, r) {
+      positions[meta.id] = { x, y };
+      nodeMeta[meta.id] = meta;
+      nodes.push({ ...meta, x, y, r });
+    }
+
+    addNode({ id: root.id, kind: "entity", entityType: root.type, name: root.name, health: root.health, description: root.full_context?.description || "", current_state: root.current_state || "", target_state: root.target_state || "", raw: root }, 0, 0, 24);
+
+    const catRadius = 360;
+    const catStep = 360 / Math.max(1, categories.length);
+    categories.forEach((cat, idx) => {
+      const catAngle = -90 + idx * catStep;
+      const pCat = polar(catRadius, catAngle);
+      addNode({ id: cat.id, kind: "entity", entityType: cat.type, name: cat.name, health: cat.health, description: cat.full_context?.description || "", current_state: cat.current_state || "", target_state: cat.target_state || "", raw: cat }, pCat.x, pCat.y, 16);
+      treeEdges.push({ from: root.id, to: cat.id });
+
+      const subs = subcatsByCategory[cat.id] || [];
+      const arc = Math.min(80, 18 * Math.max(2, subs.length));
+      const subRadius = 290;
+      subs.forEach((sub, sIdx) => {
+        const subAngle = subs.length === 1 ? catAngle : catAngle - arc / 2 + (arc * sIdx / (subs.length - 1));
+        const pSub = { x: pCat.x + polar(subRadius, subAngle).x, y: pCat.y + polar(subRadius, subAngle).y };
+        addNode({ id: sub.id, kind: "entity", entityType: sub.type, name: sub.name, health: sub.health, description: sub.full_context?.description || "", current_state: sub.current_state || "", target_state: sub.target_state || "", raw: sub }, pSub.x, pSub.y, 11);
+        treeEdges.push({ from: cat.id, to: sub.id });
+
+        const tList = tasksByEntity[sub.id] || [];
+        const tArc = Math.min(70, 22 * Math.max(2, tList.length));
+        const tRadius = 160;
+        tList.forEach((task, tIdx) => {
+          const tAngle = tList.length === 1 ? subAngle : subAngle - tArc / 2 + (tArc * tIdx / (tList.length - 1));
+          const pTask = { x: pSub.x + polar(tRadius, tAngle).x, y: pSub.y + polar(tRadius, tAngle).y };
+          const taskId = "task:" + task.id;
+          addNode({
+            id: taskId,
+            kind: "task",
+            entityType: "task",
+            name: task.title,
+            health: null,
+            priority: task.priority,
+            status: task.status,
+            description: task.description || "",
+            current_state: "",
+            target_state: "",
+            raw: task
+          }, pTask.x, pTask.y, 7);
+          treeEdges.push({ from: sub.id, to: taskId });
+        });
+      });
+    });
+
+    function relPath(a, b) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const curve = 0.22;
+      const cx = mx - dy * curve;
+      const cy = my + dx * curve;
+      return `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`;
+    }
+
+    function colorForNode(n) {
+      if (n.kind === "task") return "#6fa8ff";
+      return healthColor[n.health] || "#adbcd6";
+    }
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function formatTitle(meta) {
+      if (meta.kind === "task") return meta.name;
+      return meta.name;
+    }
+
+    function clearDetails() {
+      detail.innerHTML = "";
+    }
+
+    function updateDetails(meta, relInfo = null) {
+      clearDetails();
+      if (relInfo) {
+        detail.appendChild(el("h2", "", "Relationship"));
+        const m = el("div", "meta", `${relInfo.type}`);
+        detail.appendChild(m);
+        detail.appendChild(el("div", "section-title", "From"));
+        detail.appendChild(el("p", "text", relInfo.fromName));
+        detail.appendChild(el("div", "section-title", "To"));
+        detail.appendChild(el("p", "text", relInfo.toName));
+        detail.appendChild(el("div", "section-title", "Description"));
+        detail.appendChild(el("p", "text", relInfo.description || "No description."));
+        return;
+      }
+
+      detail.appendChild(el("h2", "", formatTitle(meta)));
+      const metaLine = [];
+      if (meta.entityType) metaLine.push(meta.entityType);
+      if (meta.kind === "task") {
+        metaLine.push(meta.priority || "n/a");
+        metaLine.push(meta.status || "n/a");
+      }
+      detail.appendChild(el("div", "meta", metaLine.join(" | ")));
+
+      if (meta.health) {
+        const chip = el("span", "chip " + meta.health, meta.health.toUpperCase());
+        detail.appendChild(chip);
+      }
+      if (meta.description) {
+        detail.appendChild(el("div", "section-title", "Description"));
+        detail.appendChild(el("p", "text", meta.description));
+      }
+      if (meta.current_state) {
+        detail.appendChild(el("div", "section-title", "Current State"));
+        detail.appendChild(el("p", "text", meta.current_state));
+      }
+      if (meta.target_state) {
+        detail.appendChild(el("div", "section-title", "Target State"));
+        detail.appendChild(el("p", "text", meta.target_state));
+      }
+      const ctx = meta.raw?.full_context;
+      if (ctx) {
+        detail.appendChild(el("div", "section-title", "Context"));
+        Object.entries(ctx).forEach(([k, v]) => {
+          if (typeof v !== "string" || !v) return;
+          detail.appendChild(el("p", "text", `${k}: ${v}`));
+        });
+      }
+    }
+
+    function showTooltip(evt, html) {
+      tooltip.innerHTML = html;
+      tooltip.style.display = "block";
+      tooltip.style.left = `${evt.clientX + 12}px`;
+      tooltip.style.top = `${evt.clientY + 12}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.style.display = "none";
+    }
+
+    function render() {
+      viewport.innerHTML = "";
+      treeEdges.forEach(edge => {
+        const a = positions[edge.from];
+        const b = positions[edge.to];
+        mkEl("path", {
+          d: `M ${a.x} ${a.y} L ${b.x} ${b.y}`,
+          class: "edge"
+        }, viewport);
+      });
+
+      DATA.relationships.forEach(rel => {
+        const a = positions[rel.from_id];
+        const b = positions[rel.to_id];
+        if (!a || !b) return;
+        const line = mkEl("path", {
+          d: relPath(a, b),
+          class: "edge rel",
+          stroke: relColor[rel.type] || "#c0c8d5"
+        }, viewport);
+        line.addEventListener("mousemove", evt => {
+          const fromName = entitiesById[rel.from_id]?.name || rel.from_id;
+          const toName = entitiesById[rel.to_id]?.name || rel.to_id;
+          showTooltip(evt, `<strong>${rel.type}</strong><br/>${fromName} → ${toName}`);
+        });
+        line.addEventListener("mouseleave", hideTooltip);
+        line.addEventListener("mouseenter", () => {
+          updateDetails(null, {
+            type: rel.type,
+            fromName: entitiesById[rel.from_id]?.name || rel.from_id,
+            toName: entitiesById[rel.to_id]?.name || rel.to_id,
+            description: rel.description || ""
+          });
+        });
+      });
+
+      nodes.forEach(n => {
+        const g = mkEl("g", {
+          class: `node ${n.kind}`,
+          transform: `translate(${n.x}, ${n.y})`
+        }, viewport);
+
+        mkEl("circle", {
+          r: n.r,
+          fill: colorForNode(n)
+        }, g);
+
+        const label = n.kind === "task"
+          ? `[${(n.priority || "").toUpperCase()}] ${n.name}`
+          : n.name;
+        mkEl("text", {
+          x: n.r + 5,
+          y: 4
+        }, g).textContent = label.length > 56 ? label.slice(0, 56) + "…" : label;
+
+        g.addEventListener("mouseenter", evt => {
+          const summary = n.description || n.current_state || "No description.";
+          showTooltip(evt, `<strong>${n.name}</strong><br/>${summary}`);
+          updateDetails(n);
+        });
+        g.addEventListener("mousemove", evt => {
+          tooltip.style.left = `${evt.clientX + 12}px`;
+          tooltip.style.top = `${evt.clientY + 12}px`;
+        });
+        g.addEventListener("mouseleave", hideTooltip);
+      });
+
+      updateDetails(nodeMeta[root.id]);
+      applyTransform();
+    }
+
+    function applyTransform() {
+      viewport.setAttribute("transform", `translate(${interaction.x}, ${interaction.y}) scale(${interaction.scale})`);
+    }
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let baseX = 0;
+    let baseY = 0;
+
+    svg.addEventListener("mousedown", evt => {
+      dragging = true;
+      svg.classList.add("dragging");
+      startX = evt.clientX;
+      startY = evt.clientY;
+      baseX = interaction.x;
+      baseY = interaction.y;
+    });
+    window.addEventListener("mouseup", () => {
+      dragging = false;
+      svg.classList.remove("dragging");
+    });
+    window.addEventListener("mousemove", evt => {
+      if (!dragging) return;
+      interaction.x = baseX + (evt.clientX - startX);
+      interaction.y = baseY + (evt.clientY - startY);
+      applyTransform();
+    });
+    svg.addEventListener("wheel", evt => {
+      evt.preventDefault();
+      const factor = evt.deltaY < 0 ? 1.08 : 0.92;
+      interaction.scale = Math.max(0.35, Math.min(2.4, interaction.scale * factor));
+      applyTransform();
+    }, { passive: false });
+
+    resetBtn.addEventListener("click", () => {
+      interaction.x = 0;
+      interaction.y = 0;
+      interaction.scale = 1;
+      applyTransform();
+    });
+
+    render();
+  </script>
+</body>
+</html>

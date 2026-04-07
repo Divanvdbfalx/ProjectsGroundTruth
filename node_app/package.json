@@ -1,0 +1,10 @@
+{
+  "name": "p-zero-mindmap-editor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js mindmap editor for P-Zerø data",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
