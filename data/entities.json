@@ -256,7 +256,7 @@
     "category_id": "cat_data",
     "parent_id": "cat_data",
     "health": "red",
-    "current_state": "Version control for datasets in the AWS platform. Datasets get overwritten when training a new model and old datasets are lost.",
+    "current_state": "Version control for datasets in the AWS platform. Training datasets get overwritten when training a new model and old datasets are lost.",
     "target_state": "Immutable versioned dataset snapshots in AWS with dates and possible concatenation of datasets to create a more complete training data set.",
     "full_context": {
       "description": "Version control for datasets in the AWS platform, which is curre"
