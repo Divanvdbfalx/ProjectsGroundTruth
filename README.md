@@ -13,18 +13,19 @@ Local, file-based product health map for P-Zerø.
 
 The only source of truth is:
 
-- `data/entities.json`
-- `data/relationships.json`
-- `data/tasks.json`
+- `knowledge_base/raw/sources/src_data_entities.json`
+- `knowledge_base/raw/sources/src_data_relationships.json`
+- `knowledge_base/raw/sources/src_data_tasks.json`
 
 Generated artifacts (for example Mermaid outputs in `artifacts/`) are views, not authoritative data.
 
 ## Repository Layout
 
-- `data/`: product graph + task ground truth JSON
+- `knowledge_base/raw/sources/`: canonical product graph + task ground truth JSON
+- `knowledge_base/obsidian/`: generated Obsidian markdown mirror of product ground truth
 - `local_tool/query.py`: CLI for querying and rendering views from ground truth
 - `node_app/`: local UI editor for nodes and relationships
-- `user/`: user-first context/task/journal tracking workspace
+- `archive/`: historical snapshots (including former `data/` and `user/` layouts)
 - `knowledge_base/`: persistent wiki scaffold (`raw/`, `wiki/`, `schema/`) for accumulated LLM-maintained knowledge
 
 ## CLI Usage
@@ -77,6 +78,11 @@ python local_tool/query.py mindmap
 python local_tool/query.py mindmap-ui
 ```
 
+9. `export-md` (Obsidian markdown mirror from canonical JSON)
+```bash
+python local_tool/query.py export-md
+```
+
 ## Node Editor (Local)
 
 Start the editor:
@@ -111,7 +117,7 @@ Editor behavior:
 - Keep IDs stable (for example `sub_data_versioning`)
 - Update only intended nodes/records; avoid broad accidental rewrites
 - Keep `full_context.description` detailed enough for future LLM retrieval/use
-- When adding relationships, verify `from_id` and `to_id` exist in `entities.json`
+- When adding relationships, verify `from_id` and `to_id` exist in `src_data_entities.json`
 
 ## Current Scope
 
@@ -121,9 +127,27 @@ This project is intentionally local and simple:
 - no external API server for the data layer
 - ground truth managed directly in JSON
 
+## New Chat Bootstrap Prompt
+
+Use this prompt in a fresh chat to initialize an agent with the repo rules before making changes:
+
+```text
+Initialize yourself for this repository before doing any edits.
+
+1. Read and follow `/Users/divanvanderbank/Falx/repos/ProjectsGroundTruth/AGENTS.md` as the primary rules file.
+2. Read `/Users/divanvanderbank/Falx/repos/ProjectsGroundTruth/knowledge_base/README.md` for knowledge-base structure and operating pattern.
+3. Confirm the canonical product ground-truth files are:
+   - `knowledge_base/raw/sources/src_data_entities.json`
+   - `knowledge_base/raw/sources/src_data_relationships.json`
+   - `knowledge_base/raw/sources/src_data_tasks.json`
+4. Confirm generated markdown mirror location: `knowledge_base/obsidian/` (not canonical).
+5. Confirm journal/task rule: every new journal entry must also update task status tracking in `knowledge_base/raw/sources/src_user_tasks.md`.
+6. Before making changes, summarize the key guardrails you will follow in 8-12 bullets.
+```
+
 ## Prompt Examples (Journal -> Tasks)
 
-Use these prompts with Codex to keep `user/` and `knowledge_base/` in sync.
+Use these prompts with Codex to keep user workspace markdown sources and the wiki in sync.
 
 ### 1) Add a journal entry only
 
@@ -138,7 +162,7 @@ Add this to today's journal:
 
 Requirements:
 - Add a timestamp in SAST.
-- Update both user/journal.md and knowledge_base/raw/sources/src_user_journal.md.
+- Update `knowledge_base/raw/sources/src_user_journal.md`.
 - Update knowledge_base/wiki/sources/src_user_journal.md summary.
 - Append knowledge_base/wiki/log.md.
 - Do not change tasks unless I explicitly ask.
@@ -152,7 +176,7 @@ Process this work log and update my workspace:
 
 Requirements:
 - First add a timestamped journal entry for today.
-- Then update user/tasks.md statuses and Updated dates based only on the notes.
+- Then update `knowledge_base/raw/sources/src_user_tasks.md` statuses and Updated dates based only on the notes.
 - If a task is blocked, include the blocker reason in Notes.
 - Sync corresponding knowledge base source files.
 - Keep task IDs stable and keep table format unchanged.
@@ -166,10 +190,10 @@ Journal update:
 I emailed <name> requesting updated data for <sites>. No response yet.
 
 Please:
-1. Add this as a timestamped journal entry.
+1. Add this as a timestamped journal entry in `knowledge_base/raw/sources/src_user_journal.md`.
 2. Move related follow-up tasks to blocked.
 3. Set Updated=today for changed tasks.
-4. Update current_context only if active in_progress focus changed.
+4. Update `knowledge_base/raw/sources/src_user_current_context.md` only if active in_progress focus changed.
 5. Sync knowledge base journal/task source summaries.
 6. Do not edit product ground truth context.
 ```
@@ -180,13 +204,12 @@ When handling journal and user task maintenance prompts, treat product graph gro
 
 Never modify:
 
-- `data/entities.json`
-- `data/relationships.json`
-- `data/tasks.json`
+- `knowledge_base/raw/sources/src_data_entities.json`
+- `knowledge_base/raw/sources/src_data_relationships.json`
+- `knowledge_base/raw/sources/src_data_tasks.json`
 
 Allowed for these flows:
 
-- `user/*.md`
 - `knowledge_base/raw/sources/src_user_*.md`
 - `knowledge_base/wiki/sources/src_user_*.md`
 - `knowledge_base/wiki/log.md`

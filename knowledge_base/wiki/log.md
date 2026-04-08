@@ -57,3 +57,11 @@ Files Touched:
 - `archive/2026-04-07/user/*`
 - `data` (symlink)
 - `user` (symlink)
+
+## [2026-04-08] update | Add ClickUp task interpretation snapshot to user task KB source
+
+Type: update  
+Summary: Added a user-context task snapshot derived from ClickUp screenshots with normalized statuses (`OPEN`, `IN_PROGRESS`, `IN_REVIEW`, `BLOCKED`, `COMPLETED`) and dependency notes. No journal files were modified.  
+Files Touched:
+- `knowledge_base/raw/sources/src_user_tasks.md`
+- `knowledge_base/wiki/sources/src_user_tasks.md`

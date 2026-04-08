@@ -13,6 +13,12 @@
         <h1>P-Zerø Mindmap Editor</h1>
         <div class="toolbar-actions">
           <button id="reloadBtn" type="button">Reload</button>
+          <label class="compact-control">View
+            <select id="viewModeSelect">
+              <option value="mindmap">Mindmap</option>
+              <option value="kanban">Kanban</option>
+            </select>
+          </label>
           <button id="fitViewBtn" type="button">Fit View</button>
           <button id="zoomOutBtn" type="button">-</button>
           <button id="zoomInBtn" type="button">+</button>
@@ -32,13 +38,14 @@
       <div id="toast" class="toast"></div>
       <div class="canvas-wrap">
         <div class="left-task-filter">
-          <label class="compact-control">Task View
-            <select id="userTaskFilter">
+          <label class="compact-control">Map Task Status
+            <select id="taskNodeStatusFilter">
               <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="uncompleted">Uncompleted</option>
               <option value="in_progress">In Progress</option>
-              <option value="todo">Todo</option>
-              <option value="blocked">Blocked</option>
-              <option value="done">Done</option>
+              <option value="open">Open</option>
+              <option value="in_review">In Review</option>
             </select>
           </label>
         </div>
@@ -51,12 +58,14 @@
           </defs>
           <g id="viewport"></g>
         </svg>
+        <section id="kanbanBoard" class="kanban-board" aria-label="Task kanban board"></section>
       </div>
-      <footer class="legend">
+      <footer id="boardLegend" class="legend">
         <span><b>Drag:</b> pan</span>
         <span><b>Wheel:</b> zoom</span>
         <span><b>Fit View:</b> auto-zoom</span>
         <span><b>Click node/edge:</b> edit</span>
+        <span><b>Task node click:</b> focus linked subcategory</span>
       </footer>
     </section>
 
@@ -68,9 +77,9 @@
         <div id="contextSummary" class="context-summary"></div>
 
         <div class="section-head task-glance-head">
-          <h2>Tasks At A Glance</h2>
+          <h2>Selected Task</h2>
         </div>
-        <ul id="userTaskList" class="user-task-list"></ul>
+        <div id="selectedTaskDetails" class="selected-task-details"></div>
       </section>
 
       <div class="tabs">
