@@ -32,14 +32,13 @@ knowledge_base/
     tasks/
     relationships/
   schema/
-    AGENTS.md
     templates/
 ```
 
 ## Operating Pattern
 
 1. Add source files to `raw/sources/` (and optional media to `raw/assets/`).
-2. Ingest with an LLM using `schema/AGENTS.md`.
+2. Ingest with an LLM using repository root `AGENTS.md`.
 3. Keep `wiki/index.md` updated on every ingest/query/lint output.
 4. Append all operations to `wiki/log.md` chronologically.
 5. Regenerate Obsidian mirror after JSON changes:

@@ -65,11 +65,62 @@ python local_tool/query.py export-md
 
 - `knowledge_base/raw/` is source input storage.
 - `knowledge_base/wiki/` is maintained synthesis and analysis.
-- `knowledge_base/schema/AGENTS.md` governs wiki ingest/query/lint behavior and should be followed for wiki maintenance tasks.
+
+### Wiki Core Rules
+
+1. Treat `knowledge_base/raw/` as immutable source-of-truth input.
+2. Write all knowledge outputs to `knowledge_base/wiki/`.
+3. Update `knowledge_base/wiki/index.md` for every new/renamed/deleted page.
+4. Append an entry to `knowledge_base/wiki/log.md` for every ingest/query/lint operation.
+5. Preserve cross-links between entities, concepts, source summaries, and analyses.
+6. Flag contradictions explicitly instead of silently overwriting prior claims.
+
+### Wiki Ingest Workflow
+
+When asked to ingest a source from `knowledge_base/raw/sources/`:
+
+1. Read source and optional manifest metadata.
+2. Create/update `knowledge_base/wiki/sources/<source_id>.md`.
+3. Update affected entity pages in `knowledge_base/wiki/entities/`.
+4. Update affected concept pages in `knowledge_base/wiki/concepts/`.
+5. Update `knowledge_base/wiki/overview.md` if global synthesis changed.
+6. Update `knowledge_base/wiki/index.md`.
+7. Append an ingest entry to `knowledge_base/wiki/log.md`.
+
+### Wiki Query Workflow
+
+When asked a question:
+
+1. Read `knowledge_base/wiki/index.md` first to identify relevant pages.
+2. Read the smallest necessary page set for synthesis.
+3. Return an answer with page-level citations.
+4. If the answer is durable, save it under `knowledge_base/wiki/analyses/`.
+5. Add analysis page to `knowledge_base/wiki/index.md` and append a query entry to `knowledge_base/wiki/log.md`.
+
+### Wiki Lint Workflow
+
+When asked to lint/health-check:
+
+1. Scan for contradictions across related pages.
+2. Scan for stale claims superseded by newer source summaries.
+3. Scan for orphan pages not linked in index or by peer pages.
+4. Identify concepts/entities that are frequently referenced but missing pages.
+5. Write results to `knowledge_base/wiki/reports/<date>_lint_report.md`.
+6. Add report to `knowledge_base/wiki/index.md` and append lint entry to `knowledge_base/wiki/log.md`.
+
+### Wiki Conventions
+
+- Use Markdown links for all internal references.
+- Keep claims concise and attributable.
+- Keep timeline/context in `knowledge_base/wiki/log.md`.
+- Prefer additive edits with explicit conflict notes over destructive rewrites.
+- Use templates in `knowledge_base/schema/templates/` (`source_summary.md`, `entity_page.md`, `concept_page.md`, `analysis_note.md`, `lint_report.md`).
 
 ## Journal / Task Guardrail
 
 When handling user workspace journaling/task prompts, treat product ground-truth JSON as read-only unless explicitly asked to update product graph data.
+
+Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields such as `Updated` date/notes) in `knowledge_base/raw/sources/src_user_tasks.md`.
 
 Allowed file targets for journal/task-only flows:
 
