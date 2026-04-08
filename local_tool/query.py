@@ -6,10 +6,35 @@ from typing import Any, Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
+KB_RAW_SOURCES_DIR = ROOT / "knowledge_base" / "raw" / "sources"
+DATA_FILE_ALIASES = {
+    "entities.json": "src_data_entities.json",
+    "relationships.json": "src_data_relationships.json",
+    "tasks.json": "src_data_tasks.json",
+}
+
+
+def resolve_data_path(name: str) -> Path:
+    candidates: List[Path] = []
+
+    legacy_path = DATA_DIR / name
+    candidates.append(legacy_path)
+    if legacy_path.exists():
+        return legacy_path
+
+    alias = DATA_FILE_ALIASES.get(name)
+    if alias:
+        canonical_path = KB_RAW_SOURCES_DIR / alias
+        candidates.append(canonical_path)
+        if canonical_path.exists():
+            return canonical_path
+
+    joined = ", ".join(str(path) for path in candidates)
+    raise FileNotFoundError(f"Could not find required data file '{name}'. Checked: {joined}")
 
 
 def load_json(name: str) -> List[Dict[str, Any]]:
-    return json.loads((DATA_DIR / name).read_text(encoding="utf-8"))
+    return json.loads(resolve_data_path(name).read_text(encoding="utf-8"))
 
 
 def load_all() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -702,6 +727,324 @@ def cmd_mindmap_ui(
     print(f"Wrote interactive mindmap to {output_path}")
 
 
+def _write_markdown(path: Path, lines: List[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def _wiki_link(path_without_extension: str, label: str) -> str:
+    return f"[[{path_without_extension}|{label}]]"
+
+
+def _as_text(value: Any, default: str = "None") -> str:
+    if value is None:
+        return default
+    text = str(value).strip()
+    return text if text else default
+
+
+def _yaml_value(value: Any) -> str:
+    if value is None:
+        return "null"
+    text = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{text}"'
+
+
+def _render_frontmatter(fields: Dict[str, Any]) -> List[str]:
+    lines = ["---"]
+    for key, value in fields.items():
+        lines.append(f"{key}: {_yaml_value(value)}")
+    lines.append("---")
+    return lines
+
+
+def _append_context(lines: List[str], context: Any) -> None:
+    if not isinstance(context, dict) or not context:
+        lines.append("None")
+        return
+
+    for key in sorted(context.keys()):
+        value = context[key]
+        lines.append(f"### {key}")
+        lines.append(_as_text(value))
+        lines.append("")
+
+    if lines[-1] == "":
+        lines.pop()
+
+
+def cmd_export_md(
+    entities: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+    tasks: List[Dict[str, Any]],
+    output: str,
+) -> None:
+    out_dir = (ROOT / output).resolve()
+    entities_dir = out_dir / "entities"
+    tasks_dir = out_dir / "tasks"
+    rels_dir = out_dir / "relationships"
+    entities_dir.mkdir(parents=True, exist_ok=True)
+    tasks_dir.mkdir(parents=True, exist_ok=True)
+    rels_dir.mkdir(parents=True, exist_ok=True)
+
+    entity_index = index_entities(entities)
+    tasks_by_entity: Dict[str, List[Dict[str, Any]]] = {}
+    outgoing: Dict[str, List[Dict[str, Any]]] = {}
+    incoming: Dict[str, List[Dict[str, Any]]] = {}
+    children: Dict[str, List[Dict[str, Any]]] = {}
+    type_order = {"product": 0, "category": 1, "subcategory": 2}
+
+    for task in tasks:
+        tasks_by_entity.setdefault(task["entity_id"], []).append(task)
+    for rel in relationships:
+        outgoing.setdefault(rel["from_id"], []).append(rel)
+        incoming.setdefault(rel["to_id"], []).append(rel)
+    for entity in entities:
+        parent = entity.get("parent_id")
+        if parent:
+            children.setdefault(parent, []).append(entity)
+
+    for group in tasks_by_entity.values():
+        group.sort(key=lambda item: (item.get("priority", ""), item.get("title", "")))
+    for group in outgoing.values():
+        group.sort(key=lambda item: item.get("id", ""))
+    for group in incoming.values():
+        group.sort(key=lambda item: item.get("id", ""))
+    for group in children.values():
+        group.sort(key=lambda item: item.get("name", ""))
+
+    sorted_entities = sorted(
+        entities,
+        key=lambda item: (type_order.get(item.get("type", ""), 99), item.get("name", "")),
+    )
+    sorted_tasks = sorted(tasks, key=lambda item: (item.get("priority", ""), item.get("title", "")))
+    sorted_relationships = sorted(relationships, key=lambda item: item.get("id", ""))
+
+    for entity in sorted_entities:
+        entity_id = entity["id"]
+        entity_name = entity["name"]
+        parent_id = entity.get("parent_id")
+        parent = entity_index.get(parent_id) if parent_id else None
+        entity_tasks = tasks_by_entity.get(entity_id, [])
+        outgoing_rels = outgoing.get(entity_id, [])
+        incoming_rels = incoming.get(entity_id, [])
+        child_entities = children.get(entity_id, [])
+
+        lines: List[str] = []
+        lines.extend(
+            _render_frontmatter(
+                {
+                    "id": entity_id,
+                    "record_type": "entity",
+                    "entity_type": entity.get("type", ""),
+                    "health": entity.get("health", ""),
+                    "product_id": entity.get("product_id"),
+                    "category_id": entity.get("category_id"),
+                    "parent_id": entity.get("parent_id"),
+                    "source_json": "knowledge_base/raw/sources/src_data_entities.json",
+                }
+            )
+        )
+        lines.append(f"# {entity_name}")
+        lines.append("")
+        lines.append(f"- ID: `{entity_id}`")
+        lines.append(f"- Type: `{_as_text(entity.get('type'))}`")
+        lines.append(f"- Health: `{_as_text(entity.get('health'))}`")
+        lines.append("")
+        lines.append("## Current State")
+        lines.append(_as_text(entity.get("current_state")))
+        lines.append("")
+        lines.append("## Target State")
+        lines.append(_as_text(entity.get("target_state")))
+        lines.append("")
+        lines.append("## Parent")
+        if parent:
+            parent_link = _wiki_link(f"entities/{parent['id']}", parent["name"])
+            lines.append(f"- {parent_link}")
+        else:
+            lines.append("- None")
+        lines.append("")
+        lines.append("## Children")
+        if child_entities:
+            for child in child_entities:
+                child_link = _wiki_link(f"entities/{child['id']}", child["name"])
+                lines.append(f"- {child_link}")
+        else:
+            lines.append("- None")
+        lines.append("")
+        lines.append("## Linked Tasks")
+        if entity_tasks:
+            for task in entity_tasks:
+                label = f"{task['title']} ({task.get('status', 'unknown')}, {task.get('priority', 'unknown')})"
+                task_link = _wiki_link(f"tasks/{task['id']}", label)
+                lines.append(f"- {task_link}")
+        else:
+            lines.append("- None")
+        lines.append("")
+        lines.append("## Outgoing Relationships")
+        if outgoing_rels:
+            for rel in outgoing_rels:
+                dst = entity_index.get(rel["to_id"], {"id": rel["to_id"], "name": rel["to_id"]})
+                rel_link = _wiki_link(f"relationships/{rel['id']}", rel["id"])
+                dst_link = _wiki_link(f"entities/{dst['id']}", dst["name"])
+                lines.append(f"- {rel_link}: `{rel['type']}` -> {dst_link}")
+        else:
+            lines.append("- None")
+        lines.append("")
+        lines.append("## Incoming Relationships")
+        if incoming_rels:
+            for rel in incoming_rels:
+                src = entity_index.get(rel["from_id"], {"id": rel["from_id"], "name": rel["from_id"]})
+                rel_link = _wiki_link(f"relationships/{rel['id']}", rel["id"])
+                src_link = _wiki_link(f"entities/{src['id']}", src["name"])
+                lines.append(f"- {rel_link}: {src_link} -> `{rel['type']}`")
+        else:
+            lines.append("- None")
+        lines.append("")
+        lines.append("## Full Context")
+        _append_context(lines, entity.get("full_context"))
+
+        _write_markdown(entities_dir / f"{entity_id}.md", lines)
+
+    for task in sorted_tasks:
+        task_id = task["id"]
+        entity = entity_index.get(task["entity_id"], {"id": task["entity_id"], "name": task["entity_id"]})
+
+        lines = []
+        lines.extend(
+            _render_frontmatter(
+                {
+                    "id": task_id,
+                    "record_type": "task",
+                    "entity_id": task.get("entity_id"),
+                    "status": task.get("status"),
+                    "priority": task.get("priority"),
+                    "source_json": "knowledge_base/raw/sources/src_data_tasks.json",
+                }
+            )
+        )
+        lines.append(f"# {task.get('title', task_id)}")
+        lines.append("")
+        lines.append(f"- ID: `{task_id}`")
+        lines.append(f"- Status: `{_as_text(task.get('status'))}`")
+        lines.append(f"- Priority: `{_as_text(task.get('priority'))}`")
+        entity_link = _wiki_link(f"entities/{entity['id']}", entity["name"])
+        lines.append(f"- Linked Entity: {entity_link}")
+        lines.append("")
+        lines.append("## Description")
+        lines.append(_as_text(task.get("description")))
+        lines.append("")
+        lines.append("## Full Context")
+        _append_context(lines, task.get("full_context"))
+        _write_markdown(tasks_dir / f"{task_id}.md", lines)
+
+    for rel in sorted_relationships:
+        rel_id = rel["id"]
+        src = entity_index.get(rel["from_id"], {"id": rel["from_id"], "name": rel["from_id"]})
+        dst = entity_index.get(rel["to_id"], {"id": rel["to_id"], "name": rel["to_id"]})
+
+        lines = []
+        lines.extend(
+            _render_frontmatter(
+                {
+                    "id": rel_id,
+                    "record_type": "relationship",
+                    "relationship_type": rel.get("type"),
+                    "from_id": rel.get("from_id"),
+                    "to_id": rel.get("to_id"),
+                    "source_json": "knowledge_base/raw/sources/src_data_relationships.json",
+                }
+            )
+        )
+        lines.append(f"# {rel_id}")
+        lines.append("")
+        lines.append(f"- Type: `{_as_text(rel.get('type'))}`")
+        from_link = _wiki_link(f"entities/{src['id']}", src["name"])
+        to_link = _wiki_link(f"entities/{dst['id']}", dst["name"])
+        lines.append(f"- From: {from_link}")
+        lines.append(f"- To: {to_link}")
+        lines.append("")
+        lines.append("## Description")
+        lines.append(_as_text(rel.get("description")))
+        lines.append("")
+        lines.append("## Full Context")
+        _append_context(lines, rel.get("full_context"))
+        _write_markdown(rels_dir / f"{rel_id}.md", lines)
+
+    root = next((entity for entity in sorted_entities if entity.get("type") == "product"), None)
+    index_lines = [
+        "# Product Ground Truth (Obsidian Mirror)",
+        "",
+        "This folder is generated from canonical JSON ground truth and is safe to open as an Obsidian vault.",
+        "",
+        "## Canonical JSON Sources",
+        "- `knowledge_base/raw/sources/src_data_entities.json`",
+        "- `knowledge_base/raw/sources/src_data_relationships.json`",
+        "- `knowledge_base/raw/sources/src_data_tasks.json`",
+        "",
+        "## Regeneration Command",
+        "```bash",
+        "python local_tool/query.py export-md",
+        "```",
+        "",
+        "Do not treat these generated markdown files as canonical runtime input for the editor/frontend.",
+        "",
+        "## Counts",
+        f"- Entities: {len(sorted_entities)}",
+        f"- Relationships: {len(sorted_relationships)}",
+        f"- Tasks: {len(sorted_tasks)}",
+        "",
+        "## Root Product",
+    ]
+    if root:
+        root_link = _wiki_link(f"entities/{root['id']}", root["name"])
+        index_lines.append(f"- {root_link}")
+    else:
+        index_lines.append("- None")
+    index_lines.extend(
+        [
+            "",
+            "## Entity Notes",
+        ]
+    )
+    for entity in sorted_entities:
+        entity_link = _wiki_link(f"entities/{entity['id']}", entity["name"])
+        index_lines.append(f"- {entity_link}")
+    index_lines.extend(["", "## Task Notes"])
+    for task in sorted_tasks:
+        task_link = _wiki_link(f"tasks/{task['id']}", task["title"])
+        index_lines.append(f"- {task_link}")
+    index_lines.extend(["", "## Relationship Notes"])
+    for rel in sorted_relationships:
+        label = f"{rel['id']} ({rel.get('type', '')})"
+        rel_link = _wiki_link(f"relationships/{rel['id']}", label)
+        index_lines.append(f"- {rel_link}")
+    _write_markdown(out_dir / "index.md", index_lines)
+
+    readme_lines = [
+        "# Obsidian Ground-Truth Mirror",
+        "",
+        "This directory is generated so the product ground truth can be browsed in Obsidian.",
+        "",
+        "- Canonical runtime/edit data remains JSON in `knowledge_base/raw/sources/`.",
+        "- Frontend/editor continues to use JSON.",
+        "- Regenerate this markdown mirror after JSON changes.",
+        "",
+        "## Generate",
+        "```bash",
+        "python local_tool/query.py export-md",
+        "```",
+        "",
+        "## Open in Obsidian",
+        "Open this folder (`knowledge_base/obsidian`) as a vault.",
+        "",
+        "Start at:",
+        "- `index.md`",
+    ]
+    _write_markdown(out_dir / "README.md", readme_lines)
+    print(f"Wrote Obsidian markdown mirror to {out_dir}")
+
+
 def main() -> None:
     entities, relationships, tasks = load_all()
     entity_index = index_entities(entities)
@@ -739,6 +1082,13 @@ def main() -> None:
         help="Output interactive HTML path relative to repo root.",
     )
 
+    export_md_p = sub.add_parser("export-md")
+    export_md_p.add_argument(
+        "--output",
+        default="knowledge_base/obsidian",
+        help="Output directory for Obsidian markdown mirror (relative to repo root).",
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "summary":
@@ -752,6 +1102,9 @@ def main() -> None:
         return
     if args.cmd == "mindmap-ui":
         cmd_mindmap_ui(entities, relationships, tasks, args.output)
+        return
+    if args.cmd == "export-md":
+        cmd_export_md(entities, relationships, tasks, args.output)
         return
 
     entity = find_entity(entities, args.entity)
