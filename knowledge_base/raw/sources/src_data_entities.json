@@ -785,27 +785,6 @@
     }
   },
   {
-    "id": "sub_product_health_app",
-    "type": "subcategory",
-    "name": "Product Health Core",
-    "product_id": "prd_pzero",
-    "category_id": "cat_product_health",
-    "parent_id": "cat_product_health",
-    "health": "yellow",
-    "current_state": "Core Product Health initiatives are active and include platform, integration, and validation workstreams.",
-    "target_state": "Unified Product Health core node with continuously updated work tracking and integration coverage.",
-    "full_context": {
-      "product": "P-Zerø",
-      "category": "Product Health Application",
-      "subcategory": "Product Health Core",
-      "description": "Primary execution node for Product Health initiatives spanning frontend development, map/review workflows, agent testing, and GitHub integration enablement.",
-      "current_problem": "Related tasks were distributed under a docs subcategory not optimized for operational delivery tracking.",
-      "impact": "Planning and dependency management were harder to reason about.",
-      "target": "Centralized Product Health execution map.",
-      "importance": "High"
-    }
-  },
-  {
     "id": "sub_ph_integrations",
     "type": "subcategory",
     "name": "Integrations",

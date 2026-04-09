@@ -2571,6 +2571,27 @@
       "Status": "todo",
       "Category": "cat_infra",
       "Subcategory": "sub_github_management"
+    },
+    {
+      "Task ID": "usr20260409ph1",
+      "Task Name": "Move the knowledge base to AWS",
+      "Parent ID": "86c97uumq",
+      "Parent Name": "PZERØ Product Health Application",
+      "Parent URL": "https://app.clickup.com/t/86c97uumq",
+      "Assignee": "[Divan van der Bank]",
+      "👨‍🎓 Contractor (users)": "",
+      "Points Estimate": "3",
+      "Time Estimate": "",
+      "Time Estimate Rolled Up": "",
+      "Due Date": "",
+      "Priority": "high",
+      "Sprints": "[Sprint 22 (30/3/26 - 19/4/26)]",
+      "Item Type (drop down)": "User Story",
+      "📚 Progress (Auto) (automatic progress)": "0",
+      "Task Category": "Active",
+      "Status": "todo",
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_platform"
     }
   ]
 }
