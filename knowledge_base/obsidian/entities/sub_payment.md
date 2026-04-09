@@ -27,8 +27,7 @@ Automated invoicing and payment operations.
 - None
 
 ## Linked Tasks
-- [[tasks/task_payment_1|Select billing/payment stack (todo, critical)]]
-- [[tasks/task_payment_2|Add monthly reconciliation workflow (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - None

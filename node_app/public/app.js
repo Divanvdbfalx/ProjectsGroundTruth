@@ -841,11 +841,26 @@ function groupTaskNodesByParent(taskNodes) {
 
 function renderTaskNodeStatusOptions() {
   if (!taskNodeStatusFilterEl) return;
+  const coveredByPreset = new Set([
+    'in_progress',
+    'in_review',
+    'open',
+    'todo',
+    'backlog',
+    'planned',
+    'ready',
+    'done',
+    'completed',
+    'closed',
+    'resolved'
+  ]);
   const taskStatuses = [...new Set(
     sourceUserTaskNodes()
       .map(taskNode => normalizeTaskNodeStatus(taskNode.status))
       .filter(Boolean)
-  )].sort();
+  )]
+    .filter(status => !coveredByPreset.has(status))
+    .sort();
 
   const previousValue = state.taskNodeStatusFilter || taskNodeStatusFilterEl.value || 'all';
   taskNodeStatusFilterEl.innerHTML = '';
@@ -1292,12 +1307,12 @@ function layoutOptimizedPositions() {
 }
 
 function taskStatusColor(status) {
-  if (status === 'in_progress') return '#55b8ff';
+  if (status === 'in_progress') return '#1e9dff';
   if (status === 'in_review') return '#c8b56f';
   if (status === 'blocked') return '#ee9a6f';
   if (isCompletedTaskStatus(status)) return '#5ecf9a';
-  if (isOpenTaskStatus(status)) return '#8aa6c8';
-  return '#8aa6c8';
+  if (isOpenTaskStatus(status)) return '#6f7f95';
+  return '#6f7f95';
 }
 
 function nodeRadius(node) {

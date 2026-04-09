@@ -292,7 +292,9 @@ svg.dragging {
 }
 
 .node.task-node.task-status-in_progress circle {
-  stroke: #8fd6ff;
+  stroke: #35b1ff;
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 8px rgba(53, 177, 255, 0.62));
 }
 
 .node.task-node.task-status-blocked circle {
@@ -305,7 +307,7 @@ svg.dragging {
 
 .node.task-node.task-status-open circle,
 .node.task-node.task-status-todo circle {
-  stroke: #b0c7e6;
+  stroke: #8fa0b7;
 }
 
 .node.task-node.task-status-in_review circle {

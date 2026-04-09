@@ -27,8 +27,7 @@ Formal model registry.
 - None
 
 ## Linked Tasks
-- [[tasks/task_model_versioning_1|Create model registry spec (todo, critical)]]
-- [[tasks/task_model_versioning_2|Gate deploys on model registry entry (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - [[relationships/rel_model_versioning_enables_perf_tracking|rel_model_versioning_enables_perf_tracking]]: `enables` -> [[entities/sub_historical_perf|Historical Performance Tracking]]

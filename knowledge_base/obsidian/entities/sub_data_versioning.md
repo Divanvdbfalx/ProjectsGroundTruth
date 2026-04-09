@@ -27,8 +27,7 @@ Immutable versioned dataset snapshots in AWS with dates and possible concatenati
 - None
 
 ## Linked Tasks
-- [[tasks/task_data_versioning_2|Attach dataset version to training runs (todo, critical)]]
-- [[tasks/task_data_versioning_1|Enforce immutable dataset snapshots (todo, critical)]]
+- None
 
 ## Outgoing Relationships
 - [[relationships/rel_data_versioning_blocks_model_versioning|rel_data_versioning_blocks_model_versioning]]: `blocks` -> [[entities/sub_model_versioning|Model Versioning]]

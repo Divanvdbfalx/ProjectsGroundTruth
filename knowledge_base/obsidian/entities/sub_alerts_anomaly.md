@@ -27,8 +27,7 @@ Reliable low-noise alerts and escalation.
 - None
 
 ## Linked Tasks
-- [[tasks/task_alerts_anomaly_1|Set baseline anomaly thresholds (todo, critical)]]
-- [[tasks/task_alerts_anomaly_2|Implement routing + acknowledgements (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - None
