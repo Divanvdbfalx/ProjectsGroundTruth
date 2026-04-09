@@ -427,8 +427,8 @@
       "📚 Progress (Auto) (automatic progress)": "28.57142857142857",
       "Task Category": "Active",
       "Status": "review",
-      "Category": "",
-      "Subcategory": ""
+      "Category": "cat_product_health",
+      "Subcategory": "sub_product_health_app"
     },
     {
       "Task ID": "86c97uxnv",
@@ -448,8 +448,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "review",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_knowledge"
     },
     {
       "Task ID": "86c97uy64",
@@ -469,8 +469,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "todo",
-      "Category": "Validation",
-      "Subcategory": "Planning test/validation approach (Updated 2026-04-09)"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_validation"
     },
     {
       "Task ID": "86c97uya4",
@@ -490,8 +490,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "review",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_platform"
     },
     {
       "Task ID": "86c97uynt",
@@ -511,8 +511,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "review",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_knowledge"
     },
     {
       "Task ID": "usr20260409gh1",
@@ -532,8 +532,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "in_progress",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_integrations"
     },
     {
       "Task ID": "86c3kyazx",
@@ -679,8 +679,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Archived",
       "Status": "done",
-      "Category": "",
-      "Subcategory": ""
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_knowledge"
     },
     {
       "Task ID": "86c7d0302",
@@ -2401,8 +2401,8 @@
       "📚 Progress (Auto) (automatic progress)": "100",
       "Task Category": "Archived",
       "Status": "done",
-      "Category": "",
-      "Subcategory": ""
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_knowledge"
     },
     {
       "Task ID": "86c97uxy9",
@@ -2422,8 +2422,8 @@
       "📚 Progress (Auto) (automatic progress)": "100",
       "Task Category": "Archived",
       "Status": "done",
-      "Category": "",
-      "Subcategory": ""
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_knowledge"
     },
     {
       "Task ID": "86c8thyu1",
@@ -2506,8 +2506,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "todo",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_integrations"
     },
     {
       "Task ID": "usr20260409gh3",
@@ -2527,8 +2527,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "todo",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_integrations"
     },
     {
       "Task ID": "usr20260409gh4",
@@ -2548,8 +2548,8 @@
       "📚 Progress (Auto) (automatic progress)": "0",
       "Task Category": "Active",
       "Status": "todo",
-      "Category": "cat_docs",
-      "Subcategory": "sub_visibility_map"
+      "Category": "cat_product_health",
+      "Subcategory": "sub_ph_integrations"
     }
   ]
 }

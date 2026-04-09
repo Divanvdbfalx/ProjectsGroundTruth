@@ -32,6 +32,7 @@ Reproducible, observable, and commercially scalable forecasting platform.
 - [[entities/cat_modeling|Modeling & Training]]
 - [[entities/cat_monitoring|Monitoring & Observability]]
 - [[entities/cat_performance|Performance & Evaluation]]
+- [[entities/cat_product_health|Product Health Application]]
 - [[entities/cat_tooling|Tooling Ecosystem]]
 
 ## Linked Tasks

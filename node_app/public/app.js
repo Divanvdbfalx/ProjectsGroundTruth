@@ -33,7 +33,9 @@ const state = {
   layoutMode: 'radial',
   taskNodeStatusFilter: 'all',
   nodeScale: 2.2,
-  lastPointerClient: null
+  lastPointerClient: null,
+  collapsedEntityIds: new Set(),
+  collapseLevel: 'all'
 };
 
 const mapEl = document.getElementById('map');
@@ -45,6 +47,8 @@ const kanbanBoardEl = document.getElementById('kanbanBoard');
 const viewModeSelectEl = document.getElementById('viewModeSelect');
 const boardLegendEl = document.getElementById('boardLegend');
 const fitViewBtn = document.getElementById('fitViewBtn');
+const collapseLevelSelect = document.getElementById('collapseLevelSelect');
+const expandAllBtn = document.getElementById('expandAllBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
 const zoomInBtn = document.getElementById('zoomInBtn');
 const layoutSelect = document.getElementById('layoutSelect');
@@ -1610,12 +1614,37 @@ function drawGraph(options = {}) {
     ...entities.map(entity => ({ ...entity, kind: 'entity' })),
     ...taskNodes
   ];
+  const graphNodeById = new Map(graphNodes.map(node => [node.id, node]));
+  const isNodeVisible = node => {
+    let parentId = node.parent_id;
+    while (parentId) {
+      if (state.collapsedEntityIds.has(parentId)) return false;
+      const parentNode = graphNodeById.get(parentId);
+      if (!parentNode) break;
+      parentId = parentNode.parent_id;
+    }
+    return true;
+  };
+  const visibleGraphNodes = graphNodes.filter(isNodeVisible);
+  const visibleNodeIds = new Set(visibleGraphNodes.map(node => node.id));
+  if (state.selectedTaskNodeId && !visibleNodeIds.has(state.selectedTaskNodeId)) {
+    clearTaskSelection();
+  }
+  if (state.selectedEntityId && !visibleNodeIds.has(state.selectedEntityId)) {
+    state.selectedEntityId = null;
+  }
+
   const relationships = state.data.relationships;
   const positions = layoutPositions();
   const entityMap = byIdMap();
+  const treeChildCountByParent = new Map();
+  graphNodes.forEach(node => {
+    if (!node.parent_id) return;
+    treeChildCountByParent.set(node.parent_id, (treeChildCountByParent.get(node.parent_id) || 0) + 1);
+  });
 
   const childrenByParent = new Map();
-  graphNodes.forEach(node => {
+  visibleGraphNodes.forEach(node => {
     if (!node.parent_id || !positions[node.parent_id] || !positions[node.id]) return;
     if (!childrenByParent.has(node.parent_id)) childrenByParent.set(node.parent_id, []);
     childrenByParent.get(node.parent_id).push(node.id);
@@ -1630,7 +1659,7 @@ function drawGraph(options = {}) {
       return aa - bb;
     });
   });
-  graphNodes.forEach(node => {
+  visibleGraphNodes.forEach(node => {
     if (!node.parent_id || !positions[node.parent_id] || !positions[node.id]) return;
     const siblings = childrenByParent.get(node.parent_id) || [];
     const idx = siblings.indexOf(node.id);
@@ -1649,6 +1678,7 @@ function drawGraph(options = {}) {
 
   const relGroups = new Map();
   relationships.forEach(rel => {
+    if (!visibleNodeIds.has(rel.from_id) || !visibleNodeIds.has(rel.to_id)) return;
     const a = rel.from_id < rel.to_id ? rel.from_id : rel.to_id;
     const b = rel.from_id < rel.to_id ? rel.to_id : rel.from_id;
     const key = `${a}||${b}`;
@@ -1660,6 +1690,7 @@ function drawGraph(options = {}) {
   });
 
   relationships.forEach(rel => {
+    if (!visibleNodeIds.has(rel.from_id) || !visibleNodeIds.has(rel.to_id)) return;
     const from = positions[rel.from_id];
     const to = positions[rel.to_id];
     if (!from || !to) return;
@@ -1713,7 +1744,7 @@ function drawGraph(options = {}) {
 
   const labelConfigs = [];
   const nodeCircles = [];
-  graphNodes.forEach(node => {
+  visibleGraphNodes.forEach(node => {
     const position = positions[node.id];
     if (!position) return;
     const radius = nodeRadius(node);
@@ -1725,9 +1756,12 @@ function drawGraph(options = {}) {
     });
     const fontSize = labelFontSize(node);
     const base = labelBaseConfig(node, position, radius);
+    const hasChildren = (treeChildCountByParent.get(node.id) || 0) > 0;
     const labelText = node.kind === 'task'
       ? taskMindmapLabel(node)
-      : node.name;
+      : hasChildren
+        ? `${state.collapsedEntityIds.has(node.id) ? '▸' : '▾'} ${node.name}`
+        : node.name;
     labelConfigs.push({
       id: node.id,
       text: shortenLabel(labelText),
@@ -1743,7 +1777,7 @@ function drawGraph(options = {}) {
   const labelsById = new Map(labelConfigs.map(item => [item.id, item]));
   const activeInProgressIds = inProgressEntityIds();
 
-  graphNodes.forEach(node => {
+  visibleGraphNodes.forEach(node => {
     const position = positions[node.id];
     if (!position) return;
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1795,6 +1829,28 @@ function drawGraph(options = {}) {
       renderLists();
       drawGraph();
     });
+    group.addEventListener('dblclick', async event => {
+      if (node.kind === 'task') return;
+      event.stopPropagation();
+      event.preventDefault();
+      if (!(await confirmSaveBeforeLeavingNode())) return;
+      clearTaskSelection();
+      state.selectedRelationshipId = null;
+      state.selectedEntityId = node.id;
+      if (state.collapsedEntityIds.has(node.id)) {
+        state.collapsedEntityIds.delete(node.id);
+        showToast(`Expanded ${node.name}`);
+      } else {
+        state.collapsedEntityIds.add(node.id);
+        showToast(`Collapsed ${node.name}`);
+      }
+      state.collapseLevel = 'custom';
+      if (collapseLevelSelect) collapseLevelSelect.value = 'custom';
+      setEntityForm(node);
+      setActiveTab('entity');
+      renderLists();
+      drawGraph();
+    });
 
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     const radius = nodeRadius(node);
@@ -1833,6 +1889,31 @@ function drawGraph(options = {}) {
   } else {
     applyTransform();
   }
+}
+
+function applyCollapseLevel(level, options = {}) {
+  const normalized = ['all', 'categories', 'subcategories', 'product', 'custom'].includes(level)
+    ? level
+    : 'all';
+  const entities = state.data?.entities || [];
+  let collapsedIds = [];
+  if (normalized === 'categories') {
+    collapsedIds = entities.filter(item => item.type === 'category').map(item => item.id);
+  } else if (normalized === 'subcategories') {
+    collapsedIds = entities.filter(item => item.type === 'subcategory').map(item => item.id);
+  } else if (normalized === 'product') {
+    collapsedIds = entities.filter(item => item.type === 'product').map(item => item.id);
+  } else if (normalized === 'custom') {
+    collapsedIds = [...state.collapsedEntityIds];
+  }
+  state.collapseLevel = normalized;
+  state.collapsedEntityIds = new Set(collapsedIds);
+  if (collapseLevelSelect) collapseLevelSelect.value = state.collapseLevel;
+  if (options.clearTaskSelection) clearTaskSelection();
+  if (options.redraw !== false) {
+    drawGraph({ fit: Boolean(options.fit) });
+  }
+  if (options.toast) showToast(options.toast);
 }
 
 function renderContextSummary() {
@@ -1939,6 +2020,13 @@ async function loadData() {
     workspaceError = error?.message || 'endpoint unavailable';
   }
   state.data = mapData;
+  const entityIds = new Set(mapData.entities.map(item => item.id));
+  state.collapsedEntityIds = new Set(
+    [...state.collapsedEntityIds].filter(id => entityIds.has(id))
+  );
+  if (state.collapseLevel !== 'custom') {
+    applyCollapseLevel(state.collapseLevel, { fit: false, clearTaskSelection: false, redraw: false });
+  }
   state.userWorkspace = workspaceData;
   state.userWorkspaceError = workspaceError;
   syncSelectedTaskMeta();
@@ -2132,6 +2220,32 @@ if (exportTasksJsonBtn) {
 fitViewBtn.addEventListener('click', () => {
   autoFitGraph();
 });
+
+if (collapseLevelSelect) {
+  collapseLevelSelect.addEventListener('change', () => {
+    const next = collapseLevelSelect.value || 'all';
+    if (next === 'custom') {
+      state.collapseLevel = 'custom';
+      showToast('Collapse level: custom');
+      return;
+    }
+    applyCollapseLevel(next, {
+      fit: true,
+      clearTaskSelection: true,
+      toast: `Collapse level: ${next}`
+    });
+  });
+}
+
+if (expandAllBtn) {
+  expandAllBtn.addEventListener('click', () => {
+    applyCollapseLevel('all', {
+      fit: false,
+      clearTaskSelection: false,
+      toast: 'Expanded all branches'
+    });
+  });
+}
 
 zoomInBtn.addEventListener('click', () => {
   const pointer = state.lastPointerClient;

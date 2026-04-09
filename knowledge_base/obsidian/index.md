@@ -15,7 +15,7 @@ python local_tool/query.py export-md
 Do not treat these generated markdown files as canonical runtime input for the editor/frontend.
 
 ## Counts
-- Entities: 39
+- Entities: 45
 - Relationships: 6
 - Tasks: 0
 
@@ -32,6 +32,7 @@ Do not treat these generated markdown files as canonical runtime input for the e
 - [[entities/cat_modeling|Modeling & Training]]
 - [[entities/cat_monitoring|Monitoring & Observability]]
 - [[entities/cat_performance|Performance & Evaluation]]
+- [[entities/cat_product_health|Product Health Application]]
 - [[entities/cat_tooling|Tooling Ecosystem]]
 - [[entities/sub_aws_lambda|AWS Lambda Deployment]]
 - [[entities/sub_active_monitoring|Active Monitoring]]
@@ -49,18 +50,23 @@ Do not treat these generated markdown files as canonical runtime input for the e
 - [[entities/sub_ground_truth|Ground Truth Integration]]
 - [[entities/sub_historical_perf|Historical Performance Tracking]]
 - [[entities/sub_inference_datalake|Inference Datalake]]
+- [[entities/sub_ph_integrations|Integrations]]
+- [[entities/sub_ph_knowledge|Knowledge & Mapping]]
 - [[entities/sub_legacy_metalearner|Legacy Metalearner (XGBoost/LightGBM)]]
 - [[entities/sub_meteomatics|MeteoMatics Downloader]]
 - [[entities/sub_model_versioning|Model Versioning]]
 - [[entities/sub_monitoring_dashboards|Monitoring Dashboards]]
 - [[entities/sub_payment|Payment System]]
+- [[entities/sub_ph_platform|Platform]]
 - [[entities/sub_pricing|Pricing System]]
+- [[entities/sub_product_health_app|Product Health Core]]
 - [[entities/sub_proposals|Proposals]]
 - [[entities/sub_sawem_readiness|SAWEM Market Readiness]]
 - [[entities/sub_shapely_inspector|Shapely Inspector]]
 - [[entities/sub_visibility_map|System Visibility / Product Map]]
 - [[entities/sub_tool_standardization|Tool Standardization]]
 - [[entities/sub_training_storage|Training Data Storage]]
+- [[entities/sub_ph_validation|Validation]]
 - [[entities/sub_weather_benchmark|Weather Data Benchmarking]]
 
 ## Task Notes

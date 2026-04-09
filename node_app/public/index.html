@@ -23,6 +23,16 @@
             <button id="exportTasksJsonBtn" type="button">Export Tasks CSV</button>
           </div>
           <button id="fitViewBtn" type="button">Fit View</button>
+          <label class="compact-control">Collapse Level
+            <select id="collapseLevelSelect">
+              <option value="all">All Expanded</option>
+              <option value="categories">Categories</option>
+              <option value="subcategories">Subcategories</option>
+              <option value="product">Product Only</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <button id="expandAllBtn" type="button">Expand All</button>
           <button id="zoomOutBtn" type="button">-</button>
           <button id="zoomInBtn" type="button">+</button>
           <label class="compact-control">Layout
@@ -67,6 +77,8 @@
         <span><b>Drag:</b> pan</span>
         <span><b>Wheel:</b> zoom</span>
         <span><b>Fit View:</b> auto-zoom</span>
+        <span><b>Collapse Level:</b> choose visible map depth</span>
+        <span><b>Double-click node:</b> collapse/expand branch</span>
         <span><b>Click node/edge:</b> edit</span>
         <span><b>Task node click:</b> focus linked subcategory</span>
       </footer>

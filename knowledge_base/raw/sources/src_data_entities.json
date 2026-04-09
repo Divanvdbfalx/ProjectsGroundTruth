@@ -742,5 +742,130 @@
       "target": "Continuously updated visibility map.",
       "importance": "Critical"
     }
+  },
+  {
+    "id": "cat_product_health",
+    "type": "category",
+    "name": "Product Health Application",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "prd_pzero",
+    "health": "yellow",
+    "current_state": "Product Health capability is active but currently grouped under documentation-driven visibility workflows.",
+    "target_state": "Dedicated product-health capability area with clear ownership of integrations, workflows, and operational status intelligence.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "description": "Operational category for the Product Health application, including integration surfaces (e.g., GitHub), status telemetry, and execution workflows that power health-oriented product operations.",
+      "current_problem": "Tasks and context were mixed into Documentation & Knowledge, reducing clarity of ownership and prioritization.",
+      "impact": "Lower traceability for delivery planning and operational execution of product-health features.",
+      "target": "Dedicated category with isolated nodes/tasks for Product Health execution.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_product_health_app",
+    "type": "subcategory",
+    "name": "Product Health Core",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "cat_product_health",
+    "health": "yellow",
+    "current_state": "Core Product Health initiatives are active and include platform, integration, and validation workstreams.",
+    "target_state": "Unified Product Health core node with continuously updated work tracking and integration coverage.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "subcategory": "Product Health Core",
+      "description": "Primary execution node for Product Health initiatives spanning frontend development, map/review workflows, agent testing, and GitHub integration enablement.",
+      "current_problem": "Related tasks were distributed under a docs subcategory not optimized for operational delivery tracking.",
+      "impact": "Planning and dependency management were harder to reason about.",
+      "target": "Centralized Product Health execution map.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_ph_integrations",
+    "type": "subcategory",
+    "name": "Integrations",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "cat_product_health",
+    "health": "yellow",
+    "current_state": "GitHub integration scope and PoC tasks are active.",
+    "target_state": "Reliable integrations with clear ownership, coverage, and fallback behavior.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "subcategory": "Integrations",
+      "description": "External and internal integration surfaces for Product Health, including GitHub data access and workflow operations.",
+      "current_problem": "Integration tasks were mixed with other execution lanes.",
+      "impact": "Lower visibility on connector readiness and delivery risk.",
+      "target": "Dedicated integration lane with explicit completion criteria.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_ph_platform",
+    "type": "subcategory",
+    "name": "Platform",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "cat_product_health",
+    "health": "yellow",
+    "current_state": "Platform/frontend capabilities are being developed.",
+    "target_state": "Production-ready Product Health platform with stable UX and workflows.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "subcategory": "Platform",
+      "description": "Core application implementation lane for Product Health frontend and platform behavior.",
+      "current_problem": "Build tasks lacked a dedicated operational lane.",
+      "impact": "Harder prioritization between build work and supporting activities.",
+      "target": "Clear platform execution stream.",
+      "importance": "High"
+    }
+  },
+  {
+    "id": "sub_ph_knowledge",
+    "type": "subcategory",
+    "name": "Knowledge & Mapping",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "cat_product_health",
+    "health": "yellow",
+    "current_state": "Knowledge-base and map-quality activities are active.",
+    "target_state": "Accurate and continuously updated Product Health map and supporting knowledge assets.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "subcategory": "Knowledge & Mapping",
+      "description": "Tasks focused on visibility-map quality, knowledge-base initialization, and context synthesis for Product Health.",
+      "current_problem": "Map/knowledge work was not isolated from build and integration execution.",
+      "impact": "Mixed progress signals across different work types.",
+      "target": "Dedicated knowledge lane with clearer scope.",
+      "importance": "Medium"
+    }
+  },
+  {
+    "id": "sub_ph_validation",
+    "type": "subcategory",
+    "name": "Validation",
+    "product_id": "prd_pzero",
+    "category_id": "cat_product_health",
+    "parent_id": "cat_product_health",
+    "health": "yellow",
+    "current_state": "Validation path exists but needs systematic execution.",
+    "target_state": "Repeatable validation gates for Product Health features and integrations.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Product Health Application",
+      "subcategory": "Validation",
+      "description": "Verification and test activities for Product Health capabilities, including agent integration checks.",
+      "current_problem": "Validation work competed with delivery tasks in a shared queue.",
+      "impact": "Reduced confidence and delayed quality signals.",
+      "target": "Explicit validation lane with measurable checks.",
+      "importance": "High"
+    }
   }
 ]
