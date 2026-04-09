@@ -1,12 +1,37 @@
+const VIEW_MODE_STORAGE_KEY = 'pzero.nodeApp.viewMode';
+
+function loadSavedViewMode() {
+  try {
+    const value = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return value === 'kanban' ? 'kanban' : 'mindmap';
+  } catch {
+    return 'mindmap';
+  }
+}
+
+function persistViewMode(viewMode) {
+  try {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode === 'kanban' ? 'kanban' : 'mindmap');
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+}
+
 const state = {
   data: null,
   userWorkspace: null,
   userWorkspaceError: null,
+  viewMode: loadSavedViewMode(),
   selectedEntityId: null,
   selectedRelationshipId: null,
+  selectedTaskNodeId: null,
+  selectedTaskMeta: null,
+  taskHyperparamSaving: false,
+  taskExportSaving: false,
   entityFormBaseline: null,
   transform: { x: 0, y: 0, scale: 1 },
   layoutMode: 'radial',
+  taskNodeStatusFilter: 'all',
   nodeScale: 2.2,
   lastPointerClient: null
 };
@@ -15,6 +40,15 @@ const mapEl = document.getElementById('map');
 const viewportEl = document.getElementById('viewport');
 const tooltipEl = document.getElementById('tooltip');
 const toastEl = document.getElementById('toast');
+const leftTaskFilterEl = document.querySelector('.left-task-filter');
+const kanbanBoardEl = document.getElementById('kanbanBoard');
+const viewModeSelectEl = document.getElementById('viewModeSelect');
+const boardLegendEl = document.getElementById('boardLegend');
+const fitViewBtn = document.getElementById('fitViewBtn');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+const zoomInBtn = document.getElementById('zoomInBtn');
+const layoutSelect = document.getElementById('layoutSelect');
+const nodeSizeRange = document.getElementById('nodeSizeRange');
 
 const entityForm = document.getElementById('entityForm');
 const relationshipForm = document.getElementById('relationshipForm');
@@ -25,8 +59,11 @@ const relationshipListSection = document.getElementById('relationshipListSection
 const toggleEntityListBtn = document.getElementById('toggleEntityListBtn');
 const toggleRelationshipListBtn = document.getElementById('toggleRelationshipListBtn');
 const contextSummaryEl = document.getElementById('contextSummary');
-const userTaskFilterEl = document.getElementById('userTaskFilter');
-const userTaskListEl = document.getElementById('userTaskList');
+const selectedTaskDetailsEl = document.getElementById('selectedTaskDetails');
+const taskNodeStatusFilterEl = document.getElementById('taskNodeStatusFilter');
+const tabsEl = document.querySelector('.tabs');
+const taskExportActionsEl = document.getElementById('taskExportActions');
+const exportTasksJsonBtn = document.getElementById('exportTasksJsonBtn');
 
 const entityTab = document.getElementById('entityTab');
 const relationshipTab = document.getElementById('relationshipTab');
@@ -48,6 +85,57 @@ async function api(path, options = {}) {
   return payload;
 }
 
+function setTaskExportButtonState() {
+  if (exportTasksJsonBtn) {
+    exportTasksJsonBtn.disabled = state.taskExportSaving;
+    exportTasksJsonBtn.textContent = state.taskExportSaving ? 'Exporting…' : 'Export Tasks CSV';
+  }
+}
+
+function contentDispositionFilename(contentDisposition) {
+  if (!contentDisposition) return '';
+  const match = /filename="?([^"]+)"?/i.exec(contentDisposition);
+  return match ? match[1] : '';
+}
+
+async function downloadTaskExport() {
+  if (state.taskExportSaving) return;
+  state.taskExportSaving = true;
+  setTaskExportButtonState();
+  try {
+    const response = await fetch('/api/exports/tasks');
+    if (!response.ok) {
+      let errorMessage = 'Failed to export tasks CSV.';
+      try {
+        const payload = await response.json();
+        if (payload?.error) errorMessage = payload.error;
+      } catch {
+        const text = (await response.text()).trim();
+        if (text) errorMessage = text;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const blob = await response.blob();
+    const suggestedName = contentDispositionFilename(response.headers.get('content-disposition'));
+    const fileName = suggestedName || 'src_tasks.csv';
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+    showToast(`Downloaded ${fileName}`);
+  } catch (error) {
+    showToast(error.message || 'Failed to export tasks CSV.', true);
+  } finally {
+    state.taskExportSaving = false;
+    setTaskExportButtonState();
+  }
+}
+
 function byIdMap() {
   return new Map(state.data.entities.map(entity => [entity.id, entity]));
 }
@@ -65,11 +153,738 @@ function normalizeStatus(status) {
 }
 
 function statusLabel(status) {
-  if (status === 'in_progress') return 'In Progress';
-  if (status === 'todo') return 'Todo';
-  if (status === 'blocked') return 'Blocked';
-  if (status === 'done') return 'Done';
-  return status || 'Unknown';
+  const value = String(status || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+  if (!value) return 'Unknown';
+  if (value === 'in_progress' || value === 'inprogress') return 'In Progress';
+  if (value === 'in_review' || value === 'inreview' || value === 'review') return 'In Review';
+  if (value === 'todo') return 'Todo';
+  if (value === 'blocked') return 'Blocked';
+  if (value === 'done' || value === 'completed') return 'Completed';
+  if (value === 'open') return 'Open';
+  return value
+    .split('_')
+    .map(part => part ? `${part[0].toUpperCase()}${part.slice(1)}` : '')
+    .join(' ')
+    .trim() || 'Unknown';
+}
+
+const TASK_NODE_PREFIX = 'task_node__';
+
+const TASK_NODE_FILTER_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'uncompleted', label: 'Uncompleted' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'open', label: 'Open' },
+  { value: 'in_review', label: 'In Review' }
+];
+
+function normalizeTaskNodeStatus(status) {
+  const value = String(status || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+  if (!value) return 'open';
+  if (value === 'inprogress') return 'in_progress';
+  if (value === 'inreview' || value === 'review') return 'in_review';
+  if (value === 'completed') return 'done';
+  return value;
+}
+
+function kanbanStatusForColumn(columnId) {
+  if (columnId === 'blocked') return 'blocked';
+  if (columnId === 'in_progress') return 'in_progress';
+  if (columnId === 'review') return 'in_review';
+  if (columnId === 'done') return 'done';
+  return 'todo';
+}
+
+function isCompletedTaskStatus(status) {
+  return status === 'done' || status === 'closed' || status === 'resolved';
+}
+
+function isOpenTaskStatus(status) {
+  return status === 'open'
+    || status === 'todo'
+    || status === 'backlog'
+    || status === 'planned'
+    || status === 'ready';
+}
+
+function taskStatusMatchesFilter(status, filter) {
+  if (!filter || filter === 'all') return true;
+  if (filter === 'completed') return isCompletedTaskStatus(status);
+  if (filter === 'uncompleted') return !isCompletedTaskStatus(status);
+  if (filter === 'in_progress') return status === 'in_progress';
+  if (filter === 'open') return isOpenTaskStatus(status);
+  if (filter === 'in_review') return status === 'in_review';
+  if (filter.startsWith('status:')) return status === filter.slice('status:'.length);
+  return true;
+}
+
+function taskNodeFilterLabel(filterValue) {
+  const preset = TASK_NODE_FILTER_OPTIONS.find(option => option.value === filterValue);
+  if (preset) return preset.label;
+  if (filterValue?.startsWith('status:')) {
+    return `Status ${statusLabel(filterValue.slice('status:'.length))}`;
+  }
+  return 'All';
+}
+
+const KANBAN_COLUMNS = [
+  { id: 'open', label: 'Open' },
+  { id: 'blocked', label: 'Blocked' },
+  { id: 'in_progress', label: 'In Progress' },
+  { id: 'review', label: 'Review' },
+  { id: 'done', label: 'Done' }
+];
+
+function kanbanColumnFromStatus(status) {
+  const normalized = normalizeTaskNodeStatus(status);
+  if (isCompletedTaskStatus(normalized)) return 'done';
+  if (normalized === 'blocked') return 'blocked';
+  if (normalized === 'in_progress') return 'in_progress';
+  if (normalized === 'in_review') return 'review';
+  return 'open';
+}
+
+function priorityRank(priority) {
+  if (priority === 'critical') return 0;
+  if (priority === 'high') return 1;
+  if (priority === 'medium') return 2;
+  if (priority === 'low') return 3;
+  return 4;
+}
+
+function taskNodeId(taskId) {
+  return `${TASK_NODE_PREFIX}${taskId}`;
+}
+
+function isArchivedWorkspaceTask(task) {
+  const category = String(task?.taskCategory || task?.['Task Category'] || '')
+    .trim()
+    .toLowerCase();
+  return category === 'archived';
+}
+
+function isEpicWorkspaceTask(task) {
+  const itemType = String(task?.itemType || task?.['Item Type (drop down)'] || '')
+    .trim()
+    .toLowerCase();
+  return itemType === 'epic';
+}
+
+function visibleWorkspaceTasks() {
+  const userTasks = state.userWorkspace?.tasks || [];
+  return userTasks.filter(task => !isArchivedWorkspaceTask(task) && !isEpicWorkspaceTask(task));
+}
+
+function clearTaskSelection() {
+  state.selectedTaskNodeId = null;
+  state.selectedTaskMeta = null;
+  state.taskHyperparamSaving = false;
+  applyTaskSelectionMode();
+}
+
+function applyTaskSelectionMode() {
+  const taskSelected = Boolean(state.selectedTaskMeta);
+  document.body.classList.toggle('task-selected', taskSelected);
+  if (!taskSelected && tabsEl) {
+    tabsEl.style.display = '';
+  }
+}
+
+function entityById(entityId) {
+  const entities = state.data?.entities || [];
+  return entities.find(entity => entity.id === entityId) || null;
+}
+
+function categoryEntities() {
+  const entities = state.data?.entities || [];
+  return entities
+    .filter(entity => entity.type === 'category')
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+function subcategoryEntities(categoryId) {
+  const entities = state.data?.entities || [];
+  if (!categoryId) return [];
+  return entities
+    .filter(entity => entity.type === 'subcategory' && entity.parent_id === categoryId)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+function resolveTaskEntityId(task, entities) {
+  const byId = new Map((entities || []).map(entity => [entity.id, entity.id]));
+  const subcategoryId = String(task?.subcategoryId || '').trim();
+  if (subcategoryId && byId.has(subcategoryId)) return subcategoryId;
+  const categoryId = String(task?.categoryId || '').trim();
+  if (categoryId && byId.has(categoryId)) return categoryId;
+  return resolveEntityIdFromLinkedEntity(task?.linkedEntity, entities || []);
+}
+
+function sourceUserTaskNodes() {
+  const entities = state.data?.entities || [];
+  const userTasks = visibleWorkspaceTasks();
+  return userTasks
+    .map((task, index) => {
+      const linkedEntityId = resolveTaskEntityId(task, entities);
+      if (!linkedEntityId) return null;
+      const rawId = String(task.id || '').trim() || `user_task_${index + 1}`;
+      const categoryId = String(task.categoryId || '').trim();
+      const subcategoryId = String(task.subcategoryId || '').trim();
+      const categoryName = categoryId ? (entityById(categoryId)?.name || '') : '';
+      const subcategoryName = subcategoryId ? (entityById(subcategoryId)?.name || '') : '';
+      const scopeLabel = subcategoryName || categoryName || '';
+      return {
+        id: taskNodeId(rawId),
+        kind: 'task',
+        type: 'task',
+        task_id: rawId,
+        parent_id: linkedEntityId,
+        entity_id: linkedEntityId,
+        name: task.title || rawId,
+        status: normalizeTaskNodeStatus(task.status),
+        priority: String(task.priority || '').toLowerCase(),
+        description: task.description || task.groundTruthTask || task.title || '',
+        owner: task.owner || '',
+        createdDate: task.createdDate || '',
+        updatedDate: task.updatedDate || '',
+        completedDate: task.completedDate || '',
+        pointsEstimate: task.pointsEstimate ?? '',
+        timeEstimate: task.timeEstimate ?? '',
+        timeEstimateRolledUp: task.timeEstimateRolledUp ?? '',
+        dueDate: task.dueDate ?? '',
+        sprints: task.sprints ?? task.clickupSprints ?? '',
+        itemType: task.itemType ?? task.clickupItemType ?? '',
+        progressAuto: task.progressAuto ?? (task.clickupProgress ?? ''),
+        taskCategory: task.taskCategory || task['Task Category'] || '',
+        categoryId,
+        subcategoryId,
+        categoryName,
+        subcategoryName,
+        scopeLabel,
+        epicId: task.parentId || task.clickupParentId || '',
+        epicName: task.parentName || task.groundTruthTask || '',
+        epicUrl: task.parentUrl || task.clickupParentUrl || '',
+        estHours: Number.isFinite(task.estHours) ? task.estHours : null,
+        actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null
+      };
+    })
+    .filter(Boolean);
+}
+
+function selectedMetaFromUserTask(task) {
+  const entities = state.data?.entities || [];
+  const linkedEntityId = resolveTaskEntityId(task, entities);
+  const taskId = String(task.id || '').trim() || 'unknown_task';
+  const categoryId = String(task.categoryId || '').trim();
+  const subcategoryId = String(task.subcategoryId || '').trim();
+  const categoryName = categoryId ? (entityById(categoryId)?.name || '') : '';
+  const subcategoryName = subcategoryId ? (entityById(subcategoryId)?.name || '') : '';
+  return {
+    id: taskNodeId(taskId),
+    task_id: taskId,
+    name: task.title || taskId,
+    status: normalizeTaskNodeStatus(task.status),
+    priority: String(task.priority || '').toLowerCase(),
+    entity_id: linkedEntityId || String(task.linkedEntity || '').trim(),
+    owner: task.owner || '',
+    createdDate: task.createdDate || '',
+    updatedDate: task.updatedDate || '',
+    completedDate: task.completedDate || '',
+    pointsEstimate: task.pointsEstimate ?? '',
+    timeEstimate: task.timeEstimate ?? '',
+    timeEstimateRolledUp: task.timeEstimateRolledUp ?? '',
+    dueDate: task.dueDate ?? '',
+    sprints: task.sprints ?? task.clickupSprints ?? '',
+    itemType: task.itemType ?? task.clickupItemType ?? '',
+    progressAuto: task.progressAuto ?? (task.clickupProgress ?? ''),
+    taskCategory: task.taskCategory || task['Task Category'] || '',
+    categoryId,
+    subcategoryId,
+    categoryName,
+    subcategoryName,
+    scopeLabel: subcategoryName || categoryName || '',
+    epicId: task.parentId || task.clickupParentId || '',
+    epicName: task.parentName || task.groundTruthTask || '',
+    epicUrl: task.parentUrl || task.clickupParentUrl || '',
+    estHours: Number.isFinite(task.estHours) ? task.estHours : null,
+    actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null,
+    description: task.description || task.groundTruthTask || task.title || ''
+  };
+}
+
+function taskMindmapLabel(node) {
+  const baseName = String(node?.name || '').trim();
+  const scopeLabel = String(node?.scopeLabel || '').trim();
+  if (!scopeLabel) return baseName;
+  return `${baseName} [${scopeLabel}]`;
+}
+
+function renderSelectedTaskDetails() {
+  if (!selectedTaskDetailsEl) return;
+  selectedTaskDetailsEl.innerHTML = '';
+
+  const task = state.selectedTaskMeta;
+  applyTaskSelectionMode();
+  if (!task) {
+    const empty = document.createElement('p');
+    empty.className = 'context-empty';
+    empty.textContent = 'Select a map task node or a Kanban card to edit task hyperparameters.';
+    selectedTaskDetailsEl.appendChild(empty);
+    return;
+  }
+
+  const heading = document.createElement('p');
+  heading.className = 'context-row';
+  const headingStrong = document.createElement('strong');
+  headingStrong.textContent = 'Task: ';
+  heading.appendChild(headingStrong);
+  heading.appendChild(document.createTextNode(task.name || task.task_id || 'N/A'));
+  selectedTaskDetailsEl.appendChild(heading);
+
+  const epicRow = document.createElement('p');
+  epicRow.className = 'context-row';
+  const epicStrong = document.createElement('strong');
+  epicStrong.textContent = 'Epic: ';
+  epicRow.appendChild(epicStrong);
+  const epicName = String(task.epicName || '').trim();
+  const epicId = String(task.epicId || '').trim();
+  if (epicName || epicId) {
+    epicRow.appendChild(document.createTextNode(epicName || epicId));
+    if (epicName && epicId) {
+      epicRow.appendChild(document.createTextNode(` (${epicId})`));
+    }
+  } else {
+    epicRow.appendChild(document.createTextNode('Unassigned'));
+  }
+  selectedTaskDetailsEl.appendChild(epicRow);
+
+  const form = document.createElement('form');
+  form.className = 'task-hyperparams-form';
+
+  const fields = [
+    { key: 'status', label: 'Status', type: 'select', options: ['todo', 'in_progress', 'in_review', 'blocked', 'done'] },
+    { key: 'priority', label: 'Priority', type: 'select', options: ['', 'low', 'medium', 'high', 'critical'] },
+    { key: 'pointsEstimate', label: 'Points Estimate', type: 'text' },
+    { key: 'timeEstimate', label: 'Time Estimate', type: 'text' },
+    { key: 'timeEstimateRolledUp', label: 'Time Estimate Rolled Up', type: 'text' },
+    { key: 'dueDate', label: 'Due Date', type: 'text' },
+    { key: 'itemType', label: 'Item Type', type: 'text' },
+    { key: 'sprints', label: 'Sprints', type: 'text' },
+    { key: 'taskCategory', label: 'Task Category', type: 'select', options: ['Active', 'Archived'] }
+  ];
+
+  fields.forEach(field => {
+    const wrapper = document.createElement('label');
+    wrapper.textContent = field.label;
+    let control;
+    if (field.type === 'select') {
+      control = document.createElement('select');
+      (field.options || []).forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue || 'none';
+        control.appendChild(option);
+      });
+      control.value = String(task[field.key] ?? '');
+      if (!control.value && field.options && field.options.length) {
+        control.value = field.options[0];
+      }
+    } else {
+      control = document.createElement('input');
+      control.type = field.type;
+      control.value = String(task[field.key] ?? '');
+      if (field.type === 'number') {
+        control.step = '0.01';
+      }
+    }
+    control.name = field.key;
+    wrapper.appendChild(control);
+    form.appendChild(wrapper);
+  });
+
+  const categorySelectWrapper = document.createElement('label');
+  categorySelectWrapper.textContent = 'Category';
+  const categorySelect = document.createElement('select');
+  categorySelect.name = 'categoryId';
+  const emptyCategoryOption = document.createElement('option');
+  emptyCategoryOption.value = '';
+  emptyCategoryOption.textContent = 'none';
+  categorySelect.appendChild(emptyCategoryOption);
+  categoryEntities().forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = category.name || category.id;
+    categorySelect.appendChild(option);
+  });
+  categorySelect.value = String(task.categoryId || '');
+  if (categorySelect.value !== String(task.categoryId || '')) {
+    categorySelect.value = '';
+  }
+  categorySelectWrapper.appendChild(categorySelect);
+  form.appendChild(categorySelectWrapper);
+
+  const subcategorySelectWrapper = document.createElement('label');
+  subcategorySelectWrapper.textContent = 'Subcategory';
+  const subcategorySelect = document.createElement('select');
+  subcategorySelect.name = 'subcategoryId';
+  subcategorySelectWrapper.appendChild(subcategorySelect);
+  form.appendChild(subcategorySelectWrapper);
+
+  function hydrateSubcategoryOptions(selectedCategoryId, selectedSubcategoryId) {
+    subcategorySelect.innerHTML = '';
+    const emptySubcategoryOption = document.createElement('option');
+    emptySubcategoryOption.value = '';
+    emptySubcategoryOption.textContent = 'none';
+    subcategorySelect.appendChild(emptySubcategoryOption);
+
+    const categoryId = String(selectedCategoryId || '').trim();
+    if (!categoryId) {
+      subcategorySelect.disabled = true;
+      subcategorySelect.value = '';
+      return;
+    }
+
+    const subcategories = subcategoryEntities(categoryId);
+    subcategories.forEach(subcategory => {
+      const option = document.createElement('option');
+      option.value = subcategory.id;
+      option.textContent = subcategory.name || subcategory.id;
+      subcategorySelect.appendChild(option);
+    });
+    subcategorySelect.disabled = false;
+    const desired = String(selectedSubcategoryId || '').trim();
+    subcategorySelect.value = desired;
+    if (subcategorySelect.value !== desired) {
+      subcategorySelect.value = '';
+    }
+  }
+
+  categorySelect.addEventListener('change', () => {
+    hydrateSubcategoryOptions(categorySelect.value, subcategorySelect.value);
+  });
+  hydrateSubcategoryOptions(task.categoryId, task.subcategoryId);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'submit';
+  saveBtn.textContent = state.taskHyperparamSaving ? 'Saving…' : 'Save Hyperparameters';
+  saveBtn.disabled = state.taskHyperparamSaving;
+  form.appendChild(saveBtn);
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (state.taskHyperparamSaving) return;
+    if (!task.task_id) {
+      showToast('Task ID is missing for this selection.', true);
+      return;
+    }
+    const payload = {
+      status: String(form.elements.status?.value || '').trim(),
+      priority: String(form.elements.priority?.value || '').trim(),
+      pointsEstimate: String(form.elements.pointsEstimate?.value || '').trim(),
+      timeEstimate: String(form.elements.timeEstimate?.value || '').trim(),
+      timeEstimateRolledUp: String(form.elements.timeEstimateRolledUp?.value || '').trim(),
+      dueDate: String(form.elements.dueDate?.value || '').trim(),
+      itemType: String(form.elements.itemType?.value || '').trim(),
+      sprints: String(form.elements.sprints?.value || '').trim(),
+      taskCategory: String(form.elements.taskCategory?.value || '').trim(),
+      categoryId: String(form.elements.categoryId?.value || '').trim(),
+      subcategoryId: String(form.elements.subcategoryId?.value || '').trim()
+    };
+
+    await saveTaskHyperparameters(task.task_id, payload, {
+      successMessage: `Updated hyperparameters for ${task.task_id}`
+    });
+  });
+
+  selectedTaskDetailsEl.appendChild(form);
+}
+
+async function saveTaskHyperparameters(taskId, payload, options = {}) {
+  const { successMessage = '', silent = false } = options;
+  if (!taskId) {
+    if (!silent) showToast('Task ID is missing for this action.', true);
+    return;
+  }
+  state.taskHyperparamSaving = true;
+  renderSelectedTaskDetails();
+  try {
+    await api(`/api/user-workspace/tasks/${encodeURIComponent(taskId)}/hyperparameters`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    if (!silent && successMessage) {
+      showToast(successMessage);
+    }
+    await refreshUserWorkspaceData();
+  } catch (error) {
+    if (!silent) showToast(error.message, true);
+    state.taskHyperparamSaving = false;
+    renderSelectedTaskDetails();
+  }
+}
+
+async function refreshUserWorkspaceData() {
+  let workspaceData = null;
+  let workspaceError = null;
+  try {
+    workspaceData = await api('/api/user-workspace');
+  } catch (error) {
+    workspaceError = error?.message || 'endpoint unavailable';
+  }
+  state.userWorkspace = workspaceData;
+  state.userWorkspaceError = workspaceError;
+  state.taskHyperparamSaving = false;
+  syncSelectedTaskMeta();
+  renderTaskNodeStatusOptions();
+  renderWorkspaceOverview();
+  drawGraph();
+  applyViewMode();
+}
+
+function syncSelectedTaskMeta() {
+  if (!state.selectedTaskNodeId) {
+    state.selectedTaskMeta = null;
+    return;
+  }
+
+  const graphTaskMatch = sourceUserTaskNodes().find(task => task.id === state.selectedTaskNodeId) || null;
+  if (graphTaskMatch) {
+    state.selectedTaskMeta = graphTaskMatch;
+    return;
+  }
+
+  const workspaceTaskMatch = visibleWorkspaceTasks().find((task, index) => {
+    const taskId = String(task.id || '').trim() || `user_task_${index + 1}`;
+    return taskNodeId(taskId) === state.selectedTaskNodeId;
+  }) || null;
+  if (workspaceTaskMatch) {
+    state.selectedTaskMeta = selectedMetaFromUserTask(workspaceTaskMatch);
+    return;
+  }
+
+  state.selectedTaskMeta = null;
+  state.selectedTaskNodeId = null;
+}
+
+function applyViewMode() {
+  const isKanban = state.viewMode === 'kanban';
+
+  mapEl.style.display = isKanban ? 'none' : 'block';
+  kanbanBoardEl?.classList.toggle('active', isKanban);
+  if (leftTaskFilterEl) {
+    leftTaskFilterEl.style.display = isKanban ? 'none' : 'grid';
+  }
+  if (boardLegendEl) {
+    boardLegendEl.style.display = isKanban ? 'none' : 'flex';
+  }
+  if (fitViewBtn) fitViewBtn.disabled = isKanban;
+  if (zoomInBtn) zoomInBtn.disabled = isKanban;
+  if (zoomOutBtn) zoomOutBtn.disabled = isKanban;
+  if (layoutSelect) layoutSelect.disabled = isKanban;
+  if (nodeSizeRange) nodeSizeRange.disabled = isKanban;
+  if (taskNodeStatusFilterEl) taskNodeStatusFilterEl.disabled = isKanban;
+  if (taskExportActionsEl) {
+    taskExportActionsEl.classList.toggle('active', isKanban);
+  }
+
+  hideTooltip();
+}
+
+function renderKanbanBoard() {
+  if (!kanbanBoardEl) return;
+  kanbanBoardEl.innerHTML = '';
+
+  if (state.userWorkspaceError) {
+    const empty = document.createElement('p');
+    empty.className = 'kanban-empty';
+    empty.textContent = `User tasks unavailable (${state.userWorkspaceError}).`;
+    kanbanBoardEl.appendChild(empty);
+    return;
+  }
+
+  const tasks = visibleWorkspaceTasks();
+  if (!tasks.length) {
+    const empty = document.createElement('p');
+    empty.className = 'kanban-empty';
+    empty.textContent = 'No active user tasks found.';
+    kanbanBoardEl.appendChild(empty);
+    return;
+  }
+
+  const byColumn = new Map(KANBAN_COLUMNS.map(column => [column.id, []]));
+  tasks.forEach(task => {
+    byColumn.get(kanbanColumnFromStatus(task.status)).push(task);
+  });
+  byColumn.forEach(list => {
+    list.sort((a, b) => {
+      const rankDiff = priorityRank(String(a.priority || '').toLowerCase()) - priorityRank(String(b.priority || '').toLowerCase());
+      if (rankDiff !== 0) return rankDiff;
+      return String(a.title || a.id || '').localeCompare(String(b.title || b.id || ''));
+    });
+  });
+
+  KANBAN_COLUMNS.forEach(column => {
+    const columnEl = document.createElement('article');
+    columnEl.className = 'kanban-column';
+
+    const heading = document.createElement('h3');
+    const entries = byColumn.get(column.id) || [];
+    heading.textContent = `${column.label} (${entries.length})`;
+    columnEl.appendChild(heading);
+
+    const listEl = document.createElement('ul');
+    listEl.className = 'kanban-list';
+    listEl.dataset.columnId = column.id;
+    listEl.addEventListener('dragover', event => {
+      event.preventDefault();
+      listEl.classList.add('drag-over');
+    });
+    listEl.addEventListener('dragleave', () => {
+      listEl.classList.remove('drag-over');
+    });
+    listEl.addEventListener('drop', async event => {
+      event.preventDefault();
+      listEl.classList.remove('drag-over');
+      const taskId = String(event.dataTransfer?.getData('text/plain') || '').trim();
+      if (!taskId) return;
+      const nextStatus = kanbanStatusForColumn(column.id);
+      await saveTaskHyperparameters(taskId, { status: nextStatus }, {
+        successMessage: `Updated ${taskId} to ${statusLabel(nextStatus)}`,
+        silent: false
+      });
+    });
+
+    if (!entries.length) {
+      const empty = document.createElement('li');
+      empty.className = 'kanban-empty';
+      empty.textContent = 'No tasks';
+      listEl.appendChild(empty);
+    } else {
+      entries.forEach(task => {
+        const meta = selectedMetaFromUserTask(task);
+        const item = document.createElement('li');
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'kanban-card';
+        card.draggable = true;
+        if (state.selectedTaskNodeId === meta.id) card.classList.add('active');
+        card.title = meta.description || meta.name;
+        card.addEventListener('dragstart', event => {
+          event.dataTransfer?.setData('text/plain', String(meta.task_id || ''));
+          if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+          }
+          card.classList.add('dragging');
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.kanban-list.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        card.addEventListener('click', () => {
+          state.selectedTaskNodeId = meta.id;
+          state.selectedTaskMeta = meta;
+          renderSelectedTaskDetails();
+          renderKanbanBoard();
+        });
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'kanban-card-title';
+        titleEl.textContent = meta.name || meta.task_id;
+
+        const metaRow = document.createElement('div');
+        metaRow.className = 'kanban-card-meta';
+        const priorityEl = document.createElement('span');
+        priorityEl.textContent = meta.priority ? `Priority: ${meta.priority}` : 'Priority: n/a';
+        const statusEl = document.createElement('span');
+        statusEl.textContent = statusLabel(meta.status);
+        metaRow.appendChild(priorityEl);
+        metaRow.appendChild(statusEl);
+
+        card.appendChild(titleEl);
+        card.appendChild(metaRow);
+        item.appendChild(card);
+        listEl.appendChild(item);
+      });
+    }
+
+    columnEl.appendChild(listEl);
+    kanbanBoardEl.appendChild(columnEl);
+  });
+}
+
+function taskGraphNodes() {
+  const selectedFilter = state.taskNodeStatusFilter || 'all';
+  return sourceUserTaskNodes()
+    .filter(taskNode => taskStatusMatchesFilter(taskNode.status, selectedFilter));
+}
+
+function groupTaskNodesByParent(taskNodes) {
+  const grouped = new Map();
+  taskNodes.forEach(taskNode => {
+    if (!grouped.has(taskNode.parent_id)) grouped.set(taskNode.parent_id, []);
+    grouped.get(taskNode.parent_id).push(taskNode);
+  });
+  grouped.forEach(nodes => {
+    nodes.sort((a, b) => (
+      String(a.name || '').localeCompare(String(b.name || '')) ||
+      String(a.id || '').localeCompare(String(b.id || ''))
+    ));
+  });
+  return grouped;
+}
+
+function renderTaskNodeStatusOptions() {
+  if (!taskNodeStatusFilterEl) return;
+  const coveredByPreset = new Set([
+    'in_progress',
+    'in_review',
+    'open',
+    'todo',
+    'backlog',
+    'planned',
+    'ready',
+    'done',
+    'completed',
+    'closed',
+    'resolved'
+  ]);
+  const taskStatuses = [...new Set(
+    sourceUserTaskNodes()
+      .map(taskNode => normalizeTaskNodeStatus(taskNode.status))
+      .filter(Boolean)
+  )]
+    .filter(status => !coveredByPreset.has(status))
+    .sort();
+
+  const previousValue = state.taskNodeStatusFilter || taskNodeStatusFilterEl.value || 'all';
+  taskNodeStatusFilterEl.innerHTML = '';
+
+  TASK_NODE_FILTER_OPTIONS.forEach(option => {
+    const el = document.createElement('option');
+    el.value = option.value;
+    el.textContent = option.label;
+    taskNodeStatusFilterEl.appendChild(el);
+  });
+
+  taskStatuses.forEach(status => {
+    const el = document.createElement('option');
+    el.value = `status:${status}`;
+    el.textContent = `Status: ${statusLabel(status)}`;
+    taskNodeStatusFilterEl.appendChild(el);
+  });
+
+  const allowed = new Set([
+    ...TASK_NODE_FILTER_OPTIONS.map(option => option.value),
+    ...taskStatuses.map(status => `status:${status}`)
+  ]);
+  state.taskNodeStatusFilter = allowed.has(previousValue) ? previousValue : 'all';
+  taskNodeStatusFilterEl.value = state.taskNodeStatusFilter;
 }
 
 function normalizeKey(value) {
@@ -139,20 +954,13 @@ function resolveEntityIdFromLinkedEntity(linkedEntity, entities) {
 
 function inProgressEntityIds() {
   const entities = state.data?.entities || [];
-  const entityIds = new Set(entities.map(entity => entity.id));
   const inProgressIds = new Set();
 
-  (state.data?.tasks || []).forEach(task => {
-    if (normalizeStatus(task.status) !== 'in_progress') return;
-    if (entityIds.has(task.entity_id)) {
-      inProgressIds.add(task.entity_id);
+  sourceUserTaskNodes().forEach(taskNode => {
+    if (normalizeTaskNodeStatus(taskNode.status) !== 'in_progress') return;
+    if (taskNode.entity_id) {
+      inProgressIds.add(taskNode.entity_id);
     }
-  });
-
-  (state.userWorkspace?.tasks || []).forEach(task => {
-    if (normalizeStatus(task.status) !== 'in_progress') return;
-    const resolved = resolveEntityIdFromLinkedEntity(task.linkedEntity, entities);
-    if (resolved) inProgressIds.add(resolved);
   });
 
   const context = state.userWorkspace?.context;
@@ -204,6 +1012,8 @@ function layoutPositions() {
 function layoutRadialPositions() {
   const positions = {};
   const entities = state.data.entities;
+  const taskNodes = taskGraphNodes();
+  const taskNodesByParent = groupTaskNodesByParent(taskNodes);
   const root = entities.find(item => item.type === 'product');
   if (!root) return positions;
 
@@ -229,20 +1039,36 @@ function layoutRadialPositions() {
         ? catAngle
         : catAngle - arc / 2 + (arc * subIndex / (subcats.length - 1));
       const offset = polar(430 * spreadScale, subAngle);
-      positions[sub.id] = {
+      const subPosition = {
         x: catPos.x + offset.x,
         y: catPos.y + offset.y
       };
+      positions[sub.id] = subPosition;
+
+      const linkedTasks = taskNodesByParent.get(sub.id) || [];
+      const taskArc = Math.min(90, 22 * Math.max(2, linkedTasks.length));
+      linkedTasks.forEach((taskNode, taskIndex) => {
+        const taskAngle = linkedTasks.length === 1
+          ? subAngle
+          : subAngle - taskArc / 2 + (taskArc * taskIndex / (linkedTasks.length - 1));
+        const taskOffset = polar(270 * spreadScale, taskAngle);
+        positions[taskNode.id] = {
+          x: subPosition.x + taskOffset.x,
+          y: subPosition.y + taskOffset.y
+        };
+      });
     });
   });
 
-  resolveNodeCollisions(positions, entities);
+  resolveNodeCollisions(positions, [...entities, ...taskNodes]);
   return positions;
 }
 
 function layoutHorizontalPositions() {
   const positions = {};
   const entities = state.data.entities;
+  const taskNodes = taskGraphNodes();
+  const taskNodesByParent = groupTaskNodesByParent(taskNodes);
   const root = entities.find(item => item.type === 'product');
   if (!root) return positions;
 
@@ -265,17 +1091,30 @@ function layoutHorizontalPositions() {
     const subGap = 150;
     const subStartY = catY - ((subcats.length - 1) * subGap) / 2;
     subcats.forEach((sub, subIndex) => {
-      positions[sub.id] = { x: 520, y: subStartY + subIndex * subGap };
+      const subPosition = { x: 520, y: subStartY + subIndex * subGap };
+      positions[sub.id] = subPosition;
+
+      const linkedTasks = taskNodesByParent.get(sub.id) || [];
+      const taskGap = 94;
+      const taskStartY = subPosition.y - ((linkedTasks.length - 1) * taskGap) / 2;
+      linkedTasks.forEach((taskNode, taskIndex) => {
+        positions[taskNode.id] = {
+          x: subPosition.x + 520,
+          y: taskStartY + taskIndex * taskGap
+        };
+      });
     });
   });
 
-  resolveNodeCollisions(positions, entities);
+  resolveNodeCollisions(positions, [...entities, ...taskNodes]);
   return positions;
 }
 
 function layoutVerticalPositions() {
   const positions = {};
   const entities = state.data.entities;
+  const taskNodes = taskGraphNodes();
+  const taskNodesByParent = groupTaskNodesByParent(taskNodes);
   const root = entities.find(item => item.type === 'product');
   if (!root) return positions;
 
@@ -298,19 +1137,32 @@ function layoutVerticalPositions() {
     const subGapX = 180;
     const subStartX = catX - ((subcats.length - 1) * subGapX) / 2;
     subcats.forEach((sub, subIndex) => {
-      positions[sub.id] = { x: subStartX + subIndex * subGapX, y: 620 };
+      const subPosition = { x: subStartX + subIndex * subGapX, y: 620 };
+      positions[sub.id] = subPosition;
+
+      const linkedTasks = taskNodesByParent.get(sub.id) || [];
+      const taskGapX = 120;
+      const taskStartX = subPosition.x - ((linkedTasks.length - 1) * taskGapX) / 2;
+      linkedTasks.forEach((taskNode, taskIndex) => {
+        positions[taskNode.id] = {
+          x: taskStartX + taskIndex * taskGapX,
+          y: subPosition.y + 430
+        };
+      });
     });
   });
 
-  resolveNodeCollisions(positions, entities);
+  resolveNodeCollisions(positions, [...entities, ...taskNodes]);
   return positions;
 }
 
 function layoutOptimizedPositions() {
   const positions = {};
   const entities = state.data.entities;
+  const taskNodes = taskGraphNodes();
+  const nodes = [...entities, ...taskNodes];
   const relationships = state.data.relationships || [];
-  const byId = new Map(entities.map(item => [item.id, item]));
+  const byId = new Map(nodes.map(item => [item.id, item]));
   const root = entities.find(item => item.type === 'product');
   if (!root) return positions;
 
@@ -328,26 +1180,32 @@ function layoutOptimizedPositions() {
   }
 
   const layers = new Map();
-  entities.forEach(entity => {
-    const d = depthOf(entity.id);
+  nodes.forEach(node => {
+    const d = depthOf(node.id);
     if (!layers.has(d)) layers.set(d, []);
-    layers.get(d).push(entity.id);
+    layers.get(d).push(node.id);
   });
   const depths = [...layers.keys()].sort((a, b) => a - b);
 
   // Build tree children for tidy-tree style initial placement.
   const children = new Map();
-  entities.forEach(entity => children.set(entity.id, []));
-  entities.forEach(entity => {
-    if (!entity.parent_id || !byId.has(entity.parent_id)) return;
-    children.get(entity.parent_id).push(entity.id);
+  nodes.forEach(node => children.set(node.id, []));
+  nodes.forEach(node => {
+    if (!node.parent_id || !byId.has(node.parent_id)) return;
+    children.get(node.parent_id).push(node.id);
   });
   children.forEach((list, id) => {
-    list.sort((a, b) => byId.get(a).name.localeCompare(byId.get(b).name));
+    list.sort((a, b) => {
+      const aNode = byId.get(a);
+      const bNode = byId.get(b);
+      if (aNode?.kind === 'task' && bNode?.kind !== 'task') return 1;
+      if (aNode?.kind !== 'task' && bNode?.kind === 'task') return -1;
+      return String(aNode?.name || '').localeCompare(String(bNode?.name || ''));
+    });
   });
 
-  const minGap = 150;
-  const layerGapY = 560;
+  const minGap = 145;
+  const layerGapY = 500;
   const x = {};
   let leafCursor = 0;
 
@@ -364,9 +1222,9 @@ function layoutOptimizedPositions() {
   }
   assignTreeX(root.id);
 
-  entities.forEach(entity => {
-    if (typeof x[entity.id] !== 'number') {
-      x[entity.id] = leafCursor;
+  nodes.forEach(node => {
+    if (typeof x[node.id] !== 'number') {
+      x[node.id] = leafCursor;
       leafCursor += minGap;
     }
   });
@@ -383,7 +1241,8 @@ function layoutOptimizedPositions() {
   });
 
   function enforceLayerSpacing(ids, depth) {
-    const requiredGap = depth === 1 ? minGap * 1.4 : minGap;
+    const containsTasks = ids.some(id => byId.get(id)?.kind === 'task');
+    const requiredGap = containsTasks ? minGap * 0.82 : depth === 1 ? minGap * 1.4 : minGap;
     ids.sort((a, b) => x[a] - x[b]);
     for (let i = 1; i < ids.length; i += 1) {
       const prev = ids[i - 1];
@@ -425,7 +1284,8 @@ function layoutOptimizedPositions() {
         return scoreA - scoreB;
       });
 
-      const requiredGap = depth === 1 ? minGap * 1.4 : minGap;
+      const containsTasks = ids.some(id => byId.get(id)?.kind === 'task');
+      const requiredGap = containsTasks ? minGap * 0.82 : depth === 1 ? minGap * 1.4 : minGap;
       const start = -((ids.length - 1) * requiredGap) / 2;
       ids.forEach((id, index) => {
         x[id] = start + index * requiredGap;
@@ -442,21 +1302,41 @@ function layoutOptimizedPositions() {
     });
   });
 
-  resolveNodeCollisions(positions, entities);
+  resolveNodeCollisions(positions, nodes);
   return positions;
 }
 
-function nodeRadius(entity) {
-  const base = entity.type === 'product' ? 28 : entity.type === 'category' ? 20 : 14;
+function taskStatusColor(status) {
+  if (status === 'in_progress') return '#1e9dff';
+  if (status === 'in_review') return '#c8b56f';
+  if (status === 'blocked') return '#ee9a6f';
+  if (isCompletedTaskStatus(status)) return '#5ecf9a';
+  if (isOpenTaskStatus(status)) return '#6f7f95';
+  return '#6f7f95';
+}
+
+function nodeRadius(node) {
+  if (node?.kind === 'task' || node?.type === 'task') {
+    const scaled = 9 * Math.max(0.84, state.nodeScale * 0.82);
+    return Math.max(8, Math.round(scaled));
+  }
+  const base = node.type === 'product' ? 28 : node.type === 'category' ? 20 : 14;
   return Math.round(base * state.nodeScale);
 }
 
-function baseNodeRadius(entity) {
-  return entity.type === 'product' ? 28 : entity.type === 'category' ? 20 : 14;
+function baseNodeRadius(node) {
+  if (node?.kind === 'task' || node?.type === 'task') return 9;
+  return node.type === 'product' ? 28 : node.type === 'category' ? 20 : 14;
 }
 
-function labelFontSize(entity) {
-  const base = entity.type === 'product' ? 14 : entity.type === 'category' ? 13 : 12;
+function labelFontSize(node) {
+  const base = node?.kind === 'task' || node?.type === 'task'
+    ? 10
+    : node.type === 'product'
+      ? 14
+      : node.type === 'category'
+        ? 13
+        : 12;
   return Math.max(10, Math.min(22, Math.round(base * state.nodeScale)));
 }
 
@@ -725,15 +1605,20 @@ function drawGraph(options = {}) {
   const { fit = false } = options;
   viewportEl.innerHTML = '';
   const entities = state.data.entities;
+  const taskNodes = taskGraphNodes();
+  const graphNodes = [
+    ...entities.map(entity => ({ ...entity, kind: 'entity' })),
+    ...taskNodes
+  ];
   const relationships = state.data.relationships;
   const positions = layoutPositions();
   const entityMap = byIdMap();
 
   const childrenByParent = new Map();
-  entities.forEach(entity => {
-    if (!entity.parent_id || !positions[entity.parent_id] || !positions[entity.id]) return;
-    if (!childrenByParent.has(entity.parent_id)) childrenByParent.set(entity.parent_id, []);
-    childrenByParent.get(entity.parent_id).push(entity.id);
+  graphNodes.forEach(node => {
+    if (!node.parent_id || !positions[node.parent_id] || !positions[node.id]) return;
+    if (!childrenByParent.has(node.parent_id)) childrenByParent.set(node.parent_id, []);
+    childrenByParent.get(node.parent_id).push(node.id);
   });
   childrenByParent.forEach((childIds, parentId) => {
     const parentPos = positions[parentId];
@@ -745,18 +1630,20 @@ function drawGraph(options = {}) {
       return aa - bb;
     });
   });
-  entities.forEach(entity => {
-    if (!entity.parent_id || !positions[entity.parent_id] || !positions[entity.id]) return;
-    const siblings = childrenByParent.get(entity.parent_id) || [];
-    const idx = siblings.indexOf(entity.id);
+  graphNodes.forEach(node => {
+    if (!node.parent_id || !positions[node.parent_id] || !positions[node.id]) return;
+    const siblings = childrenByParent.get(node.parent_id) || [];
+    const idx = siblings.indexOf(node.id);
     const lane = idx - (siblings.length - 1) / 2;
     const laneOffset = lane * 6;
-    const curvature = lane * 22;
-    const from = positions[entity.parent_id];
-    const to = positions[entity.id];
+    const curvature = node.kind === 'task' ? lane * 16 : lane * 22;
+    const from = positions[node.parent_id];
+    const to = positions[node.id];
     const treePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     treePath.setAttribute('d', curvedPath(from, to, laneOffset, curvature));
-    treePath.setAttribute('class', 'edge');
+    const edgeClasses = ['edge', 'tree-edge'];
+    if (node.kind === 'task') edgeClasses.push('task-edge');
+    treePath.setAttribute('class', edgeClasses.join(' '));
     viewportEl.appendChild(treePath);
   });
 
@@ -790,6 +1677,7 @@ function drawGraph(options = {}) {
 
     const selectRelationship = async () => {
       if (!(await confirmSaveBeforeLeavingNode())) return;
+      clearTaskSelection();
       state.selectedRelationshipId = rel.id;
       state.selectedEntityId = null;
       setRelationshipForm(rel);
@@ -825,21 +1713,24 @@ function drawGraph(options = {}) {
 
   const labelConfigs = [];
   const nodeCircles = [];
-  entities.forEach(entity => {
-    const position = positions[entity.id];
+  graphNodes.forEach(node => {
+    const position = positions[node.id];
     if (!position) return;
-    const radius = nodeRadius(entity);
+    const radius = nodeRadius(node);
     nodeCircles.push({
-      id: entity.id,
+      id: node.id,
       x: position.x,
       y: position.y,
       r: radius + 2
     });
-    const fontSize = labelFontSize(entity);
-    const base = labelBaseConfig(entity, position, radius);
+    const fontSize = labelFontSize(node);
+    const base = labelBaseConfig(node, position, radius);
+    const labelText = node.kind === 'task'
+      ? taskMindmapLabel(node)
+      : node.name;
     labelConfigs.push({
-      id: entity.id,
-      text: shortenLabel(entity.name),
+      id: node.id,
+      text: shortenLabel(labelText),
       position,
       anchor: base.anchor,
       x: base.x,
@@ -852,18 +1743,34 @@ function drawGraph(options = {}) {
   const labelsById = new Map(labelConfigs.map(item => [item.id, item]));
   const activeInProgressIds = inProgressEntityIds();
 
-  entities.forEach(entity => {
-    const position = positions[entity.id];
+  graphNodes.forEach(node => {
+    const position = positions[node.id];
     if (!position) return;
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const classes = ['node'];
-    if (state.selectedEntityId === entity.id) classes.push('selected');
-    if (activeInProgressIds.has(entity.id)) classes.push('in-progress');
+    if (node.kind === 'task') {
+      classes.push('task-node');
+      classes.push(`task-status-${normalizeTaskNodeStatus(node.status)}`);
+      if (state.selectedEntityId === node.entity_id) classes.push('task-parent-selected');
+      if (state.selectedTaskNodeId === node.id) classes.push('selected-task');
+    } else {
+      if (state.selectedEntityId === node.id) classes.push('selected');
+      if (activeInProgressIds.has(node.id)) classes.push('in-progress');
+    }
     group.setAttribute('class', classes.join(' '));
     group.setAttribute('transform', `translate(${position.x}, ${position.y})`);
     group.addEventListener('mouseenter', evt => {
-      const desc = entity.full_context?.description || entity.current_state || '';
-      showTooltip(evt, entity.name, desc);
+      if (node.kind === 'task') {
+        const status = statusLabel(normalizeTaskNodeStatus(node.status));
+        const details = [`Status: ${status}`];
+        if (node.priority) details.push(`Priority: ${node.priority}`);
+        if (node.scopeLabel) details.push(`Scope: ${node.scopeLabel}`);
+        if (node.description) details.push(node.description);
+        showTooltip(evt, taskMindmapLabel(node), details.join(' • '));
+      } else {
+        const desc = node.full_context?.description || node.current_state || '';
+        showTooltip(evt, node.name, desc);
+      }
     });
     group.addEventListener('mousemove', evt => {
       tooltipEl.style.left = `${evt.clientX + 10}px`;
@@ -871,23 +1778,34 @@ function drawGraph(options = {}) {
     });
     group.addEventListener('mouseleave', hideTooltip);
     group.addEventListener('click', async () => {
-      if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
+      if (node.kind === 'task') {
+        state.selectedTaskNodeId = node.id;
+        state.selectedTaskMeta = { ...node };
+        renderSelectedTaskDetails();
+        drawGraph();
+        return;
+      }
+      if (state.selectedEntityId === node.id && state.selectedRelationshipId === null) return;
       if (!(await confirmSaveBeforeLeavingNode())) return;
-      state.selectedEntityId = entity.id;
+      clearTaskSelection();
+      state.selectedEntityId = node.id;
       state.selectedRelationshipId = null;
-      setEntityForm(entity);
+      setEntityForm(node);
       setActiveTab('entity');
       renderLists();
       drawGraph();
     });
 
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    const radius = nodeRadius(entity);
+    const radius = nodeRadius(node);
     circle.setAttribute('r', String(radius));
-    circle.setAttribute('fill', healthColor(entity.health));
+    const fillColor = node.kind === 'task'
+      ? taskStatusColor(normalizeStatus(node.status))
+      : healthColor(node.health);
+    circle.setAttribute('fill', fillColor);
     group.appendChild(circle);
 
-    const labelCfg = labelsById.get(entity.id);
+    const labelCfg = labelsById.get(node.id);
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('text-anchor', labelCfg?.anchor || 'start');
     label.setAttribute('x', String(labelCfg?.x || radius + 10));
@@ -895,7 +1813,7 @@ function drawGraph(options = {}) {
     if (labelCfg?.fontSize) {
       label.style.fontSize = `${labelCfg.fontSize}px`;
     }
-    label.textContent = labelCfg?.text || entity.name;
+    label.textContent = labelCfg?.text || node.name;
     group.appendChild(label);
     viewportEl.appendChild(group);
   });
@@ -957,80 +1875,10 @@ function renderContextSummary() {
   });
 }
 
-async function focusEntityById(entityId) {
-  if (!entityId) return;
-  const entity = state.data?.entities?.find(item => item.id === entityId);
-  if (!entity) return;
-  if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
-  if (!(await confirmSaveBeforeLeavingNode())) return;
-  state.selectedEntityId = entity.id;
-  state.selectedRelationshipId = null;
-  setEntityForm(entity);
-  setActiveTab('entity');
-  renderLists();
-  drawGraph();
-}
-
-function renderUserTaskList() {
-  if (!userTaskListEl) return;
-  userTaskListEl.innerHTML = '';
-
-  if (state.userWorkspaceError) {
-    const empty = document.createElement('li');
-    empty.className = 'context-empty';
-    empty.textContent = 'User tasks unavailable. Restart server and reload.';
-    userTaskListEl.appendChild(empty);
-    return;
-  }
-
-  const allTasks = state.userWorkspace?.tasks || [];
-  const selectedFilter = userTaskFilterEl?.value || 'all';
-  const tasks = selectedFilter === 'all'
-    ? allTasks
-    : allTasks.filter(task => normalizeStatus(task.status) === selectedFilter);
-
-  if (!tasks.length) {
-    const empty = document.createElement('li');
-    empty.className = 'context-empty';
-    empty.textContent = 'No tasks for this filter.';
-    userTaskListEl.appendChild(empty);
-    return;
-  }
-
-  tasks.forEach(task => {
-    const status = normalizeStatus(task.status);
-    const li = document.createElement('li');
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'user-task-btn';
-    const description = task.description || task.groundTruthTask || 'No description';
-    button.title = description;
-
-    const resolvedEntityId = resolveEntityIdFromLinkedEntity(task.linkedEntity, state.data.entities);
-    if (resolvedEntityId) {
-      button.addEventListener('click', () => focusEntityById(resolvedEntityId));
-    } else {
-      button.disabled = true;
-    }
-
-    const title = document.createElement('span');
-    title.className = 'user-task-title';
-    title.textContent = task.title || task.id || 'Untitled task';
-
-    const pill = document.createElement('span');
-    pill.className = `task-status-pill ${status}`;
-    pill.textContent = statusLabel(status);
-
-    button.appendChild(title);
-    button.appendChild(pill);
-    li.appendChild(button);
-    userTaskListEl.appendChild(li);
-  });
-}
-
 function renderWorkspaceOverview() {
   renderContextSummary();
-  renderUserTaskList();
+  renderSelectedTaskDetails();
+  renderKanbanBoard();
 }
 
 function renderLists() {
@@ -1047,6 +1895,7 @@ function renderLists() {
       btn.addEventListener('click', async () => {
         if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
         if (!(await confirmSaveBeforeLeavingNode())) return;
+        clearTaskSelection();
         state.selectedEntityId = entity.id;
         state.selectedRelationshipId = null;
         setEntityForm(entity);
@@ -1067,6 +1916,7 @@ function renderLists() {
       btn.classList.toggle('active', state.selectedRelationshipId === rel.id);
       btn.addEventListener('click', async () => {
         if (!(await confirmSaveBeforeLeavingNode())) return;
+        clearTaskSelection();
         state.selectedRelationshipId = rel.id;
         state.selectedEntityId = null;
         setRelationshipForm(rel);
@@ -1091,9 +1941,15 @@ async function loadData() {
   state.data = mapData;
   state.userWorkspace = workspaceData;
   state.userWorkspaceError = workspaceError;
+  syncSelectedTaskMeta();
+  renderTaskNodeStatusOptions();
+  if (viewModeSelectEl) {
+    viewModeSelectEl.value = state.viewMode;
+  }
   renderWorkspaceOverview();
   renderLists();
   drawGraph({ fit: true });
+  applyViewMode();
   if (workspaceData && !workspaceError) {
     showToast('Loaded latest data and user workspace context');
   } else {
@@ -1208,6 +2064,7 @@ relationshipForm.addEventListener('submit', async event => {
 
 document.getElementById('newEntityBtn').addEventListener('click', async () => {
   if (!(await confirmSaveBeforeLeavingNode())) return;
+  clearTaskSelection();
   state.selectedEntityId = null;
   setEntityForm({
     type: 'subcategory',
@@ -1219,6 +2076,7 @@ document.getElementById('newEntityBtn').addEventListener('click', async () => {
 
 document.getElementById('newRelationshipBtn').addEventListener('click', async () => {
   if (!(await confirmSaveBeforeLeavingNode())) return;
+  clearTaskSelection();
   state.selectedRelationshipId = null;
   setRelationshipForm({
     type: 'blocks'
@@ -1265,11 +2123,17 @@ document.getElementById('reloadBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('fitViewBtn').addEventListener('click', () => {
+if (exportTasksJsonBtn) {
+  exportTasksJsonBtn.addEventListener('click', async () => {
+    await downloadTaskExport();
+  });
+}
+
+fitViewBtn.addEventListener('click', () => {
   autoFitGraph();
 });
 
-document.getElementById('zoomInBtn').addEventListener('click', () => {
+zoomInBtn.addEventListener('click', () => {
   const pointer = state.lastPointerClient;
   if (pointer) {
     zoomAtClientPoint(1.12, pointer.x, pointer.y);
@@ -1278,7 +2142,7 @@ document.getElementById('zoomInBtn').addEventListener('click', () => {
   zoomAtMapCenter(1.12);
 });
 
-document.getElementById('zoomOutBtn').addEventListener('click', () => {
+zoomOutBtn.addEventListener('click', () => {
   const pointer = state.lastPointerClient;
   if (pointer) {
     zoomAtClientPoint(0.88, pointer.x, pointer.y);
@@ -1291,22 +2155,37 @@ document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => setActiveTab(tab.dataset.tab));
 });
 
-const layoutSelect = document.getElementById('layoutSelect');
 layoutSelect.addEventListener('change', () => {
   state.layoutMode = layoutSelect.value;
   drawGraph({ fit: true });
   showToast(`Switched to ${state.layoutMode} layout`);
 });
 
-const nodeSizeRange = document.getElementById('nodeSizeRange');
 nodeSizeRange.addEventListener('input', () => {
   state.nodeScale = Number(nodeSizeRange.value);
   drawGraph();
 });
 
-if (userTaskFilterEl) {
-  userTaskFilterEl.addEventListener('change', () => {
-    renderUserTaskList();
+if (viewModeSelectEl) {
+  viewModeSelectEl.addEventListener('change', () => {
+    state.viewMode = viewModeSelectEl.value === 'kanban' ? 'kanban' : 'mindmap';
+    persistViewMode(state.viewMode);
+    applyViewMode();
+    if (state.viewMode === 'kanban') {
+      renderKanbanBoard();
+      showToast('Switched to Kanban view');
+    } else {
+      drawGraph({ fit: true });
+      showToast('Switched to Mindmap view');
+    }
+  });
+}
+
+if (taskNodeStatusFilterEl) {
+  taskNodeStatusFilterEl.addEventListener('change', () => {
+    state.taskNodeStatusFilter = taskNodeStatusFilterEl.value || 'all';
+    drawGraph();
+    showToast(`Task nodes filtered: ${taskNodeFilterLabel(state.taskNodeStatusFilter)}`);
   });
 }
 
@@ -1337,6 +2216,7 @@ setSectionCollapsed(
   toggleRelationshipListBtn,
   relationshipListSection.classList.contains('collapsed')
 );
+setTaskExportButtonState();
 
 function applyTransform() {
   const s = state.transform.scale;
