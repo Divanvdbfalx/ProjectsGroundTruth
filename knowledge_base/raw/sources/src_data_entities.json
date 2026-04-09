@@ -207,6 +207,27 @@
     }
   },
   {
+    "id": "sub_github_management",
+    "type": "subcategory",
+    "name": "GitHub Management",
+    "product_id": "prd_pzero",
+    "category_id": "cat_infra",
+    "parent_id": "cat_infra",
+    "health": "yellow",
+    "current_state": "GitHub repository management for infrastructure, training, tooling, deployment, and experimentation is active but fragmented across multiple repos and workflows.",
+    "target_state": "Unified GitHub repository strategy with clear structure, governance, and delivery workflows.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Infrastructure & Deployment",
+      "subcategory": "GitHub Management",
+      "description": "Repository governance and operational management in GitHub for end-to-end product delivery across training, tooling, deployment, and experimentation.",
+      "current_problem": "Work is distributed across separate repositories with inconsistent conventions and planning boundaries.",
+      "impact": "Slower coordination, weaker traceability, and higher integration overhead.",
+      "target": "Planned and executable unified-repo operating model.",
+      "importance": "High"
+    }
+  },
+  {
     "id": "sub_sam_repo",
     "type": "subcategory",
     "name": "Deployment Repository (AWS SAM)",

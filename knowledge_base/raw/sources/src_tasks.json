@@ -2550,6 +2550,27 @@
       "Status": "done",
       "Category": "",
       "Subcategory": ""
+    },
+    {
+      "Task ID": "usr20260409infra1",
+      "Task Name": "Plan the development of a unified repo for training, tooling, deploying, and experimenting",
+      "Parent ID": "",
+      "Parent Name": "",
+      "Parent URL": "",
+      "Assignee": "[Divan van der Bank]",
+      "👨‍🎓 Contractor (users)": "",
+      "Points Estimate": "3",
+      "Time Estimate": "",
+      "Time Estimate Rolled Up": "",
+      "Due Date": "",
+      "Priority": "high",
+      "Sprints": "[Sprint 22 (30/3/26 - 19/4/26)]",
+      "Item Type (drop down)": "User Story",
+      "📚 Progress (Auto) (automatic progress)": "0",
+      "Task Category": "Active",
+      "Status": "todo",
+      "Category": "cat_infra",
+      "Subcategory": "sub_github_management"
     }
   ]
 }

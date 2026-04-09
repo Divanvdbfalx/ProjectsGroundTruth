@@ -17,6 +17,9 @@ from retrieval_engine import (
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 KB_RAW_SOURCES_DIR = ROOT / "knowledge_base" / "raw" / "sources"
+INIT_DOC = ROOT / "INIT.md"
+AGENTS_DOC = ROOT / "AGENTS.md"
+README_DOC = ROOT / "README.md"
 DATA_FILE_ALIASES = {
     "entities.json": "src_data_entities.json",
     "relationships.json": "src_data_relationships.json",
@@ -1245,6 +1248,59 @@ def cmd_build_prompt(
     print(prompt)
 
 
+def cmd_initialize(as_json: bool) -> None:
+    docs = {
+        "INIT.md": INIT_DOC,
+        "AGENTS.md": AGENTS_DOC,
+        "README.md": README_DOC,
+    }
+    missing: List[str] = []
+    summaries: List[Dict[str, Any]] = []
+    for name, path in docs.items():
+        if not path.exists():
+            missing.append(name)
+            continue
+        content = path.read_text(encoding="utf-8")
+        summaries.append(
+            {
+                "file": name,
+                "path": str(path),
+                "chars": len(content),
+                "lines": len(content.splitlines()),
+            }
+        )
+
+    checks = {
+        "has_raw_scope": "raw sources only" in (INIT_DOC.read_text(encoding="utf-8").lower() if INIT_DOC.exists() else ""),
+        "has_retrieval_rule": "never pass full source files to the llm"
+        in (AGENTS_DOC.read_text(encoding="utf-8").lower() if AGENTS_DOC.exists() else ""),
+        "has_token_limits": "max retrieved chunks per query: 5" in (README_DOC.read_text(encoding="utf-8").lower() if README_DOC.exists() else ""),
+    }
+
+    payload = {
+        "ok": not missing and all(checks.values()),
+        "missing_files": missing,
+        "documents": summaries,
+        "checks": checks,
+    }
+
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False))
+        return
+
+    if missing:
+        print(f"Initialization failed. Missing docs: {', '.join(missing)}")
+        return
+
+    print("Initialization documents loaded:")
+    for summary in summaries:
+        print(f"- {summary['file']}: {summary['lines']} lines ({summary['chars']} chars)")
+    print("Rule checks:")
+    for key, value in checks.items():
+        print(f"- {key}: {'ok' if value else 'missing'}")
+    print("Ready." if payload["ok"] else "Ready with warnings.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="P-Zerø local product health query tool")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -1360,6 +1416,13 @@ def main() -> None:
         help="Emit machine-readable JSON output.",
     )
 
+    init_p = sub.add_parser("initialize")
+    init_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "build-index":
@@ -1370,6 +1433,9 @@ def main() -> None:
         return
     if args.cmd == "build-prompt":
         cmd_build_prompt(args.query, args.max_chunks, args.max_tokens, args.index_path, args.json)
+        return
+    if args.cmd == "initialize":
+        cmd_initialize(args.json)
         return
 
     entities, relationships, tasks = load_all()

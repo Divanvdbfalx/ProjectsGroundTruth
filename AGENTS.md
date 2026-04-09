@@ -5,6 +5,7 @@ Repository-wide operating rules for human/LLM agents working in this project.
 ## Mission
 
 Maintain a single canonical product knowledge system in raw source files under `knowledge_base/raw/sources/`.
+All LLM-assisted question answering must use token-efficient retrieval over chunks; never pass full source files to the LLM.
 
 ## Canonical Sources
 
@@ -20,9 +21,33 @@ Do not introduce alternate authoritative stores (wiki, mirror markdown, CSV/XLSX
 ## Frontend / Tooling Contracts
 
 - `node_app/` reads and writes canonical JSON under `knowledge_base/raw/sources/`.
-- `local_tool/query.py` commands (`summary`, `mindmap`, `mindmap-ui`, `export-tasks-table`) must keep working from canonical JSON paths.
+- `local_tool/query.py` commands (`summary`, `mindmap`, `mindmap-ui`, `export-tasks-table`, `build-index`, `retrieve`, `build-prompt`) must keep working from canonical JSON paths.
+- `local_tool/retrieval_engine.py` defines chunking, embeddings, retrieval, and prompt construction.
+- `local_tool/build_retrieval_index.py` rebuilds the retrieval index from canonical sources.
 - `export-tasks-table` CSV/XLSX outputs are views only and are not canonical.
 - Mindmap outputs in `artifacts/` are views only, never source-of-truth.
+
+## Retrieval Protocol (Mandatory)
+
+1. Never load full JSON/markdown files into an LLM prompt.
+2. Chunk canonical sources into atomic units (entity/task/relationship/journal paragraph).
+3. Enforce chunk size cap: 500 tokens max per chunk.
+4. Retrieve only relevant chunks for each query.
+5. Enforce retrieval caps per query:
+   - max 5 chunks
+   - max 1500 tokens total retrieved context
+6. Build minimal structured prompt from retrieved chunks only.
+7. Strip non-essential keys/fields before sending context to the LLM.
+
+## Server Agent Flow
+
+User query flow in `node_app/server.js`:
+
+1. Receive query (`/api/agent/retrieve` or `/api/agent/query`).
+2. Call `local_tool/query.py build-prompt ... --json`.
+3. Use only returned retrieved chunks/prompt payload.
+4. Send minimal prompt to LLM (never raw files).
+5. Return answer plus retrieval metadata.
 
 ## Editing Rules
 

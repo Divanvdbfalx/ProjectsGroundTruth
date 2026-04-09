@@ -17,6 +17,9 @@ Generated artifacts (for example Mermaid outputs in `artifacts/`, CSV/XLSX expor
 
 - `knowledge_base/raw/sources/`: canonical agent interaction surface
 - `local_tool/query.py`: CLI for querying and rendering views from canonical JSON
+- `local_tool/retrieval_engine.py`: chunking + embedding + retrieval + compact prompt builder
+- `local_tool/build_retrieval_index.py`: preprocessing script to build/update retrieval index
+- `local_tool/cache/retrieval_index.json`: generated retrieval index (non-canonical)
 - `node_app/`: local UI editor for entities/relationships/tasks backed by canonical JSON
 
 ## CLI Usage
@@ -74,11 +77,49 @@ python local_tool/query.py mindmap-ui
 python local_tool/query.py export-tasks-table
 ```
 
+10. `build-index` (build retrieval index from canonical sources)
+```bash
+python local_tool/query.py build-index
+```
+
+11. `retrieve <query>` (return top relevant chunks only)
+```bash
+python local_tool/query.py retrieve "What are blocked high priority tasks?" --json
+```
+
+12. `build-prompt <query>` (build compact LLM prompt from retrieved chunks)
+```bash
+python local_tool/query.py build-prompt "What are blocked high priority tasks?" --json
+```
+
 Optional flags:
 ```bash
 python local_tool/query.py export-tasks-table --no-xlsx
 python local_tool/query.py export-tasks-table --output-csv artifacts/my_tasks.csv --output-xlsx artifacts/my_tasks.xlsx
 ```
+
+## Token-Efficient Retrieval Rules
+
+- Never pass full source files to the LLM.
+- Always retrieve context from chunks only.
+- Max chunk size: 500 tokens.
+- Max retrieved chunks per query: 5.
+- Max retrieved tokens per query: ~1500.
+- Strip non-essential fields before sending prompt context.
+
+## Agent API Flow
+
+Server routes in `node_app/server.js`:
+
+- `POST /api/agent/retrieve`: retrieval only (returns top chunks and token counts)
+- `POST /api/agent/query`: retrieval + prompt construction + LLM answer
+
+Flow:
+
+1. Receive user query.
+2. Call `python local_tool/query.py build-prompt "<query>" --json`.
+3. Send only retrieved minimal prompt payload to LLM.
+4. Return answer plus retrieval/token metadata.
 
 ## Node Editor (Local)
 
@@ -131,5 +172,20 @@ Initialize yourself for this repository before doing any edits.
    - `knowledge_base/raw/sources/src_tasks.json`
 4. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
 5. Confirm agent-editable operational scope is raw sources only (`knowledge_base/raw/sources/`).
-6. Before making changes, summarize the key guardrails you will follow in 8-12 bullets, including the journal-entry + JSON task-status coupling rule.
+6. Confirm retrieval stack files exist:
+   - `local_tool/retrieval_engine.py`
+   - `local_tool/build_retrieval_index.py`
+   - `local_tool/query.py`
+7. Confirm token constraints:
+   - max 500 tokens per chunk
+   - max 5 chunks retrieved per query
+   - max ~1500 retrieved tokens total per query
+8. Build/refresh retrieval index:
+   - `python local_tool/build_retrieval_index.py`
+9. For Q&A, use retrieval flow only:
+   - `python local_tool/query.py retrieve "<query>" --json`
+   - `python local_tool/query.py build-prompt "<query>" --json`
+10. Before making changes, summarize the key guardrails you will follow in 8-12 bullets, including:
+   - journal-entry + JSON task-status coupling rule
+   - retrieval-only LLM context rule (never full files in prompt)
 ```
