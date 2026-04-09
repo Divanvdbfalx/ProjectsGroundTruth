@@ -30,7 +30,8 @@ Ground truth ingestion is working.
 
 ## Linked User Tasks (user/tasks.md)
 
-- `usr_task_edf_request_updated_site_data_1` | Ask for updated data from the sites | status=`blocked` | priority=`high`
+- Current `src_user_tasks` CSV mirror does not include canonical entity IDs, so deterministic per-entity user-task linkage is unavailable.
+- See [src_user_tasks](../sources/src_user_tasks.md) for the latest full task snapshot and derived rollups.
 
 ## Relationships
 

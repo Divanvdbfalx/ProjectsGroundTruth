@@ -28,6 +28,7 @@ Stable commercial operating system.
 - [[entities/sub_customers|Customers]]
 - [[entities/sub_payment|Payment System]]
 - [[entities/sub_pricing|Pricing System]]
+- [[entities/sub_sawem_readiness|SAWEM Market Readiness]]
 
 ## Linked Tasks
 - None

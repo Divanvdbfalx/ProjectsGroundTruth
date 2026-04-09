@@ -27,8 +27,7 @@ Owner-based active monitoring cadence.
 - None
 
 ## Linked Tasks
-- [[tasks/task_active_monitoring_1|Assign monitoring ownership rota (todo, critical)]]
-- [[tasks/task_active_monitoring_2|Automate daily health digest (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - None

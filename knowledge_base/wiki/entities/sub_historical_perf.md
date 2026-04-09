@@ -31,7 +31,8 @@ Long-term performance history is fragmented.
 
 ## Linked User Tasks (user/tasks.md)
 
-- `usr_task_edf_performance_analysis_1` | Do a performance analysis | status=`blocked` | priority=`high`
+- Current `src_user_tasks` CSV mirror does not include canonical entity IDs, so deterministic per-entity user-task linkage is unavailable.
+- See [src_user_tasks](../sources/src_user_tasks.md) for the latest full task snapshot and derived rollups.
 
 ## Relationships
 

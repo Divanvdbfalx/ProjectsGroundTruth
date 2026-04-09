@@ -15,13 +15,15 @@ The only source of truth is:
 
 - `knowledge_base/raw/sources/src_data_entities.json`
 - `knowledge_base/raw/sources/src_data_relationships.json`
-- `knowledge_base/raw/sources/src_data_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 
 Generated artifacts (for example Mermaid outputs in `artifacts/`) are views, not authoritative data.
 
 ## Repository Layout
 
 - `knowledge_base/raw/sources/`: canonical product graph + task ground truth JSON
+- `knowledge_base/raw/sources/src_tasks.json`: canonical unified task tracking source
+- `knowledge_base/raw/sources/src_user_journal.md`: user-authored journal source
 - `knowledge_base/obsidian/`: generated Obsidian markdown mirror of product ground truth
 - `local_tool/query.py`: CLI for querying and rendering views from ground truth
 - `node_app/`: local UI editor for nodes and relationships
@@ -83,6 +85,22 @@ python local_tool/query.py mindmap-ui
 python local_tool/query.py export-md
 ```
 
+10. `export-tasks-table` (tabular task view for CSV/Excel consumers)
+```bash
+python local_tool/query.py export-tasks-table
+```
+
+Optional flags:
+```bash
+python local_tool/query.py export-tasks-table --no-xlsx
+python local_tool/query.py export-tasks-table --output-csv artifacts/my_tasks.csv --output-xlsx artifacts/my_tasks.xlsx
+```
+
+Notes:
+- Exported CSV/XLSX files are generated views only and are never canonical input.
+- If `openpyxl` is not installed, XLSX is skipped and CSV is still generated.
+- Excel opens the generated CSV directly.
+
 ## Node Editor (Local)
 
 Start the editor:
@@ -102,6 +120,8 @@ Editor behavior:
 
 - Edits nodes in `knowledge_base/raw/sources/src_data_entities.json`
 - Edits relationships in `knowledge_base/raw/sources/src_data_relationships.json`
+- Keeps product ground-truth JSON saves focused on JSON updates only (no automatic task table export on save)
+- In `Kanban` task view, the top toolbar shows `Export Tasks CSV`, which converts `knowledge_base/raw/sources/src_tasks.json` into CSV and downloads it
 - Deletes a node and removes linked relationships/tasks
 - Prompts to save when leaving a node with unsaved changes
 - Node form is ordered for content-first editing:
@@ -139,15 +159,15 @@ Initialize yourself for this repository before doing any edits.
 3. Confirm the canonical product ground-truth files are:
    - `knowledge_base/raw/sources/src_data_entities.json`
    - `knowledge_base/raw/sources/src_data_relationships.json`
-   - `knowledge_base/raw/sources/src_data_tasks.json`
+   - `knowledge_base/raw/sources/src_tasks.json`
 4. Confirm generated markdown mirror location: `knowledge_base/obsidian/` (not canonical).
-5. Confirm journal/task rule: every new journal entry must also update task status tracking in `knowledge_base/raw/sources/src_user_tasks.md`.
+5. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
 6. Before making changes, summarize the key guardrails you will follow in 8-12 bullets.
 ```
 
 ## Prompt Examples (Journal -> Tasks)
 
-Use these prompts with Codex to keep user workspace markdown sources and the wiki in sync.
+Use these prompts with Codex to keep user workspace sources and the wiki in sync.
 
 ### 1) Add a journal entry only
 
@@ -176,10 +196,10 @@ Process this work log and update my workspace:
 
 Requirements:
 - First add a timestamped journal entry for today.
-- Then update `knowledge_base/raw/sources/src_user_tasks.md` statuses and Updated dates based only on the notes.
-- If a task is blocked, include the blocker reason in Notes.
+- Then update `knowledge_base/raw/sources/src_tasks.json` statuses and relevant metadata fields based only on the notes.
+- If a task is blocked, include the blocker reason in task metadata/description.
 - Sync corresponding knowledge base source files.
-- Keep task IDs stable and keep table format unchanged.
+- Keep task IDs stable and preserve JSON structure.
 - Do not edit product ground truth files.
 ```
 
@@ -192,10 +212,9 @@ I emailed <name> requesting updated data for <sites>. No response yet.
 Please:
 1. Add this as a timestamped journal entry in `knowledge_base/raw/sources/src_user_journal.md`.
 2. Move related follow-up tasks to blocked.
-3. Set Updated=today for changed tasks.
-4. Update `knowledge_base/raw/sources/src_user_current_context.md` only if active in_progress focus changed.
-5. Sync knowledge base journal/task source summaries.
-6. Do not edit product ground truth context.
+3. Set relevant date/metadata fields for changed tasks in `knowledge_base/raw/sources/src_tasks.json`.
+4. Sync knowledge base journal/task source summaries.
+5. Do not edit product ground truth context.
 ```
 
 ## Guardrail: Do Not Update Product Ground Truth from Journal/Task Prompts
@@ -206,10 +225,12 @@ Never modify:
 
 - `knowledge_base/raw/sources/src_data_entities.json`
 - `knowledge_base/raw/sources/src_data_relationships.json`
-- `knowledge_base/raw/sources/src_data_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 
 Allowed for these flows:
 
-- `knowledge_base/raw/sources/src_user_*.md`
-- `knowledge_base/wiki/sources/src_user_*.md`
+- `knowledge_base/raw/sources/src_user_journal.md`
+- `knowledge_base/raw/sources/src_tasks.json`
+- `knowledge_base/wiki/sources/src_user_journal.md`
+- `knowledge_base/wiki/sources/src_user_tasks.md`
 - `knowledge_base/wiki/log.md`

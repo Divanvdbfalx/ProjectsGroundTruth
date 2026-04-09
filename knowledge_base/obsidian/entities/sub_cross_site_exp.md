@@ -27,8 +27,7 @@ Generalized multi-site experimentation with consistent data contracts, source-le
 - None
 
 ## Linked Tasks
-- [[tasks/task_cross_site_exp_1|Define cross-site metric pack (todo, critical)]]
-- [[tasks/task_cross_site_exp_2|Build site abstraction layer (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - None

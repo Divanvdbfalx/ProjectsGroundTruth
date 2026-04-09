@@ -27,8 +27,7 @@ Queryable longitudinal performance history.
 - None
 
 ## Linked Tasks
-- [[tasks/task_historical_perf_1|Backfill historical performance store (todo, critical)]]
-- [[tasks/task_historical_perf_2|Create trend dashboards (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - [[relationships/rel_perf_tracking_enables_business_value|rel_perf_tracking_enables_business_value]]: `enables` -> [[entities/cat_business|Business Layer]]

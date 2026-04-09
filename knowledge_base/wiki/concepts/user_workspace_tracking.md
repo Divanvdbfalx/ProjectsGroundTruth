@@ -2,7 +2,7 @@
 
 ## Definition
 
-A lightweight operator-facing planning system using markdown files (`current_context.md`, `tasks.md`, `journal.md`) with date/version conventions.
+A lightweight operator-facing planning system using user workspace sources (`src_user_current_context.md`, `src_user_tasks.md`, `src_user_journal.md`) with date/version conventions and a JSON companion for tasks.
 
 ## Why It Matters
 
@@ -12,7 +12,8 @@ A lightweight operator-facing planning system using markdown files (`current_con
 ## Evidence Across Sources
 
 - User README defines date-based versioning and linked-entity rules.
-- Current context file captures daily active focus and next action.
+- Current context file captures daily active focus and next action but still references legacy linked IDs.
+- Task source now mirrors ClickUp CSV export exactly (111 rows, 15 columns) with `src_user_tasks.json` as structured companion.
 - Journal template exists but has not yet captured real session history.
 
 ## Linked Entities
@@ -22,5 +23,5 @@ A lightweight operator-facing planning system using markdown files (`current_con
 
 ## Open Questions
 
-- Should `current_context.md` linked entity be normalized to canonical node IDs now?
+- Should `src_user_current_context.md` linked entity/task references be normalized to canonical entity IDs and current ClickUp task IDs?
 - How often should journal entries be enforced for auditability?

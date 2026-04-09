@@ -1,12 +1,33 @@
+const VIEW_MODE_STORAGE_KEY = 'pzero.nodeApp.viewMode';
+
+function loadSavedViewMode() {
+  try {
+    const value = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return value === 'kanban' ? 'kanban' : 'mindmap';
+  } catch {
+    return 'mindmap';
+  }
+}
+
+function persistViewMode(viewMode) {
+  try {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode === 'kanban' ? 'kanban' : 'mindmap');
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+}
+
 const state = {
   data: null,
   userWorkspace: null,
   userWorkspaceError: null,
-  viewMode: 'mindmap',
+  viewMode: loadSavedViewMode(),
   selectedEntityId: null,
   selectedRelationshipId: null,
   selectedTaskNodeId: null,
   selectedTaskMeta: null,
+  taskHyperparamSaving: false,
+  taskExportSaving: false,
   entityFormBaseline: null,
   transform: { x: 0, y: 0, scale: 1 },
   layoutMode: 'radial',
@@ -40,6 +61,9 @@ const toggleRelationshipListBtn = document.getElementById('toggleRelationshipLis
 const contextSummaryEl = document.getElementById('contextSummary');
 const selectedTaskDetailsEl = document.getElementById('selectedTaskDetails');
 const taskNodeStatusFilterEl = document.getElementById('taskNodeStatusFilter');
+const tabsEl = document.querySelector('.tabs');
+const taskExportActionsEl = document.getElementById('taskExportActions');
+const exportTasksJsonBtn = document.getElementById('exportTasksJsonBtn');
 
 const entityTab = document.getElementById('entityTab');
 const relationshipTab = document.getElementById('relationshipTab');
@@ -59,6 +83,57 @@ async function api(path, options = {}) {
     throw new Error(payload.error || 'Request failed');
   }
   return payload;
+}
+
+function setTaskExportButtonState() {
+  if (exportTasksJsonBtn) {
+    exportTasksJsonBtn.disabled = state.taskExportSaving;
+    exportTasksJsonBtn.textContent = state.taskExportSaving ? 'Exporting…' : 'Export Tasks CSV';
+  }
+}
+
+function contentDispositionFilename(contentDisposition) {
+  if (!contentDisposition) return '';
+  const match = /filename="?([^"]+)"?/i.exec(contentDisposition);
+  return match ? match[1] : '';
+}
+
+async function downloadTaskExport() {
+  if (state.taskExportSaving) return;
+  state.taskExportSaving = true;
+  setTaskExportButtonState();
+  try {
+    const response = await fetch('/api/exports/tasks');
+    if (!response.ok) {
+      let errorMessage = 'Failed to export tasks CSV.';
+      try {
+        const payload = await response.json();
+        if (payload?.error) errorMessage = payload.error;
+      } catch {
+        const text = (await response.text()).trim();
+        if (text) errorMessage = text;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const blob = await response.blob();
+    const suggestedName = contentDispositionFilename(response.headers.get('content-disposition'));
+    const fileName = suggestedName || 'src_tasks.csv';
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+    showToast(`Downloaded ${fileName}`);
+  } catch (error) {
+    showToast(error.message || 'Failed to export tasks CSV.', true);
+  } finally {
+    state.taskExportSaving = false;
+    setTaskExportButtonState();
+  }
 }
 
 function byIdMap() {
@@ -117,6 +192,14 @@ function normalizeTaskNodeStatus(status) {
   if (value === 'inreview' || value === 'review') return 'in_review';
   if (value === 'completed') return 'done';
   return value;
+}
+
+function kanbanStatusForColumn(columnId) {
+  if (columnId === 'blocked') return 'blocked';
+  if (columnId === 'in_progress') return 'in_progress';
+  if (columnId === 'review') return 'in_review';
+  if (columnId === 'done') return 'done';
+  return 'todo';
 }
 
 function isCompletedTaskStatus(status) {
@@ -180,14 +263,82 @@ function taskNodeId(taskId) {
   return `${TASK_NODE_PREFIX}${taskId}`;
 }
 
+function isArchivedWorkspaceTask(task) {
+  const category = String(task?.taskCategory || task?.['Task Category'] || '')
+    .trim()
+    .toLowerCase();
+  return category === 'archived';
+}
+
+function isEpicWorkspaceTask(task) {
+  const itemType = String(task?.itemType || task?.['Item Type (drop down)'] || '')
+    .trim()
+    .toLowerCase();
+  return itemType === 'epic';
+}
+
+function visibleWorkspaceTasks() {
+  const userTasks = state.userWorkspace?.tasks || [];
+  return userTasks.filter(task => !isArchivedWorkspaceTask(task) && !isEpicWorkspaceTask(task));
+}
+
+function clearTaskSelection() {
+  state.selectedTaskNodeId = null;
+  state.selectedTaskMeta = null;
+  state.taskHyperparamSaving = false;
+  applyTaskSelectionMode();
+}
+
+function applyTaskSelectionMode() {
+  const taskSelected = Boolean(state.selectedTaskMeta);
+  document.body.classList.toggle('task-selected', taskSelected);
+  if (!taskSelected && tabsEl) {
+    tabsEl.style.display = '';
+  }
+}
+
+function entityById(entityId) {
+  const entities = state.data?.entities || [];
+  return entities.find(entity => entity.id === entityId) || null;
+}
+
+function categoryEntities() {
+  const entities = state.data?.entities || [];
+  return entities
+    .filter(entity => entity.type === 'category')
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+function subcategoryEntities(categoryId) {
+  const entities = state.data?.entities || [];
+  if (!categoryId) return [];
+  return entities
+    .filter(entity => entity.type === 'subcategory' && entity.parent_id === categoryId)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+function resolveTaskEntityId(task, entities) {
+  const byId = new Map((entities || []).map(entity => [entity.id, entity.id]));
+  const subcategoryId = String(task?.subcategoryId || '').trim();
+  if (subcategoryId && byId.has(subcategoryId)) return subcategoryId;
+  const categoryId = String(task?.categoryId || '').trim();
+  if (categoryId && byId.has(categoryId)) return categoryId;
+  return resolveEntityIdFromLinkedEntity(task?.linkedEntity, entities || []);
+}
+
 function sourceUserTaskNodes() {
   const entities = state.data?.entities || [];
-  const userTasks = state.userWorkspace?.tasks || [];
+  const userTasks = visibleWorkspaceTasks();
   return userTasks
     .map((task, index) => {
-      const linkedEntityId = resolveEntityIdFromLinkedEntity(task.linkedEntity, entities);
+      const linkedEntityId = resolveTaskEntityId(task, entities);
       if (!linkedEntityId) return null;
       const rawId = String(task.id || '').trim() || `user_task_${index + 1}`;
+      const categoryId = String(task.categoryId || '').trim();
+      const subcategoryId = String(task.subcategoryId || '').trim();
+      const categoryName = categoryId ? (entityById(categoryId)?.name || '') : '';
+      const subcategoryName = subcategoryId ? (entityById(subcategoryId)?.name || '') : '';
+      const scopeLabel = subcategoryName || categoryName || '';
       return {
         id: taskNodeId(rawId),
         kind: 'task',
@@ -203,6 +354,22 @@ function sourceUserTaskNodes() {
         createdDate: task.createdDate || '',
         updatedDate: task.updatedDate || '',
         completedDate: task.completedDate || '',
+        pointsEstimate: task.pointsEstimate ?? '',
+        timeEstimate: task.timeEstimate ?? '',
+        timeEstimateRolledUp: task.timeEstimateRolledUp ?? '',
+        dueDate: task.dueDate ?? '',
+        sprints: task.sprints ?? task.clickupSprints ?? '',
+        itemType: task.itemType ?? task.clickupItemType ?? '',
+        progressAuto: task.progressAuto ?? (task.clickupProgress ?? ''),
+        taskCategory: task.taskCategory || task['Task Category'] || '',
+        categoryId,
+        subcategoryId,
+        categoryName,
+        subcategoryName,
+        scopeLabel,
+        epicId: task.parentId || task.clickupParentId || '',
+        epicName: task.parentName || task.groundTruthTask || '',
+        epicUrl: task.parentUrl || task.clickupParentUrl || '',
         estHours: Number.isFinite(task.estHours) ? task.estHours : null,
         actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null
       };
@@ -212,8 +379,12 @@ function sourceUserTaskNodes() {
 
 function selectedMetaFromUserTask(task) {
   const entities = state.data?.entities || [];
-  const linkedEntityId = resolveEntityIdFromLinkedEntity(task.linkedEntity, entities);
+  const linkedEntityId = resolveTaskEntityId(task, entities);
   const taskId = String(task.id || '').trim() || 'unknown_task';
+  const categoryId = String(task.categoryId || '').trim();
+  const subcategoryId = String(task.subcategoryId || '').trim();
+  const categoryName = categoryId ? (entityById(categoryId)?.name || '') : '';
+  const subcategoryName = subcategoryId ? (entityById(subcategoryId)?.name || '') : '';
   return {
     id: taskNodeId(taskId),
     task_id: taskId,
@@ -225,10 +396,33 @@ function selectedMetaFromUserTask(task) {
     createdDate: task.createdDate || '',
     updatedDate: task.updatedDate || '',
     completedDate: task.completedDate || '',
+    pointsEstimate: task.pointsEstimate ?? '',
+    timeEstimate: task.timeEstimate ?? '',
+    timeEstimateRolledUp: task.timeEstimateRolledUp ?? '',
+    dueDate: task.dueDate ?? '',
+    sprints: task.sprints ?? task.clickupSprints ?? '',
+    itemType: task.itemType ?? task.clickupItemType ?? '',
+    progressAuto: task.progressAuto ?? (task.clickupProgress ?? ''),
+    taskCategory: task.taskCategory || task['Task Category'] || '',
+    categoryId,
+    subcategoryId,
+    categoryName,
+    subcategoryName,
+    scopeLabel: subcategoryName || categoryName || '',
+    epicId: task.parentId || task.clickupParentId || '',
+    epicName: task.parentName || task.groundTruthTask || '',
+    epicUrl: task.parentUrl || task.clickupParentUrl || '',
     estHours: Number.isFinite(task.estHours) ? task.estHours : null,
     actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null,
     description: task.description || task.groundTruthTask || task.title || ''
   };
+}
+
+function taskMindmapLabel(node) {
+  const baseName = String(node?.name || '').trim();
+  const scopeLabel = String(node?.scopeLabel || '').trim();
+  if (!scopeLabel) return baseName;
+  return `${baseName} [${scopeLabel}]`;
 }
 
 function renderSelectedTaskDetails() {
@@ -236,38 +430,221 @@ function renderSelectedTaskDetails() {
   selectedTaskDetailsEl.innerHTML = '';
 
   const task = state.selectedTaskMeta;
+  applyTaskSelectionMode();
   if (!task) {
     const empty = document.createElement('p');
     empty.className = 'context-empty';
-    empty.textContent = 'Select a map task node or a Kanban card to view task metadata.';
+    empty.textContent = 'Select a map task node or a Kanban card to edit task hyperparameters.';
     selectedTaskDetailsEl.appendChild(empty);
     return;
   }
 
+  const heading = document.createElement('p');
+  heading.className = 'context-row';
+  const headingStrong = document.createElement('strong');
+  headingStrong.textContent = 'Task: ';
+  heading.appendChild(headingStrong);
+  heading.appendChild(document.createTextNode(task.name || task.task_id || 'N/A'));
+  selectedTaskDetailsEl.appendChild(heading);
+
+  const epicRow = document.createElement('p');
+  epicRow.className = 'context-row';
+  const epicStrong = document.createElement('strong');
+  epicStrong.textContent = 'Epic: ';
+  epicRow.appendChild(epicStrong);
+  const epicName = String(task.epicName || '').trim();
+  const epicId = String(task.epicId || '').trim();
+  if (epicName || epicId) {
+    epicRow.appendChild(document.createTextNode(epicName || epicId));
+    if (epicName && epicId) {
+      epicRow.appendChild(document.createTextNode(` (${epicId})`));
+    }
+  } else {
+    epicRow.appendChild(document.createTextNode('Unassigned'));
+  }
+  selectedTaskDetailsEl.appendChild(epicRow);
+
+  const form = document.createElement('form');
+  form.className = 'task-hyperparams-form';
+
   const fields = [
-    ['Task', task.name || 'N/A'],
-    ['Task ID', task.task_id || 'N/A'],
-    ['Status', statusLabel(task.status)],
-    ['Priority', task.priority || 'N/A'],
-    ['Linked Entity', task.entity_id || 'N/A'],
-    ['Owner', task.owner || 'N/A'],
-    ['Created', task.createdDate || 'N/A'],
-    ['Updated', task.updatedDate || 'N/A'],
-    ['Completed', task.completedDate || 'N/A'],
-    ['Estimate (h)', task.estHours ?? 'N/A'],
-    ['Actual (h)', task.actualHours ?? 'N/A'],
-    ['Description', task.description || 'N/A']
+    { key: 'status', label: 'Status', type: 'select', options: ['todo', 'in_progress', 'in_review', 'blocked', 'done'] },
+    { key: 'priority', label: 'Priority', type: 'select', options: ['', 'low', 'medium', 'high', 'critical'] },
+    { key: 'pointsEstimate', label: 'Points Estimate', type: 'text' },
+    { key: 'timeEstimate', label: 'Time Estimate', type: 'text' },
+    { key: 'timeEstimateRolledUp', label: 'Time Estimate Rolled Up', type: 'text' },
+    { key: 'dueDate', label: 'Due Date', type: 'text' },
+    { key: 'itemType', label: 'Item Type', type: 'text' },
+    { key: 'sprints', label: 'Sprints', type: 'text' },
+    { key: 'taskCategory', label: 'Task Category', type: 'select', options: ['Active', 'Archived'] }
   ];
 
-  fields.forEach(([label, value]) => {
-    const row = document.createElement('p');
-    row.className = 'context-row';
-    const strong = document.createElement('strong');
-    strong.textContent = `${label}: `;
-    row.appendChild(strong);
-    row.appendChild(document.createTextNode(String(value)));
-    selectedTaskDetailsEl.appendChild(row);
+  fields.forEach(field => {
+    const wrapper = document.createElement('label');
+    wrapper.textContent = field.label;
+    let control;
+    if (field.type === 'select') {
+      control = document.createElement('select');
+      (field.options || []).forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue || 'none';
+        control.appendChild(option);
+      });
+      control.value = String(task[field.key] ?? '');
+      if (!control.value && field.options && field.options.length) {
+        control.value = field.options[0];
+      }
+    } else {
+      control = document.createElement('input');
+      control.type = field.type;
+      control.value = String(task[field.key] ?? '');
+      if (field.type === 'number') {
+        control.step = '0.01';
+      }
+    }
+    control.name = field.key;
+    wrapper.appendChild(control);
+    form.appendChild(wrapper);
   });
+
+  const categorySelectWrapper = document.createElement('label');
+  categorySelectWrapper.textContent = 'Category';
+  const categorySelect = document.createElement('select');
+  categorySelect.name = 'categoryId';
+  const emptyCategoryOption = document.createElement('option');
+  emptyCategoryOption.value = '';
+  emptyCategoryOption.textContent = 'none';
+  categorySelect.appendChild(emptyCategoryOption);
+  categoryEntities().forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = category.name || category.id;
+    categorySelect.appendChild(option);
+  });
+  categorySelect.value = String(task.categoryId || '');
+  if (categorySelect.value !== String(task.categoryId || '')) {
+    categorySelect.value = '';
+  }
+  categorySelectWrapper.appendChild(categorySelect);
+  form.appendChild(categorySelectWrapper);
+
+  const subcategorySelectWrapper = document.createElement('label');
+  subcategorySelectWrapper.textContent = 'Subcategory';
+  const subcategorySelect = document.createElement('select');
+  subcategorySelect.name = 'subcategoryId';
+  subcategorySelectWrapper.appendChild(subcategorySelect);
+  form.appendChild(subcategorySelectWrapper);
+
+  function hydrateSubcategoryOptions(selectedCategoryId, selectedSubcategoryId) {
+    subcategorySelect.innerHTML = '';
+    const emptySubcategoryOption = document.createElement('option');
+    emptySubcategoryOption.value = '';
+    emptySubcategoryOption.textContent = 'none';
+    subcategorySelect.appendChild(emptySubcategoryOption);
+
+    const categoryId = String(selectedCategoryId || '').trim();
+    if (!categoryId) {
+      subcategorySelect.disabled = true;
+      subcategorySelect.value = '';
+      return;
+    }
+
+    const subcategories = subcategoryEntities(categoryId);
+    subcategories.forEach(subcategory => {
+      const option = document.createElement('option');
+      option.value = subcategory.id;
+      option.textContent = subcategory.name || subcategory.id;
+      subcategorySelect.appendChild(option);
+    });
+    subcategorySelect.disabled = false;
+    const desired = String(selectedSubcategoryId || '').trim();
+    subcategorySelect.value = desired;
+    if (subcategorySelect.value !== desired) {
+      subcategorySelect.value = '';
+    }
+  }
+
+  categorySelect.addEventListener('change', () => {
+    hydrateSubcategoryOptions(categorySelect.value, subcategorySelect.value);
+  });
+  hydrateSubcategoryOptions(task.categoryId, task.subcategoryId);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'submit';
+  saveBtn.textContent = state.taskHyperparamSaving ? 'Saving…' : 'Save Hyperparameters';
+  saveBtn.disabled = state.taskHyperparamSaving;
+  form.appendChild(saveBtn);
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (state.taskHyperparamSaving) return;
+    if (!task.task_id) {
+      showToast('Task ID is missing for this selection.', true);
+      return;
+    }
+    const payload = {
+      status: String(form.elements.status?.value || '').trim(),
+      priority: String(form.elements.priority?.value || '').trim(),
+      pointsEstimate: String(form.elements.pointsEstimate?.value || '').trim(),
+      timeEstimate: String(form.elements.timeEstimate?.value || '').trim(),
+      timeEstimateRolledUp: String(form.elements.timeEstimateRolledUp?.value || '').trim(),
+      dueDate: String(form.elements.dueDate?.value || '').trim(),
+      itemType: String(form.elements.itemType?.value || '').trim(),
+      sprints: String(form.elements.sprints?.value || '').trim(),
+      taskCategory: String(form.elements.taskCategory?.value || '').trim(),
+      categoryId: String(form.elements.categoryId?.value || '').trim(),
+      subcategoryId: String(form.elements.subcategoryId?.value || '').trim()
+    };
+
+    await saveTaskHyperparameters(task.task_id, payload, {
+      successMessage: `Updated hyperparameters for ${task.task_id}`
+    });
+  });
+
+  selectedTaskDetailsEl.appendChild(form);
+}
+
+async function saveTaskHyperparameters(taskId, payload, options = {}) {
+  const { successMessage = '', silent = false } = options;
+  if (!taskId) {
+    if (!silent) showToast('Task ID is missing for this action.', true);
+    return;
+  }
+  state.taskHyperparamSaving = true;
+  renderSelectedTaskDetails();
+  try {
+    await api(`/api/user-workspace/tasks/${encodeURIComponent(taskId)}/hyperparameters`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    if (!silent && successMessage) {
+      showToast(successMessage);
+    }
+    await refreshUserWorkspaceData();
+  } catch (error) {
+    if (!silent) showToast(error.message, true);
+    state.taskHyperparamSaving = false;
+    renderSelectedTaskDetails();
+  }
+}
+
+async function refreshUserWorkspaceData() {
+  let workspaceData = null;
+  let workspaceError = null;
+  try {
+    workspaceData = await api('/api/user-workspace');
+  } catch (error) {
+    workspaceError = error?.message || 'endpoint unavailable';
+  }
+  state.userWorkspace = workspaceData;
+  state.userWorkspaceError = workspaceError;
+  state.taskHyperparamSaving = false;
+  syncSelectedTaskMeta();
+  renderTaskNodeStatusOptions();
+  renderWorkspaceOverview();
+  drawGraph();
+  applyViewMode();
 }
 
 function syncSelectedTaskMeta() {
@@ -275,11 +652,24 @@ function syncSelectedTaskMeta() {
     state.selectedTaskMeta = null;
     return;
   }
-  const match = sourceUserTaskNodes().find(task => task.id === state.selectedTaskNodeId) || null;
-  state.selectedTaskMeta = match;
-  if (!match) {
-    state.selectedTaskNodeId = null;
+
+  const graphTaskMatch = sourceUserTaskNodes().find(task => task.id === state.selectedTaskNodeId) || null;
+  if (graphTaskMatch) {
+    state.selectedTaskMeta = graphTaskMatch;
+    return;
   }
+
+  const workspaceTaskMatch = visibleWorkspaceTasks().find((task, index) => {
+    const taskId = String(task.id || '').trim() || `user_task_${index + 1}`;
+    return taskNodeId(taskId) === state.selectedTaskNodeId;
+  }) || null;
+  if (workspaceTaskMatch) {
+    state.selectedTaskMeta = selectedMetaFromUserTask(workspaceTaskMatch);
+    return;
+  }
+
+  state.selectedTaskMeta = null;
+  state.selectedTaskNodeId = null;
 }
 
 function applyViewMode() {
@@ -299,6 +689,9 @@ function applyViewMode() {
   if (layoutSelect) layoutSelect.disabled = isKanban;
   if (nodeSizeRange) nodeSizeRange.disabled = isKanban;
   if (taskNodeStatusFilterEl) taskNodeStatusFilterEl.disabled = isKanban;
+  if (taskExportActionsEl) {
+    taskExportActionsEl.classList.toggle('active', isKanban);
+  }
 
   hideTooltip();
 }
@@ -315,11 +708,11 @@ function renderKanbanBoard() {
     return;
   }
 
-  const tasks = state.userWorkspace?.tasks || [];
+  const tasks = visibleWorkspaceTasks();
   if (!tasks.length) {
     const empty = document.createElement('p');
     empty.className = 'kanban-empty';
-    empty.textContent = 'No user tasks found.';
+    empty.textContent = 'No active user tasks found.';
     kanbanBoardEl.appendChild(empty);
     return;
   }
@@ -347,6 +740,25 @@ function renderKanbanBoard() {
 
     const listEl = document.createElement('ul');
     listEl.className = 'kanban-list';
+    listEl.dataset.columnId = column.id;
+    listEl.addEventListener('dragover', event => {
+      event.preventDefault();
+      listEl.classList.add('drag-over');
+    });
+    listEl.addEventListener('dragleave', () => {
+      listEl.classList.remove('drag-over');
+    });
+    listEl.addEventListener('drop', async event => {
+      event.preventDefault();
+      listEl.classList.remove('drag-over');
+      const taskId = String(event.dataTransfer?.getData('text/plain') || '').trim();
+      if (!taskId) return;
+      const nextStatus = kanbanStatusForColumn(column.id);
+      await saveTaskHyperparameters(taskId, { status: nextStatus }, {
+        successMessage: `Updated ${taskId} to ${statusLabel(nextStatus)}`,
+        silent: false
+      });
+    });
 
     if (!entries.length) {
       const empty = document.createElement('li');
@@ -360,8 +772,20 @@ function renderKanbanBoard() {
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'kanban-card';
+        card.draggable = true;
         if (state.selectedTaskNodeId === meta.id) card.classList.add('active');
         card.title = meta.description || meta.name;
+        card.addEventListener('dragstart', event => {
+          event.dataTransfer?.setData('text/plain', String(meta.task_id || ''));
+          if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+          }
+          card.classList.add('dragging');
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.kanban-list.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
         card.addEventListener('click', () => {
           state.selectedTaskNodeId = meta.id;
           state.selectedTaskMeta = meta;
@@ -417,11 +841,26 @@ function groupTaskNodesByParent(taskNodes) {
 
 function renderTaskNodeStatusOptions() {
   if (!taskNodeStatusFilterEl) return;
+  const coveredByPreset = new Set([
+    'in_progress',
+    'in_review',
+    'open',
+    'todo',
+    'backlog',
+    'planned',
+    'ready',
+    'done',
+    'completed',
+    'closed',
+    'resolved'
+  ]);
   const taskStatuses = [...new Set(
     sourceUserTaskNodes()
       .map(taskNode => normalizeTaskNodeStatus(taskNode.status))
       .filter(Boolean)
-  )].sort();
+  )]
+    .filter(status => !coveredByPreset.has(status))
+    .sort();
 
   const previousValue = state.taskNodeStatusFilter || taskNodeStatusFilterEl.value || 'all';
   taskNodeStatusFilterEl.innerHTML = '';
@@ -868,12 +1307,12 @@ function layoutOptimizedPositions() {
 }
 
 function taskStatusColor(status) {
-  if (status === 'in_progress') return '#55b8ff';
+  if (status === 'in_progress') return '#1e9dff';
   if (status === 'in_review') return '#c8b56f';
   if (status === 'blocked') return '#ee9a6f';
   if (isCompletedTaskStatus(status)) return '#5ecf9a';
-  if (isOpenTaskStatus(status)) return '#8aa6c8';
-  return '#8aa6c8';
+  if (isOpenTaskStatus(status)) return '#6f7f95';
+  return '#6f7f95';
 }
 
 function nodeRadius(node) {
@@ -1238,6 +1677,7 @@ function drawGraph(options = {}) {
 
     const selectRelationship = async () => {
       if (!(await confirmSaveBeforeLeavingNode())) return;
+      clearTaskSelection();
       state.selectedRelationshipId = rel.id;
       state.selectedEntityId = null;
       setRelationshipForm(rel);
@@ -1285,9 +1725,12 @@ function drawGraph(options = {}) {
     });
     const fontSize = labelFontSize(node);
     const base = labelBaseConfig(node, position, radius);
+    const labelText = node.kind === 'task'
+      ? taskMindmapLabel(node)
+      : node.name;
     labelConfigs.push({
       id: node.id,
-      text: shortenLabel(node.name),
+      text: shortenLabel(labelText),
       position,
       anchor: base.anchor,
       x: base.x,
@@ -1321,8 +1764,9 @@ function drawGraph(options = {}) {
         const status = statusLabel(normalizeTaskNodeStatus(node.status));
         const details = [`Status: ${status}`];
         if (node.priority) details.push(`Priority: ${node.priority}`);
+        if (node.scopeLabel) details.push(`Scope: ${node.scopeLabel}`);
         if (node.description) details.push(node.description);
-        showTooltip(evt, node.name, details.join(' • '));
+        showTooltip(evt, taskMindmapLabel(node), details.join(' • '));
       } else {
         const desc = node.full_context?.description || node.current_state || '';
         showTooltip(evt, node.name, desc);
@@ -1339,11 +1783,11 @@ function drawGraph(options = {}) {
         state.selectedTaskMeta = { ...node };
         renderSelectedTaskDetails();
         drawGraph();
-        await focusEntityById(node.entity_id);
         return;
       }
       if (state.selectedEntityId === node.id && state.selectedRelationshipId === null) return;
       if (!(await confirmSaveBeforeLeavingNode())) return;
+      clearTaskSelection();
       state.selectedEntityId = node.id;
       state.selectedRelationshipId = null;
       setEntityForm(node);
@@ -1431,20 +1875,6 @@ function renderContextSummary() {
   });
 }
 
-async function focusEntityById(entityId) {
-  if (!entityId) return;
-  const entity = state.data?.entities?.find(item => item.id === entityId);
-  if (!entity) return;
-  if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
-  if (!(await confirmSaveBeforeLeavingNode())) return;
-  state.selectedEntityId = entity.id;
-  state.selectedRelationshipId = null;
-  setEntityForm(entity);
-  setActiveTab('entity');
-  renderLists();
-  drawGraph();
-}
-
 function renderWorkspaceOverview() {
   renderContextSummary();
   renderSelectedTaskDetails();
@@ -1465,6 +1895,7 @@ function renderLists() {
       btn.addEventListener('click', async () => {
         if (state.selectedEntityId === entity.id && state.selectedRelationshipId === null) return;
         if (!(await confirmSaveBeforeLeavingNode())) return;
+        clearTaskSelection();
         state.selectedEntityId = entity.id;
         state.selectedRelationshipId = null;
         setEntityForm(entity);
@@ -1485,6 +1916,7 @@ function renderLists() {
       btn.classList.toggle('active', state.selectedRelationshipId === rel.id);
       btn.addEventListener('click', async () => {
         if (!(await confirmSaveBeforeLeavingNode())) return;
+        clearTaskSelection();
         state.selectedRelationshipId = rel.id;
         state.selectedEntityId = null;
         setRelationshipForm(rel);
@@ -1632,6 +2064,7 @@ relationshipForm.addEventListener('submit', async event => {
 
 document.getElementById('newEntityBtn').addEventListener('click', async () => {
   if (!(await confirmSaveBeforeLeavingNode())) return;
+  clearTaskSelection();
   state.selectedEntityId = null;
   setEntityForm({
     type: 'subcategory',
@@ -1643,6 +2076,7 @@ document.getElementById('newEntityBtn').addEventListener('click', async () => {
 
 document.getElementById('newRelationshipBtn').addEventListener('click', async () => {
   if (!(await confirmSaveBeforeLeavingNode())) return;
+  clearTaskSelection();
   state.selectedRelationshipId = null;
   setRelationshipForm({
     type: 'blocks'
@@ -1689,6 +2123,12 @@ document.getElementById('reloadBtn').addEventListener('click', async () => {
   }
 });
 
+if (exportTasksJsonBtn) {
+  exportTasksJsonBtn.addEventListener('click', async () => {
+    await downloadTaskExport();
+  });
+}
+
 fitViewBtn.addEventListener('click', () => {
   autoFitGraph();
 });
@@ -1729,6 +2169,7 @@ nodeSizeRange.addEventListener('input', () => {
 if (viewModeSelectEl) {
   viewModeSelectEl.addEventListener('change', () => {
     state.viewMode = viewModeSelectEl.value === 'kanban' ? 'kanban' : 'mindmap';
+    persistViewMode(state.viewMode);
     applyViewMode();
     if (state.viewMode === 'kanban') {
       renderKanbanBoard();
@@ -1775,6 +2216,7 @@ setSectionCollapsed(
   toggleRelationshipListBtn,
   relationshipListSection.classList.contains('collapsed')
 );
+setTaskExportButtonState();
 
 function applyTransform() {
   const s = state.transform.scale;

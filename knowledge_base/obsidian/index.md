@@ -5,7 +5,7 @@ This folder is generated from canonical JSON ground truth and is safe to open as
 ## Canonical JSON Sources
 - `knowledge_base/raw/sources/src_data_entities.json`
 - `knowledge_base/raw/sources/src_data_relationships.json`
-- `knowledge_base/raw/sources/src_data_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 
 ## Regeneration Command
 ```bash
@@ -15,9 +15,9 @@ python local_tool/query.py export-md
 Do not treat these generated markdown files as canonical runtime input for the editor/frontend.
 
 ## Counts
-- Entities: 38
+- Entities: 39
 - Relationships: 6
-- Tasks: 16
+- Tasks: 0
 
 ## Root Product
 - [[entities/prd_pzero|P-Zerø]]
@@ -56,6 +56,7 @@ Do not treat these generated markdown files as canonical runtime input for the e
 - [[entities/sub_payment|Payment System]]
 - [[entities/sub_pricing|Pricing System]]
 - [[entities/sub_proposals|Proposals]]
+- [[entities/sub_sawem_readiness|SAWEM Market Readiness]]
 - [[entities/sub_shapely_inspector|Shapely Inspector]]
 - [[entities/sub_visibility_map|System Visibility / Product Map]]
 - [[entities/sub_tool_standardization|Tool Standardization]]
@@ -63,22 +64,6 @@ Do not treat these generated markdown files as canonical runtime input for the e
 - [[entities/sub_weather_benchmark|Weather Data Benchmarking]]
 
 ## Task Notes
-- [[tasks/task_active_monitoring_1|Assign monitoring ownership rota]]
-- [[tasks/task_data_versioning_2|Attach dataset version to training runs]]
-- [[tasks/task_historical_perf_1|Backfill historical performance store]]
-- [[tasks/task_model_versioning_1|Create model registry spec]]
-- [[tasks/task_cross_site_exp_1|Define cross-site metric pack]]
-- [[tasks/task_pricing_1|Define tiered pricing model]]
-- [[tasks/task_data_versioning_1|Enforce immutable dataset snapshots]]
-- [[tasks/task_payment_1|Select billing/payment stack]]
-- [[tasks/task_alerts_anomaly_1|Set baseline anomaly thresholds]]
-- [[tasks/task_payment_2|Add monthly reconciliation workflow]]
-- [[tasks/task_active_monitoring_2|Automate daily health digest]]
-- [[tasks/task_cross_site_exp_2|Build site abstraction layer]]
-- [[tasks/task_historical_perf_2|Create trend dashboards]]
-- [[tasks/task_model_versioning_2|Gate deploys on model registry entry]]
-- [[tasks/task_alerts_anomaly_2|Implement routing + acknowledgements]]
-- [[tasks/task_pricing_2|Link pricing to measured value]]
 
 ## Relationship Notes
 - [[relationships/rel_business_depends_on_performance|rel_business_depends_on_performance (depends_on)]]

@@ -27,8 +27,7 @@ Tiered value-linked pricing framework.
 - None
 
 ## Linked Tasks
-- [[tasks/task_pricing_1|Define tiered pricing model (todo, critical)]]
-- [[tasks/task_pricing_2|Link pricing to measured value (todo, high)]]
+- None
 
 ## Outgoing Relationships
 - None

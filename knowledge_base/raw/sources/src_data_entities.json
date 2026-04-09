@@ -660,6 +660,27 @@
     }
   },
   {
+    "id": "sub_sawem_readiness",
+    "type": "subcategory",
+    "name": "SAWEM Market Readiness",
+    "product_id": "prd_pzero",
+    "category_id": "cat_business",
+    "parent_id": "cat_business",
+    "health": "blue",
+    "current_state": "SAWEM opportunity identified, but market-entry approach and quantified benefit model are not yet formalized.",
+    "target_state": "Documented SAWEM go-to-market strategy with quantified value capture, clear execution plan, and linked technical validation milestones.",
+    "full_context": {
+      "product": "P-Zerø",
+      "category": "Business Layer",
+      "subcategory": "SAWEM Market Readiness",
+      "description": "Business readiness workstream for entering the South African Wholesale Energy Market (SAWEM), focused on market-entry strategy and value capture from forecasting capabilities.",
+      "current_problem": "No structured SAWEM strategy, benefit model, or execution sequencing.",
+      "impact": "Delayed market entry and unclear commercial upside.",
+      "target": "Actionable SAWEM strategy with validated assumptions and owner-assigned execution tasks.",
+      "importance": "Critical"
+    }
+  },
+  {
     "id": "sub_documentation",
     "type": "subcategory",
     "name": "Documentation",

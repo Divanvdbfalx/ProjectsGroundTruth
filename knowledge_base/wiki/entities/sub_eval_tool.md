@@ -30,8 +30,8 @@ Evaluation tooling exists but not fully operationalized.
 
 ## Linked User Tasks (user/tasks.md)
 
-- `usr_task_edf_perf_improvement_options_1` | See if we can improve performance | status=`blocked` | priority=`medium`
-- `usr_task_codex_cli_exp_eval_protocols_1` | Create evaluation protocals for the Experimentation Platform to use for evaluating models | status=`todo` | priority=`medium`
+- Current `src_user_tasks` CSV mirror does not include canonical entity IDs, so deterministic per-entity user-task linkage is unavailable.
+- See [src_user_tasks](../sources/src_user_tasks.md) for the latest full task snapshot and derived rollups.
 
 ## Relationships
 

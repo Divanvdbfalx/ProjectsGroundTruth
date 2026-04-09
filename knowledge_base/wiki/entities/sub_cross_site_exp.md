@@ -31,7 +31,8 @@ Current experiments are single-site (eims_castle) with intra-site weather-source
 
 ## Linked User Tasks (user/tasks.md)
 
-- `usr_task_codex_cli_exp_import_clean_data_1` | Import and clean data | status=`in_progress` | priority=`medium`
+- Current `src_user_tasks` CSV mirror does not include canonical entity IDs, so deterministic per-entity user-task linkage is unavailable.
+- See [src_user_tasks](../sources/src_user_tasks.md) for the latest full task snapshot and derived rollups.
 
 ## Relationships
 

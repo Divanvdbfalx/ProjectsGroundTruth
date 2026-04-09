@@ -2,7 +2,7 @@
 
 ## Definition
 
-Snapshot of active execution state across product graph tasks and user sprint tasks.
+Historical snapshot of active execution state across product graph tasks and user sprint tasks as captured on 2026-04-07.
 
 ## Why It Matters
 
@@ -11,9 +11,10 @@ Snapshot of active execution state across product graph tasks and user sprint ta
 
 ## Evidence Across Sources
 
-- User task board: 11 rows (`blocked=5`, `todo=4`, `in_progress=2`).
-- Active focus: Codex CLI experimentation data import.
-- EDF follow-up cluster moved to blocked state.
+- User task board at the time of capture: 11 rows (`blocked=5`, `todo=4`, `in_progress=2`).
+- Active focus at that time: Codex CLI experimentation data import.
+- EDF follow-up cluster was captured as blocked.
+- This view is superseded by [sprint status 2026 04 08](./sprint_status_2026_04_08.md) after migration to full ClickUp CSV mirror.
 
 ## Linked Entities
 
@@ -24,4 +25,4 @@ Snapshot of active execution state across product graph tasks and user sprint ta
 ## Open Questions
 
 - What specific unblock condition should move EDF tasks out of blocked?
-- Should template placeholder task remain in active register?
+- Should template placeholder task remain in active register for historical snapshots?
