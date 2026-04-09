@@ -1,6 +1,6 @@
 # Wiki Index
 
-Last Updated: 2026-04-07
+Last Updated: 2026-04-08
 
 ## Overview
 
@@ -56,6 +56,7 @@ Last Updated: 2026-04-07
 
 - [experiment governance](./concepts/experiment_governance.md)
 - [sprint status 2026 04 07](./concepts/sprint_status_2026_04_07.md)
+- [sprint status 2026 04 08](./concepts/sprint_status_2026_04_08.md)
 - [user workspace tracking](./concepts/user_workspace_tracking.md)
 
 ## Source Summaries

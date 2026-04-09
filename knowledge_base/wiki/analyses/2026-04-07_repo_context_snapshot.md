@@ -3,6 +3,8 @@
 Date: 2026-04-07  
 Question: What is the current integrated state across canonical graph data and user sprint planning?
 
+_Historical note (2026-04-08): This analysis predates migration of `src_user_tasks` to full ClickUp CSV mirror and should be read as a point-in-time snapshot._
+
 ## Answer
 
 The repo now has two distinct but connected planning layers:

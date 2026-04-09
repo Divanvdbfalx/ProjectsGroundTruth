@@ -21,12 +21,12 @@ Do all product graph edits in these JSON files:
 
 Do not treat generated markdown as canonical.
 
-User workspace markdown sources currently live at:
+User workspace operational sources:
 
-- `knowledge_base/raw/sources/src_user_current_context.md`
-- `knowledge_base/raw/sources/src_user_tasks.md`
+- `knowledge_base/raw/sources/src_user_tasks.json`
 - `knowledge_base/raw/sources/src_user_journal.md`
-- `knowledge_base/raw/sources/src_user_readme.md`
+
+Legacy user markdown task/context/readme files are deprecated and should not be reintroduced as authoritative sources.
 
 Historical snapshots live in `archive/`.
 
@@ -49,6 +49,7 @@ python local_tool/query.py export-md
 
 - `node_app/` reads and writes canonical JSON under `knowledge_base/raw/sources/`.
 - `local_tool/query.py` commands (`summary`, `mindmap`, `mindmap-ui`, etc.) must keep working from current canonical JSON paths.
+- `local_tool/query.py export-tasks-table` generates user-facing task table views from canonical JSON; CSV/XLSX outputs are non-canonical views.
 - Mindmap outputs in `artifacts/` are views only, never source-of-truth.
 
 ## Editing Rules
@@ -120,17 +121,20 @@ When asked to lint/health-check:
 
 When handling user workspace journaling/task prompts, treat product ground-truth JSON as read-only unless explicitly asked to update product graph data.
 
-Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields such as `Updated` date/notes) in `knowledge_base/raw/sources/src_user_tasks.md`.
+Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields) in `knowledge_base/raw/sources/src_user_tasks.json`.
 
 Allowed file targets for journal/task-only flows:
 
-- `knowledge_base/raw/sources/src_user_*.md`
-- `knowledge_base/wiki/sources/src_user_*.md`
+- `knowledge_base/raw/sources/src_user_journal.md`
+- `knowledge_base/raw/sources/src_user_tasks.json`
+- `knowledge_base/wiki/sources/src_user_journal.md`
+- `knowledge_base/wiki/sources/src_user_tasks.md`
 - `knowledge_base/wiki/log.md`
 
 ## Recommended Working Sequence
 
 1. Update canonical JSON.
 2. Validate with query commands as needed (`summary`, `mindmap`, `mindmap-ui`).
-3. Regenerate Obsidian markdown mirror (`export-md`).
-4. Update docs if behavior/paths changed.
+3. Regenerate task table views when needed (`export-tasks-table`).
+4. Regenerate Obsidian markdown mirror (`export-md`).
+5. Update docs if behavior/paths changed.

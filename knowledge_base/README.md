@@ -41,7 +41,15 @@ knowledge_base/
 2. Ingest with an LLM using repository root `AGENTS.md`.
 3. Keep `wiki/index.md` updated on every ingest/query/lint output.
 4. Append all operations to `wiki/log.md` chronologically.
-5. Regenerate Obsidian mirror after JSON changes:
+5. Keep product graph canonical in:
+   - `knowledge_base/raw/sources/src_data_entities.json`
+   - `knowledge_base/raw/sources/src_data_relationships.json`
+   - `knowledge_base/raw/sources/src_data_tasks.json`
+6. Keep user workspace task tracking canonical in:
+   - `knowledge_base/raw/sources/src_user_tasks.json`
+7. Keep journal source in:
+   - `knowledge_base/raw/sources/src_user_journal.md`
+8. Regenerate Obsidian mirror after product JSON changes:
 
 ```bash
 python local_tool/query.py export-md

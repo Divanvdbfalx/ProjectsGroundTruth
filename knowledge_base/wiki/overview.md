@@ -9,23 +9,22 @@
 ## Current Synthesis
 
 - Canonical graph snapshot contains 38 entities, 6 relationships, and 16 product tasks.
-- User task register contains 11 rows with status mix: `blocked`=5, `todo`=4, `in_progress`=2.
-- Experimentation track remains active through [sub_cross_site_exp](./entities/sub_cross_site_exp.md) and [sub_codex_cli](./entities/sub_codex_cli.md).
-- Current in-progress user tasks:
-  - `usr_task_codex_cli_exp_import_clean_data_1`: Import and clean data
-  - `usr_task_template_1`: Define current session objective
+- User task register now mirrors ClickUp CSV export with 111 rows (`Epic`=22, `User Story`=88, `Bug`=1).
+- Derived status from auto-progress (`📚 Progress (Auto)`) is: `done`=81, `in_progress`=8, `todo`=22.
+- Highest active streams by partial progress include training pipeline, deployment/platform rebuild, NTCSA delivery, forecast evaluation, and product health execution.
+- Latest task-source synthesis: [src_user_tasks](./sources/src_user_tasks.md) and [sprint status 2026 04 08](./concepts/sprint_status_2026_04_08.md).
 
 ## Known Contradictions
 
-- `user/current_context.md` linked entity `codex_cli_experimentation_platform` is not a canonical entity ID in `data/entities.json`.
-- Template task `usr_task_template_1` is still marked `in_progress`, which may distort sprint visibility.
-- 5 user tasks are currently blocked; EDF follow-up cluster is a major blocked group.
+- `src_user_current_context.md` linked entity `codex_cli_experimentation_platform` is not a canonical entity ID in `src_data_entities.json`.
+- `src_user_current_context.md` linked task `usr_task_codex_cli_exp_import_clean_data_1` is a legacy ID not present in current ClickUp CSV task IDs.
+- Current CSV source has no canonical `entity_id` field, so entity-to-user-task joins are ambiguous without an explicit mapping layer.
 
 ## Open Questions
 
-- What concrete unblock criteria should be attached to each EDF task?
-- Should `user/current_context.md` linked IDs be normalized to canonical entity IDs now?
-- Should historical snapshots (`data/v0.0.1`, `data/v0.0.2`) be compared and summarized in a dedicated drift report?
+- Should we introduce a `task_to_entity_map` source to restore deterministic entity-linked user task sections?
+- Should `src_user_current_context.md` linked IDs be normalized to ClickUp Task IDs + canonical entity IDs?
+- Should historical snapshots (`src_data_v0_0_1*`, `src_data_v0_0_2*`) be compared in a dedicated drift report?
 
 ## Next Sources To Ingest
 

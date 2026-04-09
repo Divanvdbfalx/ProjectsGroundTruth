@@ -2,35 +2,37 @@
 
 ## Metadata
 
-- Title: User Sprint Task Register
+- Title: User Task Register (ClickUp CSV Mirror)
 - Date Added: 2026-04-07
-- Origin: local repository
-- File: `user/tasks.md`
+- Origin: ClickUp CSV export
+- Files:
+  - `knowledge_base/raw/sources/src_user_tasks.md`
+  - `knowledge_base/raw/sources/src_user_tasks.json`
 
 ## Summary
 
-The user task register represents operator-level sprint planning layered on top of product graph work. It now includes a structured ClickUp interpretation snapshot with normalized statuses and explicit dependency notes across training, deployment, delivery, evaluation, and product-health tracks.
+The user task source mirrors the latest ClickUp CSV export directly, preserving source columns and row values in both markdown and JSON formats, and adds a derived `Task Category` field to distinguish active vs archived work.
 
 ## Key Claims
 
-1. ClickUp status semantics are normalized for KB use: `OPEN`, `IN_PROGRESS`, `IN_REVIEW`, `BLOCKED`, `COMPLETED`.
-2. Migration of the P-ZER0 training pipeline to ClearML is captured as `IN_REVIEW`, while training architecture experimentation is `IN_PROGRESS`.
-3. NTCSA deployment tasks are explicitly `BLOCKED` despite XML preparation being complete.
-4. Product Health tracks are split between completed research/manifests, `IN_REVIEW` KB initialization, and `IN_PROGRESS` agent integration.
+1. Source shape includes 15 CSV columns plus 1 derived column: `Task Category`.
+2. Current snapshot contains 111 task rows: 22 `Epic`, 88 `User Story`, and 1 `Bug`.
+3. Derived progress rollup from `📚 Progress (Auto)` is: `done=81`, `in_progress=8`, `todo=22`, with `Task Category` split `Archived=81`, `Active=30`.
 
 ## Extracted Facts
 
-1. Existing register rows remain alongside a new ClickUp interpretation snapshot section.
-2. The new section includes workstream, task name, normalized status, KB context description, and dependency notes for each listed task.
-3. Snapshot source is user-provided ClickUp screenshots with corrected status legend (`blue=in_progress`, `purple=in_review`).
+1. Markdown now contains a single CSV-aligned table under `# User Tasks`.
+2. JSON companion includes `columns`, `rows`, and `task_categories` metadata.
+3. The source CSV is `2026-04-08T14_05_57.516Z FALX - Product Development - P ZERO.csv`.
 
 ## Contradictions / Tensions
 
-- Legacy register statuses (`todo`, `in_progress`, `blocked`, `done`) coexist with normalized snapshot statuses, so rollups should account for both representations.
+- Legacy KB-specific status fields (`todo`, `in_progress`, `blocked`, `done`) are not explicit in the source and must be derived from ClickUp fields (for example progress).
+- CSV rows do not carry canonical `entity_id` mappings, so deterministic per-entity linkage is unavailable without an additional mapping layer.
 
 ## Wiki Pages Updated
 
+- [src_user_tasks](./src_user_tasks.md)
 - [Overview](../overview.md)
-- [Sprint Status (2026-04-07)](../concepts/sprint_status_2026_04_07.md)
-- [Cross-Site Experimentation](../entities/sub_cross_site_exp.md)
-- [Business Layer](../entities/cat_business.md)
+- [sprint status 2026 04 08](../concepts/sprint_status_2026_04_08.md)
+- [user workspace tracking](../concepts/user_workspace_tracking.md)

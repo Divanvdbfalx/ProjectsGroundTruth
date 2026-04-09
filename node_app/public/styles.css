@@ -61,6 +61,16 @@ body {
   flex-wrap: wrap;
 }
 
+.task-export-actions {
+  display: none;
+  gap: 8px;
+  align-items: center;
+}
+
+.task-export-actions.active {
+  display: flex;
+}
+
 button {
   border: 1px solid #436899;
   background: linear-gradient(180deg, #22416e, #18345a);
@@ -152,6 +162,12 @@ button.danger:hover {
   align-content: start;
 }
 
+.kanban-list.drag-over {
+  outline: 2px dashed #6da7df;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 .kanban-card {
   width: 100%;
   border: 1px solid #3f618a;
@@ -162,6 +178,10 @@ button.danger:hover {
   padding: 8px;
   display: grid;
   gap: 6px;
+}
+
+.kanban-card.dragging {
+  opacity: 0.55;
 }
 
 .kanban-card:hover {
@@ -519,6 +539,14 @@ svg.dragging {
 
 .tab-panel.active {
   display: block;
+}
+
+body.task-selected .tabs,
+body.task-selected #entityTab,
+body.task-selected #relationshipTab,
+body.task-selected #entityListSection,
+body.task-selected #relationshipListSection {
+  display: none !important;
 }
 
 .section-head {

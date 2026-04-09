@@ -13,7 +13,7 @@ The user context file captures same-day working focus on Codex CLI experimentati
 
 ## Key Claims
 
-1. Active linked task is `usr_task_codex_cli_exp_import_clean_data_1`.
+1. Active linked task text is `usr_task_codex_cli_exp_import_clean_data_1` (legacy ID format).
 2. Current goal is a cleaned, standardized dataset for model training/evaluation.
 3. Main risk is schema/quality inconsistency across source sites.
 
@@ -25,7 +25,8 @@ The user context file captures same-day working focus on Codex CLI experimentati
 
 ## Contradictions / Tensions
 
-- Linked entity in context file is a free-text legacy value, while task board now uses canonical entity IDs (for example `sub_cross_site_exp`, `sub_eval_tool`).
+- Linked entity in context file is a free-text legacy value and is not a canonical entity ID.
+- Linked task ID in context is not present in the current ClickUp CSV mirror task IDs.
 
 ## Wiki Pages Updated
 

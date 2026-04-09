@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import argparse
+import csv
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
@@ -1045,6 +1046,108 @@ def cmd_export_md(
     print(f"Wrote Obsidian markdown mirror to {out_dir}")
 
 
+def _task_export_context_keys(tasks: List[Dict[str, Any]]) -> List[str]:
+    keys = set()
+    for task in tasks:
+        context = task.get("full_context")
+        if isinstance(context, dict):
+            for key in context.keys():
+                keys.add(str(key))
+    return sorted(keys)
+
+
+def _task_export_rows(
+    tasks: List[Dict[str, Any]],
+    entity_index: Dict[str, Dict[str, Any]],
+    context_keys: List[str],
+) -> List[Dict[str, str]]:
+    rows: List[Dict[str, str]] = []
+    priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    sorted_tasks = sorted(
+        tasks,
+        key=lambda item: (
+            priority_order.get(str(item.get("priority", "")).lower(), 99),
+            str(item.get("status", "")),
+            str(item.get("title", "")),
+            str(item.get("id", "")),
+        ),
+    )
+
+    for task in sorted_tasks:
+        entity_id = str(task.get("entity_id", ""))
+        entity = entity_index.get(entity_id, {})
+        context = task.get("full_context")
+        if not isinstance(context, dict):
+            context = {}
+
+        row: Dict[str, str] = {
+            "task_id": str(task.get("id", "")),
+            "title": str(task.get("title", "")),
+            "status": str(task.get("status", "")),
+            "priority": str(task.get("priority", "")),
+            "entity_id": entity_id,
+            "entity_name": str(entity.get("name", "")),
+            "entity_type": str(entity.get("type", "")),
+            "entity_health": str(entity.get("health", "")),
+            "description": str(task.get("description", "")),
+            "full_context_json": json.dumps(context, ensure_ascii=False, sort_keys=True),
+        }
+        for key in context_keys:
+            row[f"context_{key}"] = str(context.get(key, ""))
+        rows.append(row)
+    return rows
+
+
+def cmd_export_tasks_table(
+    entities: List[Dict[str, Any]],
+    tasks: List[Dict[str, Any]],
+    output_csv: str,
+    output_xlsx: Optional[str],
+) -> None:
+    entity_index = index_entities(entities)
+    context_keys = _task_export_context_keys(tasks)
+    rows = _task_export_rows(tasks, entity_index, context_keys)
+
+    columns = [
+        "task_id",
+        "title",
+        "status",
+        "priority",
+        "entity_id",
+        "entity_name",
+        "entity_type",
+        "entity_health",
+        "description",
+        "full_context_json",
+    ] + [f"context_{key}" for key in context_keys]
+
+    csv_path = (ROOT / output_csv).resolve()
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"Wrote tasks CSV export to {csv_path}")
+
+    if output_xlsx:
+        xlsx_path = (ROOT / output_xlsx).resolve()
+        xlsx_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            from openpyxl import Workbook  # type: ignore
+        except ImportError:
+            print("Skipped XLSX export (openpyxl not installed). CSV is Excel-compatible.")
+            return
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "tasks"
+        sheet.append(columns)
+        for row in rows:
+            sheet.append([row.get(column, "") for column in columns])
+        workbook.save(xlsx_path)
+        print(f"Wrote tasks XLSX export to {xlsx_path}")
+
+
 def main() -> None:
     entities, relationships, tasks = load_all()
     entity_index = index_entities(entities)
@@ -1089,6 +1192,23 @@ def main() -> None:
         help="Output directory for Obsidian markdown mirror (relative to repo root).",
     )
 
+    export_tasks_table_p = sub.add_parser("export-tasks-table")
+    export_tasks_table_p.add_argument(
+        "--output-csv",
+        default="artifacts/tasks_export.csv",
+        help="Output CSV file path relative to repo root.",
+    )
+    export_tasks_table_p.add_argument(
+        "--output-xlsx",
+        default="artifacts/tasks_export.xlsx",
+        help="Output XLSX file path relative to repo root (requires openpyxl).",
+    )
+    export_tasks_table_p.add_argument(
+        "--no-xlsx",
+        action="store_true",
+        help="Disable XLSX export even when openpyxl is installed.",
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "summary":
@@ -1105,6 +1225,10 @@ def main() -> None:
         return
     if args.cmd == "export-md":
         cmd_export_md(entities, relationships, tasks, args.output)
+        return
+    if args.cmd == "export-tasks-table":
+        output_xlsx = None if args.no_xlsx else args.output_xlsx
+        cmd_export_tasks_table(entities, tasks, args.output_csv, output_xlsx)
         return
 
     entity = find_entity(entities, args.entity)

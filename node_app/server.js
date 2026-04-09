@@ -1,12 +1,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { URL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
 const KB_RAW_SOURCES_DIR = path.join(ROOT, 'knowledge_base', 'raw', 'sources');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 4311);
+const TASK_TABLE_EXPORT_CMD = ['local_tool/query.py', 'export-tasks-table'];
 
 const DATA_FILES = {
   entities: path.join(KB_RAW_SOURCES_DIR, 'src_data_entities.json'),
@@ -16,7 +18,24 @@ const DATA_FILES = {
 
 const USER_FILES = {
   tasks: path.join(KB_RAW_SOURCES_DIR, 'src_user_tasks.md'),
+  tasksJson: path.join(KB_RAW_SOURCES_DIR, 'src_user_tasks.json'),
   context: path.join(KB_RAW_SOURCES_DIR, 'src_user_current_context.md')
+};
+
+const USER_TASK_COLUMNS = {
+  id: 'Task ID',
+  status: 'Status',
+  priority: 'Priority',
+  pointsEstimate: 'Points Estimate',
+  timeEstimate: 'Time Estimate',
+  timeEstimateRolledUp: 'Time Estimate Rolled Up',
+  dueDate: 'Due Date',
+  sprints: 'Sprints',
+  itemType: 'Item Type (drop down)',
+  progressAuto: '📚 Progress (Auto) (automatic progress)',
+  taskCategory: 'Task Category',
+  category: 'Category',
+  subcategory: 'Subcategory'
 };
 
 function safeReadText(filePath) {
@@ -33,6 +52,9 @@ function normalizeStatus(raw) {
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
   if (value === 'inprogress') return 'in_progress';
+  if (value === 'inreview') return 'in_review';
+  if (value === 'completed') return 'done';
+  if (value === 'open') return 'todo';
   if (value === 'in_progress' || value === 'todo' || value === 'blocked' || value === 'done') {
     return value;
   }
@@ -47,50 +69,385 @@ function splitMarkdownRow(line) {
   return noEnd.split('|').map(part => part.trim());
 }
 
-function parseUserTasksMarkdown(markdown) {
+function parseNumber(value) {
+  const parsed = Number.parseFloat(String(value ?? '').replace(/,/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizePriority(raw) {
+  const value = String(raw || '').trim().toLowerCase();
+  if (!value || value === 'none') return '';
+  if (value === 'normal') return 'medium';
+  return value;
+}
+
+function parseAssigneeList(raw) {
+  const value = String(raw || '').trim();
+  if (!value || value === '[]') return '';
+  if (value.startsWith('[') && value.endsWith(']')) {
+    return value
+      .slice(1, -1)
+      .split(',')
+      .map(part => part.trim())
+      .filter(Boolean)
+      .join(', ');
+  }
+  return value;
+}
+
+function inferCsvStatus(row) {
+  const explicitStatus = row.Status || row['Task Status'] || row['Current Status'];
+  if (explicitStatus) return normalizeStatus(explicitStatus);
+
+  const progress = parseNumber(row['📚 Progress (Auto) (automatic progress)']);
+  if (progress !== null) {
+    if (progress >= 100) return 'done';
+    if (progress > 0) return 'in_progress';
+  }
+  return 'todo';
+}
+
+function inferTaskCategory(rawCategory, row = {}) {
+  const explicit = String(rawCategory || '').trim().toLowerCase();
+  if (explicit === 'archived') return 'Archived';
+  if (explicit === 'active') return 'Active';
+  const progress = parseNumber(row[USER_TASK_COLUMNS.progressAuto]);
+  return progress !== null && progress >= 100 ? 'Archived' : 'Active';
+}
+
+function inferTaskStatus(rawStatus, row = {}) {
+  const explicit = String(rawStatus || '').trim();
+  if (explicit) {
+    return normalizeStatus(explicit);
+  }
+  return inferCsvStatus(row);
+}
+
+function normalizeParsedTask(task) {
+  return {
+    ...task,
+    status: normalizeStatus(task.status),
+    taskCategory: String(task.taskCategory || '').trim() || '',
+    categoryId: String(task.categoryId || '').trim(),
+    subcategoryId: String(task.subcategoryId || '').trim(),
+    estHours: Number.isFinite(task.estHours) ? task.estHours : null,
+    actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null
+  };
+}
+
+function mapLegacyMarkdownTask(row) {
+  const progressAuto = String(row[USER_TASK_COLUMNS.progressAuto] || '').trim();
+  return normalizeParsedTask({
+    id: row.ID || '',
+    title: row.Task || '',
+    linkedEntity: row['Linked Entity'] || '',
+    groundTruthTask: row['Ground-Truth Task'] || '',
+    status: inferTaskStatus(row[USER_TASK_COLUMNS.status] || row.Status, row),
+    priority: normalizePriority(row.Priority),
+    createdDate: row['Created (Date)'] || '',
+    updatedDate: row['Updated (Date)'] || '',
+    completedDate: row['Completed (Date)'] || '',
+    taskCategory: inferTaskCategory(row[USER_TASK_COLUMNS.taskCategory], row),
+    pointsEstimate: String(row[USER_TASK_COLUMNS.pointsEstimate] || '').trim(),
+    timeEstimate: String(row[USER_TASK_COLUMNS.timeEstimate] || '').trim(),
+    timeEstimateRolledUp: String(row[USER_TASK_COLUMNS.timeEstimateRolledUp] || '').trim(),
+    dueDate: String(row[USER_TASK_COLUMNS.dueDate] || '').trim(),
+    sprints: String(row[USER_TASK_COLUMNS.sprints] || '').trim(),
+    itemType: String(row[USER_TASK_COLUMNS.itemType] || '').trim(),
+    progressAuto,
+    categoryId: String(row[USER_TASK_COLUMNS.category] || '').trim(),
+    subcategoryId: String(row[USER_TASK_COLUMNS.subcategory] || '').trim(),
+    parentId: String(row['Parent ID'] || '').trim(),
+    parentName: String(row['Parent Name'] || '').trim(),
+    parentUrl: String(row['Parent URL'] || '').trim(),
+    estHours: parseNumber(row['Est (h)']),
+    actualHours: parseNumber(row['Actual (h)']),
+    owner: row.Owner || '',
+    description: row.Notes || row['Ground-Truth Task'] || ''
+  });
+}
+
+function mapCsvTask(row) {
+  const progressAuto = String(row[USER_TASK_COLUMNS.progressAuto] || '').trim();
+  const progress = parseNumber(progressAuto);
+  const parentId = String(row['Parent ID'] || '').trim();
+  const parentName = String(row['Parent Name'] || '').trim();
+  const parentUrl = String(row['Parent URL'] || '').trim();
+  const itemType = String(row[USER_TASK_COLUMNS.itemType] || '').trim();
+  const sprints = String(row[USER_TASK_COLUMNS.sprints] || '').trim();
+  const taskCategory = inferTaskCategory(row[USER_TASK_COLUMNS.taskCategory], row);
+  const descriptionParts = [];
+  if (parentName) descriptionParts.push(`Parent: ${parentName}`);
+  if (itemType) descriptionParts.push(`Type: ${itemType}`);
+  if (sprints && sprints !== '[]') descriptionParts.push(`Sprints: ${sprints}`);
+  if (progress !== null) descriptionParts.push(`Progress: ${progress}%`);
+
+  return normalizeParsedTask({
+    id: row['Task ID'] || '',
+    title: row['Task Name'] || '',
+    linkedEntity: '',
+    groundTruthTask: parentName,
+    status: inferTaskStatus(row[USER_TASK_COLUMNS.status], row),
+    priority: normalizePriority(row.Priority),
+    createdDate: '',
+    updatedDate: '',
+    completedDate: '',
+    taskCategory,
+    pointsEstimate: String(row[USER_TASK_COLUMNS.pointsEstimate] || '').trim(),
+    timeEstimate: String(row[USER_TASK_COLUMNS.timeEstimate] || '').trim(),
+    timeEstimateRolledUp: String(row[USER_TASK_COLUMNS.timeEstimateRolledUp] || '').trim(),
+    dueDate: String(row[USER_TASK_COLUMNS.dueDate] || '').trim(),
+    sprints,
+    itemType,
+    progressAuto,
+    categoryId: String(row[USER_TASK_COLUMNS.category] || '').trim(),
+    subcategoryId: String(row[USER_TASK_COLUMNS.subcategory] || '').trim(),
+    parentId,
+    parentName,
+    parentUrl,
+    estHours: parseNumber(row['Time Estimate']),
+    actualHours: null,
+    owner: parseAssigneeList(row.Assignee),
+    description: descriptionParts.join(' | '),
+    clickupTaskId: row['Task ID'] || '',
+    clickupParentId: parentId,
+    clickupParentUrl: parentUrl,
+    clickupItemType: itemType,
+    clickupSprints: sprints,
+    clickupProgress: progress,
+    clickupPointsEstimate: parseNumber(row['Points Estimate']),
+    clickupTimeEstimateRolledUp: parseNumber(row['Time Estimate Rolled Up'])
+  });
+}
+
+function parseMarkdownTableRows(markdown) {
   const lines = markdown.split(/\r?\n/);
-  const headerIndex = lines.findIndex(line => line.includes('| ID |') && line.includes('Linked Entity'));
-  if (headerIndex < 0 || !lines[headerIndex + 1]) return [];
+  let headerIndex = -1;
 
+  for (let i = 0; i < lines.length - 1; i += 1) {
+    const line = lines[i];
+    const next = lines[i + 1] || '';
+    if (!line.trim().startsWith('|')) continue;
+    if (!next.trim().startsWith('|')) continue;
+    if (!next.includes('---')) continue;
+    headerIndex = i;
+    break;
+  }
+
+  if (headerIndex < 0) return { headers: [], rows: [] };
   const headers = splitMarkdownRow(lines[headerIndex]);
-  if (!headers.length) return [];
+  if (!headers.length) return { headers: [], rows: [] };
 
-  const tasks = [];
+  const rows = [];
   for (let i = headerIndex + 2; i < lines.length; i += 1) {
     const line = lines[i];
     if (!line.trim().startsWith('|')) break;
     if (line.includes('|---')) continue;
     const cols = splitMarkdownRow(line);
     if (!cols.length) continue;
-
     const row = {};
     headers.forEach((header, idx) => {
       row[header] = cols[idx] || '';
     });
-
-    const status = normalizeStatus(row.Status);
-    tasks.push({
-      id: row.ID || '',
-      title: row.Task || '',
-      linkedEntity: row['Linked Entity'] || '',
-      groundTruthTask: row['Ground-Truth Task'] || '',
-      status,
-      priority: (row.Priority || '').toLowerCase(),
-      createdDate: row['Created (Date)'] || '',
-      updatedDate: row['Updated (Date)'] || '',
-      completedDate: row['Completed (Date)'] || '',
-      estHours: Number.parseFloat(row['Est (h)']),
-      actualHours: Number.parseFloat(row['Actual (h)']),
-      owner: row.Owner || '',
-      description: row.Notes || row['Ground-Truth Task'] || ''
-    });
+    rows.push(row);
   }
 
-  return tasks.map(task => ({
-    ...task,
-    estHours: Number.isFinite(task.estHours) ? task.estHours : null,
-    actualHours: Number.isFinite(task.actualHours) ? task.actualHours : null
+  return { headers, rows };
+}
+
+function parseUserTasksMarkdown(markdown) {
+  const { headers, rows } = parseMarkdownTableRows(markdown);
+  if (!headers.length || !rows.length) return [];
+
+  if (headers.includes('Task ID') && headers.includes('Task Name')) {
+    return rows.map(mapCsvTask);
+  }
+  if (headers.includes('ID') && headers.includes('Task')) {
+    return rows.map(mapLegacyMarkdownTask);
+  }
+  return [];
+}
+
+function parseUserTasksJson(jsonText) {
+  if (!jsonText.trim()) return [];
+  let payload;
+  try {
+    payload = JSON.parse(jsonText);
+  } catch {
+    return [];
+  }
+
+  if (Array.isArray(payload)) {
+    if (payload.length && payload[0] && typeof payload[0] === 'object' && 'Task ID' in payload[0]) {
+      return payload.map(mapCsvTask);
+    }
+    if (payload.length && payload[0] && typeof payload[0] === 'object' && 'ID' in payload[0]) {
+      return payload.map(mapLegacyMarkdownTask);
+    }
+    return payload
+      .filter(item => item && typeof item === 'object')
+      .map(item => normalizeParsedTask({
+        id: item.id || '',
+        title: item.title || '',
+        linkedEntity: item.linkedEntity || '',
+        groundTruthTask: item.groundTruthTask || '',
+        status: item.status || '',
+        priority: normalizePriority(item.priority),
+        createdDate: item.createdDate || '',
+        updatedDate: item.updatedDate || '',
+        completedDate: item.completedDate || '',
+        taskCategory: item.taskCategory || item['Task Category'] || '',
+        pointsEstimate: String(item.pointsEstimate || item[USER_TASK_COLUMNS.pointsEstimate] || '').trim(),
+        timeEstimate: String(item.timeEstimate || item[USER_TASK_COLUMNS.timeEstimate] || '').trim(),
+        timeEstimateRolledUp: String(item.timeEstimateRolledUp || item[USER_TASK_COLUMNS.timeEstimateRolledUp] || '').trim(),
+        dueDate: String(item.dueDate || item[USER_TASK_COLUMNS.dueDate] || '').trim(),
+        sprints: String(item.sprints || item[USER_TASK_COLUMNS.sprints] || '').trim(),
+        itemType: String(item.itemType || item[USER_TASK_COLUMNS.itemType] || '').trim(),
+        progressAuto: String(item.progressAuto || item[USER_TASK_COLUMNS.progressAuto] || '').trim(),
+        categoryId: String(item.categoryId || item[USER_TASK_COLUMNS.category] || '').trim(),
+        subcategoryId: String(item.subcategoryId || item[USER_TASK_COLUMNS.subcategory] || '').trim(),
+        parentId: String(item.parentId || item['Parent ID'] || '').trim(),
+        parentName: String(item.parentName || item['Parent Name'] || '').trim(),
+        parentUrl: String(item.parentUrl || item['Parent URL'] || '').trim(),
+        estHours: parseNumber(item.estHours),
+        actualHours: parseNumber(item.actualHours),
+        owner: item.owner || '',
+        description: item.description || ''
+      }));
+  }
+
+  if (payload && typeof payload === 'object' && Array.isArray(payload.rows)) {
+    const rows = payload.rows.filter(row => row && typeof row === 'object');
+    if (rows.length && 'Task ID' in rows[0]) {
+      return rows.map(mapCsvTask);
+    }
+    if (rows.length && 'ID' in rows[0]) {
+      return rows.map(mapLegacyMarkdownTask);
+    }
+  }
+
+  return [];
+}
+
+function isArchivedTask(task) {
+  const category = String(task.taskCategory || task['Task Category'] || '')
+    .trim()
+    .toLowerCase();
+  return category === 'archived';
+}
+
+function isEpicTask(task) {
+  const itemType = String(task.itemType || task[USER_TASK_COLUMNS.itemType] || '')
+    .trim()
+    .toLowerCase();
+  return itemType === 'epic';
+}
+
+function ensureTaskColumns(columns) {
+  const list = Array.isArray(columns) ? [...columns] : [];
+  if (!list.includes(USER_TASK_COLUMNS.status)) {
+    list.push(USER_TASK_COLUMNS.status);
+  }
+  if (!list.includes(USER_TASK_COLUMNS.category)) {
+    list.push(USER_TASK_COLUMNS.category);
+  }
+  if (!list.includes(USER_TASK_COLUMNS.subcategory)) {
+    list.push(USER_TASK_COLUMNS.subcategory);
+  }
+  if (!list.includes(USER_TASK_COLUMNS.taskCategory)) {
+    list.push(USER_TASK_COLUMNS.taskCategory);
+  }
+  const canonicalTail = [
+    USER_TASK_COLUMNS.taskCategory,
+    USER_TASK_COLUMNS.category,
+    USER_TASK_COLUMNS.subcategory,
+    USER_TASK_COLUMNS.status
+  ];
+  const withoutTail = list.filter(column => !canonicalTail.includes(column));
+  return [...withoutTail, ...canonicalTail];
+}
+
+function orderRowsByCategory(rows) {
+  const active = [];
+  const archived = [];
+  rows.forEach(row => {
+    if (inferTaskCategory(row?.[USER_TASK_COLUMNS.taskCategory], row) === 'Archived') {
+      archived.push(row);
+    } else {
+      active.push(row);
+    }
+  });
+  return [...active, ...archived];
+}
+
+function escapeMarkdownCell(value) {
+  return String(value ?? '')
+    .replace(/\|/g, '\\|')
+    .replace(/\n/g, '<br>');
+}
+
+function readUserTasksSourcePayload() {
+  const text = safeReadText(USER_FILES.tasksJson);
+  if (!text.trim()) return null;
+  let payload;
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!payload || typeof payload !== 'object' || !Array.isArray(payload.rows)) return null;
+  payload.columns = ensureTaskColumns(payload.columns || []);
+  payload.rows = payload.rows
+    .filter(row => row && typeof row === 'object')
+    .map(row => {
+      const next = { ...row };
+      next[USER_TASK_COLUMNS.category] = String(next[USER_TASK_COLUMNS.category] || '').trim();
+      next[USER_TASK_COLUMNS.subcategory] = String(next[USER_TASK_COLUMNS.subcategory] || '').trim();
+      if (!next[USER_TASK_COLUMNS.category]) {
+        next[USER_TASK_COLUMNS.subcategory] = '';
+      }
+      next[USER_TASK_COLUMNS.status] = inferTaskStatus(next[USER_TASK_COLUMNS.status], next);
+      next[USER_TASK_COLUMNS.taskCategory] = inferTaskCategory(next[USER_TASK_COLUMNS.taskCategory], next);
+      return next;
+    });
+  payload.rows = orderRowsByCategory(payload.rows);
+  return payload;
+}
+
+function writeUserTasksSourcePayload(payload) {
+  const next = { ...(payload || {}) };
+  next.columns = ensureTaskColumns(next.columns || []);
+  next.rows = orderRowsByCategory((next.rows || []).map(row => {
+    const normalized = { ...row };
+    normalized[USER_TASK_COLUMNS.category] = String(normalized[USER_TASK_COLUMNS.category] || '').trim();
+    normalized[USER_TASK_COLUMNS.subcategory] = String(normalized[USER_TASK_COLUMNS.subcategory] || '').trim();
+    if (!normalized[USER_TASK_COLUMNS.category]) {
+      normalized[USER_TASK_COLUMNS.subcategory] = '';
+    }
+    normalized[USER_TASK_COLUMNS.status] = inferTaskStatus(normalized[USER_TASK_COLUMNS.status], normalized);
+    normalized[USER_TASK_COLUMNS.taskCategory] = inferTaskCategory(normalized[USER_TASK_COLUMNS.taskCategory], normalized);
+    return normalized;
   }));
+  fs.writeFileSync(USER_FILES.tasksJson, JSON.stringify(next, null, 2) + '\n', 'utf8');
+
+  const lastUpdated = new Date().toISOString();
+  const lines = [
+    '# User Tasks',
+    '',
+    `Last Updated: ${lastUpdated}  `,
+    `Source CSV: \`${next.source_file || ''}\`  `,
+    'Format: CSV-aligned task register with editable task hyperparameters (`Task Category`, `Category`, `Subcategory`)',
+    '',
+    'Task Category values: `Active`, `Archived`',
+    'Ordering: active rows first, archived rows second.',
+    '',
+    `| ${next.columns.join(' | ')} |`,
+    `|${next.columns.map(() => '---').join('|')}|`
+  ];
+  next.rows.forEach(row => {
+    lines.push(`| ${next.columns.map(column => escapeMarkdownCell(row[column] || '')).join(' | ')} |`);
+  });
+  fs.writeFileSync(USER_FILES.tasks, lines.join('\n') + '\n', 'utf8');
 }
 
 function sectionBullets(markdown, sectionTitle) {
@@ -127,10 +484,15 @@ function parseUserContextMarkdown(markdown) {
 }
 
 function readUserWorkspace() {
+  const tasksJson = safeReadText(USER_FILES.tasksJson);
   const tasksMarkdown = safeReadText(USER_FILES.tasks);
   const contextMarkdown = safeReadText(USER_FILES.context);
+  const parsedFromJson = parseUserTasksJson(tasksJson);
+  const parsedFromMarkdown = parseUserTasksMarkdown(tasksMarkdown);
+  const allTasks = parsedFromJson.length ? parsedFromJson : parsedFromMarkdown;
+  const visibleTasks = allTasks.filter(task => !isArchivedTask(task) && !isEpicTask(task));
   return {
-    tasks: parseUserTasksMarkdown(tasksMarkdown),
+    tasks: visibleTasks,
     context: parseUserContextMarkdown(contextMarkdown)
   };
 }
@@ -189,6 +551,13 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILES.entities, JSON.stringify(data.entities, null, 2) + '\n', 'utf8');
   fs.writeFileSync(DATA_FILES.relationships, JSON.stringify(data.relationships, null, 2) + '\n', 'utf8');
   fs.writeFileSync(DATA_FILES.tasks, JSON.stringify(data.tasks, null, 2) + '\n', 'utf8');
+}
+
+function exportMimeType(format) {
+  if (format === 'xlsx') {
+    return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  }
+  return 'text/csv; charset=utf-8';
 }
 
 function safeJoinPublic(urlPath) {
@@ -255,11 +624,123 @@ function validateRelationship(rel, entitiesById) {
   return null;
 }
 
-async function handleApi(req, res, pathname) {
+async function handleApi(req, res, parsedUrl) {
+  const pathname = parsedUrl.pathname;
+  const searchParams = parsedUrl.searchParams;
   const segments = pathname.split('/').filter(Boolean);
   try {
+    if (
+      req.method === 'GET'
+      && (pathname === '/api/exports/tasks' || pathname === '/api/export/tasks')
+    ) {
+      const requestedFormat = String(searchParams.get('format') || 'csv').trim().toLowerCase();
+      const format = requestedFormat || 'csv';
+      if (format !== 'csv' && format !== 'xlsx') {
+        sendJson(res, 400, { error: `Unsupported export format '${requestedFormat}'. Use 'csv' or 'xlsx'.` });
+        return;
+      }
+
+      const result = spawnSync('python', TASK_TABLE_EXPORT_CMD, {
+        cwd: ROOT,
+        encoding: 'utf8'
+      });
+      if (result.error) {
+        sendJson(res, 500, { error: `Failed to run export: ${result.error.message}` });
+        return;
+      }
+      if (result.status !== 0) {
+        const stderr = String(result.stderr || '').trim();
+        const stdout = String(result.stdout || '').trim();
+        sendJson(res, 500, { error: stderr || stdout || 'Task export command failed.' });
+        return;
+      }
+
+      const fileName = format === 'xlsx' ? 'tasks_export.xlsx' : 'tasks_export.csv';
+      const artifactPath = path.join(ROOT, 'artifacts', fileName);
+      if (!fs.existsSync(artifactPath)) {
+        if (format === 'xlsx') {
+          sendJson(res, 404, { error: 'XLSX export not found. Install openpyxl to enable Excel export.' });
+          return;
+        }
+        sendJson(res, 404, { error: 'CSV export file was not created.' });
+        return;
+      }
+
+      const stats = fs.statSync(artifactPath);
+      res.writeHead(200, {
+        'Content-Type': exportMimeType(format),
+        'Content-Length': stats.size,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Cache-Control': 'no-store'
+      });
+      fs.createReadStream(artifactPath).pipe(res);
+      return;
+    }
+
     if (req.method === 'GET' && pathname === '/api/user-workspace') {
       sendJson(res, 200, readUserWorkspace());
+      return;
+    }
+
+    if (
+      req.method === 'PUT'
+      && segments[0] === 'api'
+      && segments[1] === 'user-workspace'
+      && segments[2] === 'tasks'
+      && segments[3]
+      && segments[4] === 'hyperparameters'
+    ) {
+      const taskId = decodeURIComponent(segments[3]);
+      const payload = await parseBody(req);
+      const sourcePayload = readUserTasksSourcePayload();
+      if (!sourcePayload) {
+        sendJson(res, 500, { error: 'User task source JSON is unavailable or invalid.' });
+        return;
+      }
+
+      const row = sourcePayload.rows.find(item => String(item[USER_TASK_COLUMNS.id] || '').trim() === taskId);
+      if (!row) {
+        sendJson(res, 404, { error: `User task not found: ${taskId}` });
+        return;
+      }
+
+      const mapping = {
+        status: USER_TASK_COLUMNS.status,
+        priority: USER_TASK_COLUMNS.priority,
+        pointsEstimate: USER_TASK_COLUMNS.pointsEstimate,
+        timeEstimate: USER_TASK_COLUMNS.timeEstimate,
+        timeEstimateRolledUp: USER_TASK_COLUMNS.timeEstimateRolledUp,
+        dueDate: USER_TASK_COLUMNS.dueDate,
+        sprints: USER_TASK_COLUMNS.sprints,
+        itemType: USER_TASK_COLUMNS.itemType,
+        categoryId: USER_TASK_COLUMNS.category,
+        subcategoryId: USER_TASK_COLUMNS.subcategory,
+        taskCategory: USER_TASK_COLUMNS.taskCategory
+      };
+
+      Object.entries(mapping).forEach(([key, column]) => {
+        if (payload[key] !== undefined) {
+          row[column] = String(payload[key] ?? '').trim();
+        }
+      });
+
+      if (!String(row[USER_TASK_COLUMNS.category] || '').trim()) {
+        row[USER_TASK_COLUMNS.subcategory] = '';
+      }
+      row[USER_TASK_COLUMNS.status] = inferTaskStatus(row[USER_TASK_COLUMNS.status], row);
+      row[USER_TASK_COLUMNS.taskCategory] = inferTaskCategory(row[USER_TASK_COLUMNS.taskCategory], row);
+      sourcePayload.task_categories = sourcePayload.task_categories || {
+        Active: 'Tasks not yet complete',
+        Archived: 'Completed tasks moved out of active queue'
+      };
+      sourcePayload.category_rule = sourcePayload.category_rule
+        || 'Archived when auto progress >= 100 or explicit done/completed/closed/resolved status; otherwise Active.';
+
+      writeUserTasksSourcePayload(sourcePayload);
+      sendJson(res, 200, {
+        ok: true,
+        task: mapCsvTask(row)
+      });
       return;
     }
 
@@ -397,7 +878,7 @@ async function handleApi(req, res, pathname) {
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   if (parsedUrl.pathname.startsWith('/api/')) {
-    handleApi(req, res, parsedUrl.pathname);
+    handleApi(req, res, parsedUrl);
     return;
   }
   if (req.method !== 'GET' && req.method !== 'HEAD') {

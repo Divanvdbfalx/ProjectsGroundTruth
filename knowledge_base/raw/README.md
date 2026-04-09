@@ -10,6 +10,17 @@ This is the immutable source-of-truth layer for knowledge ingestion.
 4. Do not edit source content during wiki maintenance workflows.
 5. Wiki pages must cite raw-source provenance.
 
+## Canonical Operational Files
+
+- Product graph JSON:
+  - `knowledge_base/raw/sources/src_data_entities.json`
+  - `knowledge_base/raw/sources/src_data_relationships.json`
+  - `knowledge_base/raw/sources/src_data_tasks.json`
+- User workspace task tracking JSON:
+  - `knowledge_base/raw/sources/src_user_tasks.json`
+- User journal markdown:
+  - `knowledge_base/raw/sources/src_user_journal.md`
+
 ## Suggested Source Naming
 
 Use stable, sortable IDs:

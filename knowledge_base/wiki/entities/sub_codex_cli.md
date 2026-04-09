@@ -30,8 +30,8 @@ Codex CLI experimentation flow is active around run_experiments.py and experimen
 
 ## Linked User Tasks (user/tasks.md)
 
-- `usr_task_pzero_complete_existing_tickets_1` | Complete existing Pzero development tickets | status=`todo` | priority=`high`
-- `usr_task_pzero_align_platform_plan_rourke_1` | Chat with Rourke about platform concept and implementation plan | status=`todo` | priority=`medium`
+- Current `src_user_tasks` CSV mirror does not include canonical entity IDs, so deterministic per-entity user-task linkage is unavailable.
+- See [src_user_tasks](../sources/src_user_tasks.md) for the latest full task snapshot and derived rollups.
 
 ## Relationships
 
