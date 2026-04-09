@@ -17,13 +17,13 @@ Do all product graph edits in these JSON files:
 
 - `knowledge_base/raw/sources/src_data_entities.json`
 - `knowledge_base/raw/sources/src_data_relationships.json`
-- `knowledge_base/raw/sources/src_data_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 
 Do not treat generated markdown as canonical.
 
 User workspace operational sources:
 
-- `knowledge_base/raw/sources/src_user_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 - `knowledge_base/raw/sources/src_user_journal.md`
 
 Legacy user markdown task/context/readme files are deprecated and should not be reintroduced as authoritative sources.
@@ -121,12 +121,12 @@ When asked to lint/health-check:
 
 When handling user workspace journaling/task prompts, treat product ground-truth JSON as read-only unless explicitly asked to update product graph data.
 
-Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields) in `knowledge_base/raw/sources/src_user_tasks.json`.
+Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields) in `knowledge_base/raw/sources/src_tasks.json`.
 
 Allowed file targets for journal/task-only flows:
 
 - `knowledge_base/raw/sources/src_user_journal.md`
-- `knowledge_base/raw/sources/src_user_tasks.json`
+- `knowledge_base/raw/sources/src_tasks.json`
 - `knowledge_base/wiki/sources/src_user_journal.md`
 - `knowledge_base/wiki/sources/src_user_tasks.md`
 - `knowledge_base/wiki/log.md`

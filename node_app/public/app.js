@@ -63,8 +63,7 @@ const selectedTaskDetailsEl = document.getElementById('selectedTaskDetails');
 const taskNodeStatusFilterEl = document.getElementById('taskNodeStatusFilter');
 const tabsEl = document.querySelector('.tabs');
 const taskExportActionsEl = document.getElementById('taskExportActions');
-const exportTasksCsvBtn = document.getElementById('exportTasksCsvBtn');
-const exportTasksXlsxBtn = document.getElementById('exportTasksXlsxBtn');
+const exportTasksJsonBtn = document.getElementById('exportTasksJsonBtn');
 
 const entityTab = document.getElementById('entityTab');
 const relationshipTab = document.getElementById('relationshipTab');
@@ -87,13 +86,9 @@ async function api(path, options = {}) {
 }
 
 function setTaskExportButtonState() {
-  if (exportTasksCsvBtn) {
-    exportTasksCsvBtn.disabled = state.taskExportSaving;
-    exportTasksCsvBtn.textContent = state.taskExportSaving ? 'Exporting…' : 'Export CSV';
-  }
-  if (exportTasksXlsxBtn) {
-    exportTasksXlsxBtn.disabled = state.taskExportSaving;
-    exportTasksXlsxBtn.textContent = state.taskExportSaving ? 'Exporting…' : 'Export Excel';
+  if (exportTasksJsonBtn) {
+    exportTasksJsonBtn.disabled = state.taskExportSaving;
+    exportTasksJsonBtn.textContent = state.taskExportSaving ? 'Exporting…' : 'Export Tasks CSV';
   }
 }
 
@@ -103,15 +98,14 @@ function contentDispositionFilename(contentDisposition) {
   return match ? match[1] : '';
 }
 
-async function downloadTaskExport(format) {
+async function downloadTaskExport() {
   if (state.taskExportSaving) return;
-  const safeFormat = format === 'xlsx' ? 'xlsx' : 'csv';
   state.taskExportSaving = true;
   setTaskExportButtonState();
   try {
-    const response = await fetch(`/api/exports/tasks?format=${encodeURIComponent(safeFormat)}`);
+    const response = await fetch('/api/exports/tasks');
     if (!response.ok) {
-      let errorMessage = `Failed to export ${safeFormat.toUpperCase()}.`;
+      let errorMessage = 'Failed to export tasks CSV.';
       try {
         const payload = await response.json();
         if (payload?.error) errorMessage = payload.error;
@@ -124,7 +118,7 @@ async function downloadTaskExport(format) {
 
     const blob = await response.blob();
     const suggestedName = contentDispositionFilename(response.headers.get('content-disposition'));
-    const fileName = suggestedName || `tasks_export.${safeFormat}`;
+    const fileName = suggestedName || 'src_tasks.csv';
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = downloadUrl;
@@ -135,7 +129,7 @@ async function downloadTaskExport(format) {
     URL.revokeObjectURL(downloadUrl);
     showToast(`Downloaded ${fileName}`);
   } catch (error) {
-    showToast(error.message || `Failed to export ${safeFormat.toUpperCase()}.`, true);
+    showToast(error.message || 'Failed to export tasks CSV.', true);
   } finally {
     state.taskExportSaving = false;
     setTaskExportButtonState();
@@ -2114,15 +2108,9 @@ document.getElementById('reloadBtn').addEventListener('click', async () => {
   }
 });
 
-if (exportTasksCsvBtn) {
-  exportTasksCsvBtn.addEventListener('click', async () => {
-    await downloadTaskExport('csv');
-  });
-}
-
-if (exportTasksXlsxBtn) {
-  exportTasksXlsxBtn.addEventListener('click', async () => {
-    await downloadTaskExport('xlsx');
+if (exportTasksJsonBtn) {
+  exportTasksJsonBtn.addEventListener('click', async () => {
+    await downloadTaskExport();
   });
 }
 

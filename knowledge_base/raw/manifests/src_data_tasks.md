@@ -4,5 +4,5 @@
 - Title: Product Ground-Truth Tasks
 - Date Added: 2026-04-07
 - Origin: local repository
-- File Path: `data/tasks.json`
-- Notes: Canonical structured tasks tied to graph entities.
+- File Path: `knowledge_base/raw/sources/src_tasks.json`
+- Notes: Canonical structured tasks tied to graph entities and workspace tracking.

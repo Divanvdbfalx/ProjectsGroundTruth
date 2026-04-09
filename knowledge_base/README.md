@@ -44,9 +44,9 @@ knowledge_base/
 5. Keep product graph canonical in:
    - `knowledge_base/raw/sources/src_data_entities.json`
    - `knowledge_base/raw/sources/src_data_relationships.json`
-   - `knowledge_base/raw/sources/src_data_tasks.json`
-6. Keep user workspace task tracking canonical in:
-   - `knowledge_base/raw/sources/src_user_tasks.json`
+   - `knowledge_base/raw/sources/src_tasks.json`
+6. Keep task tracking canonical in:
+   - `knowledge_base/raw/sources/src_tasks.json`
 7. Keep journal source in:
    - `knowledge_base/raw/sources/src_user_journal.md`
 8. Regenerate Obsidian mirror after product JSON changes:

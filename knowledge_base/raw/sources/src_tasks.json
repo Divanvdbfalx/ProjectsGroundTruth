@@ -1,6 +1,6 @@
 {
-  "source_id": "src_user_tasks",
-  "source_type": "clickup_csv_export",
+  "source_id": "src_tasks",
+  "schema_version": "2.0",
   "source_file": "/Users/divanvanderbank/Downloads/2026-04-08T14_05_57.516Z FALX - Product Development - P ZERO.csv",
   "export_captured_at": "2026-04-08T14:05:57.516Z",
   "generated_from_csv_on": "2026-04-08",
@@ -25,7 +25,12 @@
     "Subcategory",
     "Status"
   ],
-  "rows": [
+  "task_categories": {
+    "Active": "Tasks not yet complete",
+    "Archived": "Completed tasks moved out of active queue"
+  },
+  "category_rule": "Archived when auto progress >= 100 or explicit done/completed/closed/resolved status; otherwise Active.",
+  "tasks": [
     {
       "Task ID": "86c2g1fg4",
       "Task Name": "Meeting Time",
@@ -2399,10 +2404,5 @@
       "Category": "",
       "Subcategory": ""
     }
-  ],
-  "task_categories": {
-    "Active": "Tasks not yet complete",
-    "Archived": "Completed tasks moved out of active queue"
-  },
-  "category_rule": "Archived when auto progress >= 100 or explicit done/completed/closed/resolved status; otherwise Active."
+  ]
 }

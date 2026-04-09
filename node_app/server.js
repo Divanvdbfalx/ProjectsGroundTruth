@@ -1,24 +1,21 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
 const { URL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
 const KB_RAW_SOURCES_DIR = path.join(ROOT, 'knowledge_base', 'raw', 'sources');
+const COMBINED_TASKS_FILE = path.join(KB_RAW_SOURCES_DIR, 'src_tasks.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 4311);
-const TASK_TABLE_EXPORT_CMD = ['local_tool/query.py', 'export-tasks-table'];
 
 const DATA_FILES = {
   entities: path.join(KB_RAW_SOURCES_DIR, 'src_data_entities.json'),
   relationships: path.join(KB_RAW_SOURCES_DIR, 'src_data_relationships.json'),
-  tasks: path.join(KB_RAW_SOURCES_DIR, 'src_data_tasks.json')
+  tasks: COMBINED_TASKS_FILE
 };
 
 const USER_FILES = {
-  tasks: path.join(KB_RAW_SOURCES_DIR, 'src_user_tasks.md'),
-  tasksJson: path.join(KB_RAW_SOURCES_DIR, 'src_user_tasks.json'),
   context: path.join(KB_RAW_SOURCES_DIR, 'src_user_current_context.md')
 };
 
@@ -44,6 +41,83 @@ function safeReadText(filePath) {
   } catch {
     return '';
   }
+}
+
+function readCombinedTasks() {
+  const text = safeReadText(COMBINED_TASKS_FILE).trim();
+  if (!text) {
+    return {
+      source_id: 'src_tasks',
+      schema_version: '1.0',
+      tasks: [],
+      columns: []
+    };
+  }
+  const payload = JSON.parse(text);
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid src_tasks.json payload');
+  }
+  if (!Array.isArray(payload.tasks)) payload.tasks = [];
+  if (!Array.isArray(payload.columns)) payload.columns = [];
+  return payload;
+}
+
+function writeCombinedTasks(payload) {
+  fs.writeFileSync(COMBINED_TASKS_FILE, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function buildTasksCsv(payload) {
+  const tasks = Array.isArray(payload?.tasks) ? payload.tasks : [];
+  const preferred = Array.isArray(payload?.columns)
+    ? payload.columns.filter(column => typeof column === 'string' && column.trim())
+    : [];
+
+  const keySet = new Set(preferred);
+  tasks.forEach(task => {
+    if (!task || typeof task !== 'object') return;
+    Object.keys(task).forEach(key => keySet.add(key));
+  });
+  const columns = [...preferred, ...[...keySet].filter(key => !preferred.includes(key))];
+  if (!columns.length) {
+    return '';
+  }
+
+  const lines = [];
+  lines.push(columns.map(csvEscape).join(','));
+  tasks.forEach(task => {
+    const row = columns.map(column => csvEscape(task?.[column] ?? ''));
+    lines.push(row.join(','));
+  });
+  return `${lines.join('\n')}\n`;
+}
+
+function isProductTaskEntry(task) {
+  return Boolean(
+    task
+    && typeof task === 'object'
+    && typeof task.id === 'string'
+    && task.id.trim()
+    && typeof task.entity_id === 'string'
+    && task.entity_id.trim()
+    && typeof task.title === 'string'
+  );
+}
+
+function isUserWorkspaceTaskRow(task) {
+  return Boolean(
+    task
+    && typeof task === 'object'
+    && typeof task[USER_TASK_COLUMNS.id] === 'string'
+    && task[USER_TASK_COLUMNS.id].trim()
+  );
 }
 
 function normalizeStatus(raw) {
@@ -387,15 +461,23 @@ function escapeMarkdownCell(value) {
 }
 
 function readUserTasksSourcePayload() {
-  const text = safeReadText(USER_FILES.tasksJson);
-  if (!text.trim()) return null;
-  let payload;
+  let combined;
   try {
-    payload = JSON.parse(text);
+    combined = readCombinedTasks();
   } catch {
     return null;
   }
-  if (!payload || typeof payload !== 'object' || !Array.isArray(payload.rows)) return null;
+  const payload = {
+    source_file: combined.source_file || '',
+    columns: ensureTaskColumns(combined.columns || []),
+    rows: (combined.tasks || []).filter(isUserWorkspaceTaskRow),
+    task_categories: combined.task_categories || {
+      Active: 'Tasks not yet complete',
+      Archived: 'Completed tasks moved out of active queue'
+    },
+    category_rule: combined.category_rule
+      || 'Archived when auto progress >= 100 or explicit done/completed/closed/resolved status; otherwise Active.'
+  };
   payload.columns = ensureTaskColumns(payload.columns || []);
   payload.rows = payload.rows
     .filter(row => row && typeof row === 'object')
@@ -415,6 +497,8 @@ function readUserTasksSourcePayload() {
 }
 
 function writeUserTasksSourcePayload(payload) {
+  const combined = readCombinedTasks();
+  const existingTasks = Array.isArray(combined.tasks) ? combined.tasks : [];
   const next = { ...(payload || {}) };
   next.columns = ensureTaskColumns(next.columns || []);
   next.rows = orderRowsByCategory((next.rows || []).map(row => {
@@ -428,26 +512,13 @@ function writeUserTasksSourcePayload(payload) {
     normalized[USER_TASK_COLUMNS.taskCategory] = inferTaskCategory(normalized[USER_TASK_COLUMNS.taskCategory], normalized);
     return normalized;
   }));
-  fs.writeFileSync(USER_FILES.tasksJson, JSON.stringify(next, null, 2) + '\n', 'utf8');
-
-  const lastUpdated = new Date().toISOString();
-  const lines = [
-    '# User Tasks',
-    '',
-    `Last Updated: ${lastUpdated}  `,
-    `Source CSV: \`${next.source_file || ''}\`  `,
-    'Format: CSV-aligned task register with editable task hyperparameters (`Task Category`, `Category`, `Subcategory`)',
-    '',
-    'Task Category values: `Active`, `Archived`',
-    'Ordering: active rows first, archived rows second.',
-    '',
-    `| ${next.columns.join(' | ')} |`,
-    `|${next.columns.map(() => '---').join('|')}|`
-  ];
-  next.rows.forEach(row => {
-    lines.push(`| ${next.columns.map(column => escapeMarkdownCell(row[column] || '')).join(' | ')} |`);
-  });
-  fs.writeFileSync(USER_FILES.tasks, lines.join('\n') + '\n', 'utf8');
+  const retained = existingTasks.filter(task => !isUserWorkspaceTaskRow(task));
+  combined.tasks = [...retained, ...next.rows];
+  combined.columns = next.columns;
+  if (next.source_file !== undefined) combined.source_file = next.source_file;
+  if (next.task_categories !== undefined) combined.task_categories = next.task_categories;
+  if (next.category_rule !== undefined) combined.category_rule = next.category_rule;
+  writeCombinedTasks(combined);
 }
 
 function sectionBullets(markdown, sectionTitle) {
@@ -484,12 +555,9 @@ function parseUserContextMarkdown(markdown) {
 }
 
 function readUserWorkspace() {
-  const tasksJson = safeReadText(USER_FILES.tasksJson);
-  const tasksMarkdown = safeReadText(USER_FILES.tasks);
   const contextMarkdown = safeReadText(USER_FILES.context);
-  const parsedFromJson = parseUserTasksJson(tasksJson);
-  const parsedFromMarkdown = parseUserTasksMarkdown(tasksMarkdown);
-  const allTasks = parsedFromJson.length ? parsedFromJson : parsedFromMarkdown;
+  const sourcePayload = readUserTasksSourcePayload();
+  const allTasks = sourcePayload?.rows?.map(mapCsvTask) || [];
   const visibleTasks = allTasks.filter(task => !isArchivedTask(task) && !isEpicTask(task));
   return {
     tasks: visibleTasks,
@@ -540,24 +608,23 @@ function parseBody(req) {
 }
 
 function readData() {
+  const combinedTasks = readCombinedTasks();
   return {
     entities: JSON.parse(fs.readFileSync(DATA_FILES.entities, 'utf8')),
     relationships: JSON.parse(fs.readFileSync(DATA_FILES.relationships, 'utf8')),
-    tasks: JSON.parse(fs.readFileSync(DATA_FILES.tasks, 'utf8'))
+    tasks: (combinedTasks.tasks || []).filter(isProductTaskEntry)
   };
 }
 
 function writeData(data) {
+  const combinedTasks = readCombinedTasks();
+  const existingTasks = Array.isArray(combinedTasks.tasks) ? combinedTasks.tasks : [];
   fs.writeFileSync(DATA_FILES.entities, JSON.stringify(data.entities, null, 2) + '\n', 'utf8');
   fs.writeFileSync(DATA_FILES.relationships, JSON.stringify(data.relationships, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(DATA_FILES.tasks, JSON.stringify(data.tasks, null, 2) + '\n', 'utf8');
-}
-
-function exportMimeType(format) {
-  if (format === 'xlsx') {
-    return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  }
-  return 'text/csv; charset=utf-8';
+  const retained = existingTasks.filter(task => !isProductTaskEntry(task));
+  const product = Array.isArray(data.tasks) ? data.tasks : [];
+  combinedTasks.tasks = [...product, ...retained];
+  writeCombinedTasks(combinedTasks);
 }
 
 function safeJoinPublic(urlPath) {
@@ -626,54 +693,27 @@ function validateRelationship(rel, entitiesById) {
 
 async function handleApi(req, res, parsedUrl) {
   const pathname = parsedUrl.pathname;
-  const searchParams = parsedUrl.searchParams;
   const segments = pathname.split('/').filter(Boolean);
   try {
     if (
       req.method === 'GET'
       && (pathname === '/api/exports/tasks' || pathname === '/api/export/tasks')
     ) {
-      const requestedFormat = String(searchParams.get('format') || 'csv').trim().toLowerCase();
-      const format = requestedFormat || 'csv';
-      if (format !== 'csv' && format !== 'xlsx') {
-        sendJson(res, 400, { error: `Unsupported export format '${requestedFormat}'. Use 'csv' or 'xlsx'.` });
+      if (!fs.existsSync(COMBINED_TASKS_FILE)) {
+        sendJson(res, 404, { error: 'Task source file not found.' });
         return;
       }
-
-      const result = spawnSync('python', TASK_TABLE_EXPORT_CMD, {
-        cwd: ROOT,
-        encoding: 'utf8'
-      });
-      if (result.error) {
-        sendJson(res, 500, { error: `Failed to run export: ${result.error.message}` });
-        return;
-      }
-      if (result.status !== 0) {
-        const stderr = String(result.stderr || '').trim();
-        const stdout = String(result.stdout || '').trim();
-        sendJson(res, 500, { error: stderr || stdout || 'Task export command failed.' });
-        return;
-      }
-
-      const fileName = format === 'xlsx' ? 'tasks_export.xlsx' : 'tasks_export.csv';
-      const artifactPath = path.join(ROOT, 'artifacts', fileName);
-      if (!fs.existsSync(artifactPath)) {
-        if (format === 'xlsx') {
-          sendJson(res, 404, { error: 'XLSX export not found. Install openpyxl to enable Excel export.' });
-          return;
-        }
-        sendJson(res, 404, { error: 'CSV export file was not created.' });
-        return;
-      }
-
-      const stats = fs.statSync(artifactPath);
+      const payload = readCombinedTasks();
+      const csvContent = buildTasksCsv(payload);
+      const body = Buffer.from(csvContent, 'utf8');
+      const fileName = 'src_tasks.csv';
       res.writeHead(200, {
-        'Content-Type': exportMimeType(format),
-        'Content-Length': stats.size,
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Length': body.length,
         'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'no-store'
       });
-      fs.createReadStream(artifactPath).pipe(res);
+      res.end(body);
       return;
     }
 

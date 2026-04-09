@@ -11,7 +11,7 @@ KB_RAW_SOURCES_DIR = ROOT / "knowledge_base" / "raw" / "sources"
 DATA_FILE_ALIASES = {
     "entities.json": "src_data_entities.json",
     "relationships.json": "src_data_relationships.json",
-    "tasks.json": "src_data_tasks.json",
+    "tasks.json": "src_tasks.json",
 }
 
 
@@ -35,7 +35,22 @@ def resolve_data_path(name: str) -> Path:
 
 
 def load_json(name: str) -> List[Dict[str, Any]]:
-    return json.loads(resolve_data_path(name).read_text(encoding="utf-8"))
+    payload = json.loads(resolve_data_path(name).read_text(encoding="utf-8"))
+    if name == "tasks.json" and isinstance(payload, dict):
+        tasks = payload.get("tasks")
+        if isinstance(tasks, list):
+            product_tasks = [
+                task
+                for task in tasks
+                if isinstance(task, dict)
+                and isinstance(task.get("id"), str)
+                and isinstance(task.get("entity_id"), str)
+                and isinstance(task.get("title"), str)
+            ]
+            return product_tasks
+    if isinstance(payload, list):
+        return payload
+    raise ValueError(f"Unexpected JSON shape for '{name}'. Expected a list.")
 
 
 def load_all() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -920,7 +935,7 @@ def cmd_export_md(
                     "entity_id": task.get("entity_id"),
                     "status": task.get("status"),
                     "priority": task.get("priority"),
-                    "source_json": "knowledge_base/raw/sources/src_data_tasks.json",
+                    "source_json": "knowledge_base/raw/sources/src_tasks.json",
                 }
             )
         )
@@ -981,7 +996,7 @@ def cmd_export_md(
         "## Canonical JSON Sources",
         "- `knowledge_base/raw/sources/src_data_entities.json`",
         "- `knowledge_base/raw/sources/src_data_relationships.json`",
-        "- `knowledge_base/raw/sources/src_data_tasks.json`",
+        "- `knowledge_base/raw/sources/src_tasks.json`",
         "",
         "## Regeneration Command",
         "```bash",
