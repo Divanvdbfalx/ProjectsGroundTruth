@@ -2,33 +2,22 @@
 
 Local, file-based product health map for P-Zerø.
 
-## Next steps:
-
-- Create repo
-- Figure out how to integrate AI to help project manage P-Zerø
-- Add clients/sites status
-- Figure out how tasks will be included
-
 ## Ground Truth
 
-The only source of truth is:
+Canonical operational sources:
 
 - `knowledge_base/raw/sources/src_data_entities.json`
 - `knowledge_base/raw/sources/src_data_relationships.json`
 - `knowledge_base/raw/sources/src_tasks.json`
+- `knowledge_base/raw/sources/src_user_journal.md`
 
-Generated artifacts (for example Mermaid outputs in `artifacts/`) are views, not authoritative data.
+Generated artifacts (for example Mermaid outputs in `artifacts/`, CSV/XLSX exports, and UI-rendered views) are non-canonical.
 
 ## Repository Layout
 
-- `knowledge_base/raw/sources/`: canonical product graph + task ground truth JSON
-- `knowledge_base/raw/sources/src_tasks.json`: canonical unified task tracking source
-- `knowledge_base/raw/sources/src_user_journal.md`: user-authored journal source
-- `knowledge_base/obsidian/`: generated Obsidian markdown mirror of product ground truth
-- `local_tool/query.py`: CLI for querying and rendering views from ground truth
-- `node_app/`: local UI editor for nodes and relationships
-- `archive/`: historical snapshots (including former `data/` and `user/` layouts)
-- `knowledge_base/`: persistent wiki scaffold (`raw/`, `wiki/`, `schema/`) for accumulated LLM-maintained knowledge
+- `knowledge_base/raw/sources/`: canonical agent interaction surface
+- `local_tool/query.py`: CLI for querying and rendering views from canonical JSON
+- `node_app/`: local UI editor for entities/relationships/tasks backed by canonical JSON
 
 ## CLI Usage
 
@@ -80,12 +69,7 @@ python local_tool/query.py mindmap
 python local_tool/query.py mindmap-ui
 ```
 
-9. `export-md` (Obsidian markdown mirror from canonical JSON)
-```bash
-python local_tool/query.py export-md
-```
-
-10. `export-tasks-table` (tabular task view for CSV/Excel consumers)
+9. `export-tasks-table` (tabular task view for CSV/Excel consumers)
 ```bash
 python local_tool/query.py export-tasks-table
 ```
@@ -95,11 +79,6 @@ Optional flags:
 python local_tool/query.py export-tasks-table --no-xlsx
 python local_tool/query.py export-tasks-table --output-csv artifacts/my_tasks.csv --output-xlsx artifacts/my_tasks.xlsx
 ```
-
-Notes:
-- Exported CSV/XLSX files are generated views only and are never canonical input.
-- If `openpyxl` is not installed, XLSX is skipped and CSV is still generated.
-- Excel opens the generated CSV directly.
 
 ## Node Editor (Local)
 
@@ -120,36 +99,26 @@ Editor behavior:
 
 - Edits nodes in `knowledge_base/raw/sources/src_data_entities.json`
 - Edits relationships in `knowledge_base/raw/sources/src_data_relationships.json`
-- Keeps product ground-truth JSON saves focused on JSON updates only (no automatic task table export on save)
-- In `Kanban` task view, the top toolbar shows `Export Tasks CSV`, which converts `knowledge_base/raw/sources/src_tasks.json` into CSV and downloads it
-- Deletes a node and removes linked relationships/tasks
-- Prompts to save when leaving a node with unsaved changes
-- Node form is ordered for content-first editing:
-  - Save button
-  - Current State
-  - Target State
-  - Description
-  - ID fields and metadata
-- Node textareas for `Current State`, `Target State`, and `Description` are enlarged for long-form context editing
+- Uses `knowledge_base/raw/sources/src_tasks.json` for task operations
 
 ## Editing Rules
 
 - Keep IDs stable (for example `sub_data_versioning`)
-- Update only intended nodes/records; avoid broad accidental rewrites
-- Keep `full_context.description` detailed enough for future LLM retrieval/use
-- When adding relationships, verify `from_id` and `to_id` exist in `src_data_entities.json`
+- Preserve referential integrity across entities, relationships, and tasks
+- Update only intended records; avoid broad accidental rewrites
+- Keep `full_context.description` detailed enough for future retrieval
 
-## Current Scope
+## Journal and Tasks
 
-This project is intentionally local and simple:
+For journal updates:
 
-- no database
-- no external API server for the data layer
-- ground truth managed directly in JSON
+1. Add the entry to `knowledge_base/raw/sources/src_user_journal.md`.
+2. In the same change, update impacted task status/metadata in `knowledge_base/raw/sources/src_tasks.json`.
+3. Do not modify `src_data_entities.json` or `src_data_relationships.json` unless explicitly requested.
 
 ## New Chat Bootstrap Prompt
 
-Use this prompt in a fresh chat to initialize an agent with the repo rules before making changes:
+Use this prompt in a fresh chat to initialize an agent with repo rules before making changes:
 
 ```text
 Initialize yourself for this repository before doing any edits.
@@ -160,77 +129,7 @@ Initialize yourself for this repository before doing any edits.
    - `knowledge_base/raw/sources/src_data_entities.json`
    - `knowledge_base/raw/sources/src_data_relationships.json`
    - `knowledge_base/raw/sources/src_tasks.json`
-4. Confirm generated markdown mirror location: `knowledge_base/obsidian/` (not canonical).
-5. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
-6. Before making changes, summarize the key guardrails you will follow in 8-12 bullets.
+4. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
+5. Confirm agent-editable operational scope is raw sources only (`knowledge_base/raw/sources/`).
+6. Before making changes, summarize the key guardrails you will follow in 8-12 bullets, including the journal-entry + JSON task-status coupling rule.
 ```
-
-## Prompt Examples (Journal -> Tasks)
-
-Use these prompts with Codex to keep user workspace sources and the wiki in sync.
-
-### 1) Add a journal entry only
-
-```text
-Add this to today's journal:
-- Summary: Spoke to <person> about <topic>
-- Focus: <focus area>
-- Task Updates: <what changed>
-- Time Spent (h): <hours>
-- Blockers: <blockers>
-- Next Action: <next step>
-
-Requirements:
-- Add a timestamp in SAST.
-- Update `knowledge_base/raw/sources/src_user_journal.md`.
-- Update knowledge_base/wiki/sources/src_user_journal.md summary.
-- Append knowledge_base/wiki/log.md.
-- Do not change tasks unless I explicitly ask.
-```
-
-### 2) Add journal entry and update tasks from it
-
-```text
-Process this work log and update my workspace:
-<paste notes>
-
-Requirements:
-- First add a timestamped journal entry for today.
-- Then update `knowledge_base/raw/sources/src_tasks.json` statuses and relevant metadata fields based only on the notes.
-- If a task is blocked, include the blocker reason in task metadata/description.
-- Sync corresponding knowledge base source files.
-- Keep task IDs stable and preserve JSON structure.
-- Do not edit product ground truth files.
-```
-
-### 3) Mark follow-up blocked from journal evidence
-
-```text
-Journal update:
-I emailed <name> requesting updated data for <sites>. No response yet.
-
-Please:
-1. Add this as a timestamped journal entry in `knowledge_base/raw/sources/src_user_journal.md`.
-2. Move related follow-up tasks to blocked.
-3. Set relevant date/metadata fields for changed tasks in `knowledge_base/raw/sources/src_tasks.json`.
-4. Sync knowledge base journal/task source summaries.
-5. Do not edit product ground truth context.
-```
-
-## Guardrail: Do Not Update Product Ground Truth from Journal/Task Prompts
-
-When handling journal and user task maintenance prompts, treat product graph ground truth as read-only.
-
-Never modify:
-
-- `knowledge_base/raw/sources/src_data_entities.json`
-- `knowledge_base/raw/sources/src_data_relationships.json`
-- `knowledge_base/raw/sources/src_tasks.json`
-
-Allowed for these flows:
-
-- `knowledge_base/raw/sources/src_user_journal.md`
-- `knowledge_base/raw/sources/src_tasks.json`
-- `knowledge_base/wiki/sources/src_user_journal.md`
-- `knowledge_base/wiki/sources/src_user_tasks.md`
-- `knowledge_base/wiki/log.md`

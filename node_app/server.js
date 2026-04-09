@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { URL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -8,6 +9,15 @@ const KB_RAW_SOURCES_DIR = path.join(ROOT, 'knowledge_base', 'raw', 'sources');
 const COMBINED_TASKS_FILE = path.join(KB_RAW_SOURCES_DIR, 'src_tasks.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 4311);
+const QUERY_TOOL = path.join(ROOT, 'local_tool', 'query.py');
+const PYTHON_BIN = process.env.PYTHON_BIN || 'python';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const AGENT_MAX_CHUNKS = 5;
+const AGENT_MAX_CONTEXT_TOKENS = 1500;
+const AGENT_RESPONSE_MAX_TOKENS = Number(process.env.AGENT_RESPONSE_MAX_TOKENS || 700);
+
+const retrievalCache = new Map();
 
 const DATA_FILES = {
   entities: path.join(KB_RAW_SOURCES_DIR, 'src_data_entities.json'),
@@ -607,6 +617,87 @@ function parseBody(req) {
   });
 }
 
+function sanitizeRetrievedChunks(chunks) {
+  if (!Array.isArray(chunks)) return [];
+  // Keep only minimal fields to reduce prompt token overhead.
+  return chunks.slice(0, AGENT_MAX_CHUNKS).map(item => ({
+    chunk_id: String(item?.chunk_id || ''),
+    type: String(item?.type || ''),
+    source_file: String(item?.source_file || ''),
+    token_count: Number(item?.token_count || 0),
+    text: String(item?.text || '')
+  }));
+}
+
+function buildRetrievedPrompt(query) {
+  const key = String(query || '').trim().toLowerCase();
+  if (retrievalCache.has(key)) {
+    return retrievalCache.get(key);
+  }
+
+  const args = [
+    QUERY_TOOL,
+    'build-prompt',
+    query,
+    '--max-chunks',
+    String(AGENT_MAX_CHUNKS),
+    '--max-tokens',
+    String(AGENT_MAX_CONTEXT_TOKENS),
+    '--json'
+  ];
+  const run = spawnSync(PYTHON_BIN, args, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024
+  });
+  if (run.error) {
+    throw new Error(`Failed to execute retrieval query: ${run.error.message}`);
+  }
+  if (run.status !== 0) {
+    const stderr = (run.stderr || '').trim();
+    throw new Error(`Retrieval query failed: ${stderr || `exit ${run.status}`}`);
+  }
+  const out = JSON.parse(String(run.stdout || '{}'));
+  out.chunks = sanitizeRetrievedChunks(out.chunks);
+  retrievalCache.set(key, out);
+  return out;
+}
+
+async function callOpenAIWithRetrievedPrompt(prompt) {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set');
+  }
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.1,
+      max_tokens: AGENT_RESPONSE_MAX_TOKENS,
+      messages: [
+        {
+          role: 'system',
+          content: 'Answer using only provided retrieved context. If context is insufficient, state exactly what is missing.'
+        },
+        { role: 'user', content: prompt }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenAI request failed (${response.status}): ${body}`);
+  }
+  const payload = await response.json();
+  const answer = payload?.choices?.[0]?.message?.content || '';
+  const usage = payload?.usage || {};
+  return { answer, usage, model: payload?.model || OPENAI_MODEL };
+}
+
 function readData() {
   const combinedTasks = readCombinedTasks();
   return {
@@ -695,6 +786,56 @@ async function handleApi(req, res, parsedUrl) {
   const pathname = parsedUrl.pathname;
   const segments = pathname.split('/').filter(Boolean);
   try {
+    if (req.method === 'POST' && pathname === '/api/agent/query') {
+      const body = await parseBody(req);
+      const query = String(body?.query || '').trim();
+      if (!query) {
+        sendJson(res, 400, { error: 'query is required' });
+        return;
+      }
+
+      // Retrieval happens in query.py with strict hard caps (max chunks + max tokens).
+      const retrieval = buildRetrievedPrompt(query);
+      const prompt = String(retrieval?.prompt || '');
+      if (!prompt) {
+        sendJson(res, 500, { error: 'failed to build retrieval prompt' });
+        return;
+      }
+
+      const llm = await callOpenAIWithRetrievedPrompt(prompt);
+      sendJson(res, 200, {
+        ok: true,
+        query,
+        answer: llm.answer,
+        model: llm.model,
+        retrieval: {
+          chunk_count: Number(retrieval?.chunk_count || 0),
+          retrieved_tokens: Number(retrieval?.retrieved_tokens || 0),
+          chunks: retrieval?.chunks || []
+        },
+        usage: llm.usage
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/agent/retrieve') {
+      const body = await parseBody(req);
+      const query = String(body?.query || '').trim();
+      if (!query) {
+        sendJson(res, 400, { error: 'query is required' });
+        return;
+      }
+      const retrieval = buildRetrievedPrompt(query);
+      sendJson(res, 200, {
+        ok: true,
+        query,
+        chunk_count: Number(retrieval?.chunk_count || 0),
+        retrieved_tokens: Number(retrieval?.retrieved_tokens || 0),
+        chunks: retrieval?.chunks || []
+      });
+      return;
+    }
+
     if (
       req.method === 'GET'
       && (pathname === '/api/exports/tasks' || pathname === '/api/export/tasks')

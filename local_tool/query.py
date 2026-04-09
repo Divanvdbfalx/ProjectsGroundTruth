@@ -5,6 +5,15 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from retrieval_engine import (
+    DEFAULT_MAX_CHUNKS,
+    DEFAULT_MAX_TOTAL_TOKENS,
+    INDEX_PATH,
+    build_minimal_prompt,
+    retrieve,
+    save_index,
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 KB_RAW_SOURCES_DIR = ROOT / "knowledge_base" / "raw" / "sources"
@@ -1163,10 +1172,80 @@ def cmd_export_tasks_table(
         print(f"Wrote tasks XLSX export to {xlsx_path}")
 
 
-def main() -> None:
-    entities, relationships, tasks = load_all()
-    entity_index = index_entities(entities)
+def cmd_build_index(output: Optional[str]) -> None:
+    index_path = Path(output).resolve() if output else INDEX_PATH
+    payload = save_index(index_path)
+    chunk_count = len(payload.get("chunks", [])) if isinstance(payload, dict) else 0
+    print(f"Wrote retrieval index to {index_path} ({chunk_count} chunks)")
 
+
+def cmd_retrieve(
+    query: str,
+    max_chunks: int,
+    max_total_tokens: int,
+    index_path: Optional[str],
+    as_json: bool,
+) -> None:
+    effective_chunks = min(max(1, max_chunks), DEFAULT_MAX_CHUNKS)
+    effective_tokens = max(1, max_total_tokens)
+    resolved_index = Path(index_path).resolve() if index_path else INDEX_PATH
+    payload = retrieve(
+        query=query,
+        max_chunks=effective_chunks,
+        max_total_tokens=effective_tokens,
+        index_path=resolved_index,
+    )
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False))
+        return
+
+    print(f"Query: {payload.get('query', '')}")
+    print(
+        f"Retrieved {len(payload.get('chunks', []))} chunks "
+        f"({payload.get('retrieved_tokens', 0)} tokens total)"
+    )
+    for item in payload.get("chunks", []):
+        print(
+            f"- {item.get('chunk_id', '')} [{item.get('type', '')}] "
+            f"{item.get('source_file', '')} score={item.get('score', 0)} "
+            f"tokens={item.get('token_count', 0)}"
+        )
+        print(f"  {item.get('text', '')}")
+
+
+def cmd_build_prompt(
+    query: str,
+    max_chunks: int,
+    max_total_tokens: int,
+    index_path: Optional[str],
+    as_json: bool,
+) -> None:
+    resolved_index = Path(index_path).resolve() if index_path else INDEX_PATH
+    retrieved = retrieve(
+        query=query,
+        max_chunks=min(max(1, max_chunks), DEFAULT_MAX_CHUNKS),
+        max_total_tokens=max(1, max_total_tokens),
+        index_path=resolved_index,
+    )
+    prompt = build_minimal_prompt(query, retrieved.get("chunks", []))
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "query": query,
+                    "retrieved_tokens": retrieved.get("retrieved_tokens", 0),
+                    "chunk_count": len(retrieved.get("chunks", [])),
+                    "prompt": prompt,
+                    "chunks": retrieved.get("chunks", []),
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
+    print(prompt)
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="P-Zerø local product health query tool")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -1224,7 +1303,77 @@ def main() -> None:
         help="Disable XLSX export even when openpyxl is installed.",
     )
 
+    build_index_p = sub.add_parser("build-index")
+    build_index_p.add_argument(
+        "--output",
+        default=None,
+        help="Optional explicit retrieval index output path.",
+    )
+
+    retrieve_p = sub.add_parser("retrieve")
+    retrieve_p.add_argument("query", help="Natural language query")
+    retrieve_p.add_argument(
+        "--max-chunks",
+        type=int,
+        default=DEFAULT_MAX_CHUNKS,
+        help=f"Maximum retrieved chunks (hard-capped at {DEFAULT_MAX_CHUNKS}).",
+    )
+    retrieve_p.add_argument(
+        "--max-tokens",
+        type=int,
+        default=DEFAULT_MAX_TOTAL_TOKENS,
+        help="Maximum total tokens across all retrieved chunks.",
+    )
+    retrieve_p.add_argument(
+        "--index-path",
+        default=None,
+        help="Optional path to retrieval index JSON.",
+    )
+    retrieve_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
+    prompt_p = sub.add_parser("build-prompt")
+    prompt_p.add_argument("query", help="Natural language query")
+    prompt_p.add_argument(
+        "--max-chunks",
+        type=int,
+        default=DEFAULT_MAX_CHUNKS,
+        help=f"Maximum retrieved chunks (hard-capped at {DEFAULT_MAX_CHUNKS}).",
+    )
+    prompt_p.add_argument(
+        "--max-tokens",
+        type=int,
+        default=DEFAULT_MAX_TOTAL_TOKENS,
+        help="Maximum total tokens across all retrieved chunks.",
+    )
+    prompt_p.add_argument(
+        "--index-path",
+        default=None,
+        help="Optional path to retrieval index JSON.",
+    )
+    prompt_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
     args = parser.parse_args()
+
+    if args.cmd == "build-index":
+        cmd_build_index(args.output)
+        return
+    if args.cmd == "retrieve":
+        cmd_retrieve(args.query, args.max_chunks, args.max_tokens, args.index_path, args.json)
+        return
+    if args.cmd == "build-prompt":
+        cmd_build_prompt(args.query, args.max_chunks, args.max_tokens, args.index_path, args.json)
+        return
+
+    entities, relationships, tasks = load_all()
+    entity_index = index_entities(entities)
 
     if args.cmd == "summary":
         cmd_summary(entities, relationships, tasks)

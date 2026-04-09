@@ -1,14 +1,13 @@
 # Raw Sources Layer
 
-This is the immutable source-of-truth layer for knowledge ingestion.
+This is the source-of-truth layer for all agent operations in this repository.
 
 ## Rules
 
-1. Add new source material only under `raw/sources/`.
-2. Add downloaded images/files under `raw/assets/` when needed.
-3. Add or update source metadata manifests under `raw/manifests/`.
-4. Do not edit source content during wiki maintenance workflows.
-5. Wiki pages must cite raw-source provenance.
+1. Add and update operational source material under `raw/sources/`.
+2. Treat files in `raw/sources/` as canonical.
+3. Do not create alternate authoritative stores for the same data.
+4. Keep edits targeted and preserve existing schema and IDs unless explicitly asked to change them.
 
 ## Canonical Operational Files
 
@@ -21,7 +20,7 @@ This is the immutable source-of-truth layer for knowledge ingestion.
 - User journal markdown:
   - `knowledge_base/raw/sources/src_user_journal.md`
 
-## Suggested Source Naming
+## Suggested Naming
 
 Use stable, sortable IDs:
 
@@ -30,13 +29,3 @@ YYYY-MM-DD_<short-slug>.md
 YYYY-MM-DD_<short-slug>.pdf
 YYYY-MM-DD_<short-slug>.txt
 ```
-
-## Suggested Manifest Fields
-
-- `source_id`
-- `title`
-- `date_added`
-- `origin`
-- `author`
-- `file_path`
-- `notes`

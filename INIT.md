@@ -6,10 +6,10 @@ Initialize yourself for this repository before doing any edits.
    - `knowledge_base/raw/sources/src_data_entities.json`
    - `knowledge_base/raw/sources/src_data_relationships.json`
    - `knowledge_base/raw/sources/src_tasks.json`
-4. Confirm generated markdown mirror location: `knowledge_base/obsidian/` (not canonical).
-5. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
+4. Confirm canonical task tracking source is `knowledge_base/raw/sources/src_tasks.json` and journal source is `knowledge_base/raw/sources/src_user_journal.md`.
+5. Confirm agent-editable operational scope is raw sources only (`knowledge_base/raw/sources/`).
 6. If asked to add a journal entry, follow this mandatory workflow:
-   - Treat product graph JSON files as read-only unless explicitly instructed otherwise.
+   - Treat product graph JSON files (`src_data_entities.json`, `src_data_relationships.json`) as read-only unless explicitly instructed otherwise.
    - Add the entry to `knowledge_base/raw/sources/src_user_journal.md`.
    - In the same change, update `knowledge_base/raw/sources/src_tasks.json`:
      - Update status for impacted tasks.
@@ -18,8 +18,5 @@ Initialize yourself for this repository before doing any edits.
    - Keep journal/task-only edits within allowed targets:
      - `knowledge_base/raw/sources/src_user_journal.md`
      - `knowledge_base/raw/sources/src_tasks.json`
-     - `knowledge_base/wiki/sources/src_user_journal.md`
-     - `knowledge_base/wiki/sources/src_user_tasks.md`
-     - `knowledge_base/wiki/log.md`
    - Do not modify canonical product data JSON files for journal-only requests.
 7. Before making changes, summarize the key guardrails you will follow in 8-12 bullets, including the journal-entry + JSON task-status coupling rule.
