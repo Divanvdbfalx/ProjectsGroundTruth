@@ -92,10 +92,55 @@ python local_tool/query.py retrieve "What are blocked high priority tasks?" --js
 python local_tool/query.py build-prompt "What are blocked high priority tasks?" --json
 ```
 
+13. `snapshot-task-state` (write non-canonical task-state snapshot in `artifacts/`)
+```bash
+python local_tool/query.py snapshot-task-state --output artifacts/current_task_state_snapshot.json
+```
+
+14. `journal-from-task-diff` (compare snapshot vs current tasks and append journal entry)
+```bash
+python local_tool/query.py journal-from-task-diff --snapshot artifacts/current_task_state_snapshot.json
+```
+
+15. `journal-entry-kickoff` (load snapshot + current tasks, inspect diff, preview draft in terminal)
+```bash
+python local_tool/query.py journal-entry-kickoff
+```
+
+16. `journal-entry-finalize` (validate edited draft, append to canonical journal, refresh task snapshot)
+```bash
+python local_tool/query.py journal-entry-finalize
+```
+
 Optional flags:
 ```bash
 python local_tool/query.py export-tasks-table --no-xlsx
 python local_tool/query.py export-tasks-table --output-csv artifacts/my_tasks.csv --output-xlsx artifacts/my_tasks.xlsx
+python local_tool/query.py journal-from-task-diff --dry-run
+python local_tool/query.py journal-from-task-diff --time-spent 1.0 --blockers "Waiting on EDF response"
+python local_tool/query.py journal-entry-kickoff --write-draft --draft-output artifacts/journal_entry_draft.md
+python local_tool/query.py journal-entry-finalize --draft artifacts/journal_entry_draft.md
+```
+
+Recommended journal workflow:
+
+1. Create snapshot before edits:
+```bash
+python local_tool/query.py snapshot-task-state
+```
+2. Edit `knowledge_base/raw/sources/src_tasks.json`.
+3. Kick off journal automation to preview draft from diffs (no file write):
+```bash
+python local_tool/query.py journal-entry-kickoff
+```
+4. Save draft only when you want to edit it:
+```bash
+python local_tool/query.py journal-entry-kickoff --write-draft --draft-output artifacts/journal_entry_draft.md
+```
+5. Inspect/edit draft at `artifacts/journal_entry_draft.md`.
+6. Finalize and push entry to canonical journal, then refresh snapshot:
+```bash
+python local_tool/query.py journal-entry-finalize
 ```
 
 ## Token-Efficient Retrieval Rules
@@ -156,6 +201,17 @@ For journal updates:
 1. Add the entry to `knowledge_base/raw/sources/src_user_journal.md`.
 2. In the same change, update impacted task status/metadata in `knowledge_base/raw/sources/src_tasks.json`.
 3. Do not modify `src_data_entities.json` or `src_data_relationships.json` unless explicitly requested.
+
+### Creating a Journal Entry
+
+Use this workflow:
+
+1. `python local_tool/query.py snapshot-task-state`
+2. Edit `knowledge_base/raw/sources/src_tasks.json`
+3. `python local_tool/query.py journal-entry-kickoff`
+4. `python local_tool/query.py journal-entry-kickoff --write-draft --draft-output artifacts/journal_entry_draft.md`
+5. Inspect/edit draft at `artifacts/journal_entry_draft.md`
+6. `python local_tool/query.py journal-entry-finalize --draft artifacts/journal_entry_draft.md`
 
 ## New Chat Bootstrap Prompt
 

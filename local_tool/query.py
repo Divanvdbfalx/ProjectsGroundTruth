@@ -2,6 +2,8 @@
 import argparse
 import csv
 import json
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -17,6 +19,10 @@ from retrieval_engine import (
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 KB_RAW_SOURCES_DIR = ROOT / "knowledge_base" / "raw" / "sources"
+CANONICAL_TASKS_PATH = KB_RAW_SOURCES_DIR / "src_tasks.json"
+CANONICAL_JOURNAL_PATH = KB_RAW_SOURCES_DIR / "src_user_journal.md"
+DEFAULT_TASK_SNAPSHOT_PATH = ROOT / "artifacts" / "current_task_state_snapshot.json"
+DEFAULT_JOURNAL_DRAFT_PATH = ROOT / "artifacts" / "journal_entry_draft.md"
 INIT_DOC = ROOT / "INIT.md"
 AGENTS_DOC = ROOT / "AGENTS.md"
 README_DOC = ROOT / "README.md"
@@ -25,6 +31,562 @@ DATA_FILE_ALIASES = {
     "relationships.json": "src_data_relationships.json",
     "tasks.json": "src_tasks.json",
 }
+STATUS_FIELDS = ("Status", "status")
+JOURNAL_REQUIRED_PREFIXES = (
+    "Entry ID:",
+    "Date/Time:",
+    "Context Date:",
+    "Context Version:",
+    "Summary:",
+    "Focus:",
+    "Task Updates:",
+    "Time Spent (h):",
+    "Blockers:",
+    "Next Action:",
+)
+
+
+def _now_local() -> datetime:
+    return datetime.now().astimezone()
+
+
+def _resolve_repo_relative_or_abs(path: str) -> Path:
+    candidate = Path(path)
+    return candidate.resolve() if candidate.is_absolute() else (ROOT / candidate).resolve()
+
+
+def _read_tasks_payload(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _extract_tasks(raw_tasks_payload: Any) -> List[Dict[str, Any]]:
+    if isinstance(raw_tasks_payload, list):
+        return [item for item in raw_tasks_payload if isinstance(item, dict)]
+    if isinstance(raw_tasks_payload, dict) and isinstance(raw_tasks_payload.get("tasks"), list):
+        return [item for item in raw_tasks_payload["tasks"] if isinstance(item, dict)]
+    return []
+
+
+def _task_id(task: Dict[str, Any]) -> str:
+    return str(task.get("Task ID", "")).strip() or str(task.get("id", "")).strip()
+
+
+def _task_title(task: Dict[str, Any]) -> str:
+    return str(task.get("Task Name", "")).strip() or str(task.get("title", "")).strip()
+
+
+def _task_status(task: Dict[str, Any]) -> str:
+    for key in STATUS_FIELDS:
+        value = str(task.get(key, "")).strip()
+        if value:
+            return value
+    return ""
+
+
+def _tasks_map(tasks: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    mapped: Dict[str, Dict[str, Any]] = {}
+    for task in tasks:
+        task_id = _task_id(task)
+        if task_id:
+            mapped[task_id] = task
+    return mapped
+
+
+def _safe_str(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _short_value(value: Any, limit: int = 96) -> str:
+    text = _safe_str(value)
+    if not text:
+        return "''"
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1] + "…"
+
+
+def _diff_task_fields(before: Dict[str, Any], after: Dict[str, Any]) -> List[Dict[str, Any]]:
+    changed: List[Dict[str, Any]] = []
+    keys = sorted(set(before.keys()) | set(after.keys()))
+    for key in keys:
+        before_val = before.get(key)
+        after_val = after.get(key)
+        if before_val != after_val:
+            changed.append({"field": key, "before": before_val, "after": after_val})
+    return changed
+
+
+def _next_journal_entry_id(journal_text: str, date_yyyymmdd: str) -> str:
+    pattern = re.compile(rf"Entry ID:\s*jrnl_{re.escape(date_yyyymmdd)}_(\d+)")
+    indices = [int(match.group(1)) for match in pattern.finditer(journal_text)]
+    next_idx = max(indices) + 1 if indices else 1
+    return f"jrnl_{date_yyyymmdd}_{next_idx:02d}"
+
+
+def _next_context_version(journal_text: str, context_date: str) -> str:
+    pattern = re.compile(rf"Context Version:\s*{re.escape(context_date)}\.(\d+)")
+    versions = [int(match.group(1)) for match in pattern.finditer(journal_text)]
+    next_idx = max(versions) + 1 if versions else 1
+    return f"{context_date}.{next_idx}"
+
+
+def _render_task_update_line(diff_payload: Dict[str, Any]) -> str:
+    parts: List[str] = []
+
+    for item in diff_payload["status_changes"]:
+        title = item.get("title") or item["task_id"]
+        parts.append(
+            f"`{item['task_id']}` ({title}) status: `{_short_value(item['before'])}` -> `{_short_value(item['after'])}`"
+        )
+
+    for item in diff_payload["field_changes"]:
+        title = item.get("title") or item["task_id"]
+        field_parts = []
+        for field_change in item["changes"]:
+            field_name = field_change["field"]
+            before = _short_value(field_change["before"])
+            after = _short_value(field_change["after"])
+            field_parts.append(f"{field_name}: `{before}` -> `{after}`")
+        parts.append(f"`{item['task_id']}` ({title}) fields updated: " + "; ".join(field_parts))
+
+    for item in diff_payload["added"]:
+        title = item.get("title") or item["task_id"]
+        status = item.get("status") or "unknown"
+        parts.append(f"Added task `{item['task_id']}` ({title}) with status `{status}`")
+
+    for item in diff_payload["removed"]:
+        title = item.get("title") or item["task_id"]
+        status = item.get("status") or "unknown"
+        parts.append(f"Removed task `{item['task_id']}` ({title}) previously in status `{status}`")
+
+    if not parts:
+        return "No task deltas were detected between snapshot and current task state."
+    return " | ".join(parts)
+
+
+def _build_task_diff(snapshot_tasks: Dict[str, Dict[str, Any]], current_tasks: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    status_changes: List[Dict[str, Any]] = []
+    field_changes: List[Dict[str, Any]] = []
+    added: List[Dict[str, Any]] = []
+    removed: List[Dict[str, Any]] = []
+
+    snapshot_ids = set(snapshot_tasks.keys())
+    current_ids = set(current_tasks.keys())
+
+    for task_id in sorted(snapshot_ids - current_ids):
+        task = snapshot_tasks[task_id]
+        removed.append(
+            {
+                "task_id": task_id,
+                "title": _task_title(task),
+                "status": _task_status(task),
+            }
+        )
+
+    for task_id in sorted(current_ids - snapshot_ids):
+        task = current_tasks[task_id]
+        added.append(
+            {
+                "task_id": task_id,
+                "title": _task_title(task),
+                "status": _task_status(task),
+            }
+        )
+
+    for task_id in sorted(snapshot_ids & current_ids):
+        before = snapshot_tasks[task_id]
+        after = current_tasks[task_id]
+
+        before_status = _task_status(before)
+        after_status = _task_status(after)
+        if before_status != after_status:
+            status_changes.append(
+                {
+                    "task_id": task_id,
+                    "title": _task_title(after) or _task_title(before),
+                    "before": before_status,
+                    "after": after_status,
+                }
+            )
+
+        changed_fields = _diff_task_fields(before, after)
+        non_status_changes = [change for change in changed_fields if change["field"] not in STATUS_FIELDS]
+        if non_status_changes:
+            field_changes.append(
+                {
+                    "task_id": task_id,
+                    "title": _task_title(after) or _task_title(before),
+                    "changes": non_status_changes,
+                }
+            )
+
+    return {
+        "status_changes": status_changes,
+        "field_changes": field_changes,
+        "added": added,
+        "removed": removed,
+        "counts": {
+            "status_changes": len(status_changes),
+            "field_changes": len(field_changes),
+            "added": len(added),
+            "removed": len(removed),
+        },
+    }
+
+
+def _build_snapshot_payload(tasks_path: Path) -> Dict[str, Any]:
+    raw_payload = _read_tasks_payload(tasks_path)
+    tasks = _extract_tasks(raw_payload)
+    tasks_by_id = _tasks_map(tasks)
+    now = _now_local()
+    return {
+        "snapshot_type": "current_task_state",
+        "generated_at": now.isoformat(),
+        "generated_at_local": now.strftime("%Y-%m-%d %H:%M:%S %Z"),
+        "source_tasks_path": str(tasks_path),
+        "task_count": len(tasks_by_id),
+        "tasks_by_id": tasks_by_id,
+    }
+
+
+def _write_snapshot_file(tasks_path: Path, output_path: Path) -> Dict[str, Any]:
+    snapshot_payload = _build_snapshot_payload(tasks_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(snapshot_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return snapshot_payload
+
+
+def cmd_snapshot_task_state(tasks_path: str, output: str, as_json: bool) -> None:
+    resolved_tasks_path = _resolve_repo_relative_or_abs(tasks_path)
+    resolved_output_path = _resolve_repo_relative_or_abs(output)
+
+    snapshot_payload = _write_snapshot_file(resolved_tasks_path, resolved_output_path)
+
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "snapshot_path": str(resolved_output_path),
+                    "task_count": snapshot_payload["task_count"],
+                    "generated_at": snapshot_payload["generated_at"],
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
+
+    print(f"Wrote task snapshot to {resolved_output_path} ({snapshot_payload['task_count']} tasks)")
+
+
+def _prepare_journal_entry_from_diff(
+    snapshot_path: Path,
+    tasks_path: Path,
+    journal_path: Path,
+    summary: Optional[str],
+    focus: Optional[str],
+    time_spent: str,
+    blockers: str,
+    next_action: str,
+) -> Dict[str, Any]:
+    snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    snapshot_tasks = snapshot_payload.get("tasks_by_id")
+    if not isinstance(snapshot_tasks, dict):
+        raise SystemExit(f"Invalid snapshot format in {snapshot_path}: missing tasks_by_id object.")
+    snapshot_tasks = {str(key): value for key, value in snapshot_tasks.items() if isinstance(value, dict)}
+
+    raw_current_payload = _read_tasks_payload(tasks_path)
+    current_tasks = _tasks_map(_extract_tasks(raw_current_payload))
+    diff_payload = _build_task_diff(snapshot_tasks, current_tasks)
+
+    now = _now_local()
+    context_date = now.strftime("%Y-%m-%d")
+    date_key = now.strftime("%Y%m%d")
+    journal_text = journal_path.read_text(encoding="utf-8") if journal_path.exists() else ""
+    entry_id = _next_journal_entry_id(journal_text, date_key)
+    context_version = _next_context_version(journal_text, context_date)
+
+    summary_line = summary or (
+        "Captured task-state delta from snapshot: "
+        f"{diff_payload['counts']['status_changes']} status changes, "
+        f"{diff_payload['counts']['field_changes']} non-status field changes, "
+        f"{diff_payload['counts']['added']} additions, "
+        f"{diff_payload['counts']['removed']} removals."
+    )
+    focus_line = focus or "Task status and parameter delta tracking from non-canonical snapshot."
+    task_updates_line = _render_task_update_line(diff_payload)
+
+    entry_lines = [
+        f"Entry ID: {entry_id}  ",
+        f"Date/Time: {now.strftime('%Y-%m-%d %H:%M %Z')}  ",
+        f"Context Date: {context_date}  ",
+        f"Context Version: {context_version}  ",
+        f"Summary: {summary_line}  ",
+        f"Focus: {focus_line}  ",
+        f"Task Updates: {task_updates_line}  ",
+        f"Time Spent (h): {time_spent}  ",
+        f"Blockers: {blockers}  ",
+        f"Next Action: {next_action}",
+    ]
+
+    return {
+        "snapshot_path": str(snapshot_path),
+        "tasks_path": str(tasks_path),
+        "journal_path": str(journal_path),
+        "entry_id": entry_id,
+        "context_version": context_version,
+        "diff": diff_payload,
+        "entry_text": "\n".join(entry_lines),
+    }
+
+
+def _extract_entry_text_from_draft(draft_text: str) -> str:
+    start_marker = "<!-- JOURNAL_ENTRY_START -->"
+    end_marker = "<!-- JOURNAL_ENTRY_END -->"
+    start_idx = draft_text.find(start_marker)
+    end_idx = draft_text.find(end_marker)
+    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        body = draft_text[start_idx + len(start_marker) : end_idx].strip()
+        if body:
+            return body
+
+    lines = [line.rstrip() for line in draft_text.splitlines()]
+    start_line = next((idx for idx, line in enumerate(lines) if line.startswith("Entry ID:")), None)
+    if start_line is None:
+        return ""
+    return "\n".join(lines[start_line:]).strip()
+
+
+def _validate_journal_entry_text(entry_text: str) -> List[str]:
+    errors: List[str] = []
+    lines = [line.strip() for line in entry_text.splitlines() if line.strip()]
+    for prefix in JOURNAL_REQUIRED_PREFIXES:
+        if not any(line.startswith(prefix) for line in lines):
+            errors.append(f"Missing required field line with prefix '{prefix}'")
+    return errors
+
+
+def cmd_journal_entry_kickoff(
+    snapshot_path: str,
+    tasks_path: str,
+    journal_path: str,
+    draft_output: str,
+    summary: Optional[str],
+    focus: Optional[str],
+    time_spent: str,
+    blockers: str,
+    next_action: str,
+    write_draft: bool,
+    as_json: bool,
+) -> None:
+    resolved_snapshot_path = _resolve_repo_relative_or_abs(snapshot_path)
+    resolved_tasks_path = _resolve_repo_relative_or_abs(tasks_path)
+    resolved_journal_path = _resolve_repo_relative_or_abs(journal_path)
+    resolved_draft_output = _resolve_repo_relative_or_abs(draft_output)
+
+    prepared = _prepare_journal_entry_from_diff(
+        snapshot_path=resolved_snapshot_path,
+        tasks_path=resolved_tasks_path,
+        journal_path=resolved_journal_path,
+        summary=summary,
+        focus=focus,
+        time_spent=time_spent,
+        blockers=blockers,
+        next_action=next_action,
+    )
+
+    draft_lines = [
+        "# Journal Entry Draft",
+        "",
+        "Review and edit this entry, then run:",
+        f"`python local_tool/query.py journal-entry-finalize --draft {resolved_draft_output}`",
+        "",
+        "<!-- JOURNAL_ENTRY_START -->",
+        prepared["entry_text"],
+        "<!-- JOURNAL_ENTRY_END -->",
+        "",
+        "## Diff Summary",
+        f"- status_changes: {prepared['diff']['counts']['status_changes']}",
+        f"- field_changes: {prepared['diff']['counts']['field_changes']}",
+        f"- added: {prepared['diff']['counts']['added']}",
+        f"- removed: {prepared['diff']['counts']['removed']}",
+    ]
+    draft_text = "\n".join(draft_lines).rstrip() + "\n"
+    if write_draft:
+        resolved_draft_output.parent.mkdir(parents=True, exist_ok=True)
+        resolved_draft_output.write_text(draft_text, encoding="utf-8")
+
+    payload = {
+        "ok": True,
+        "write_draft": write_draft,
+        "draft_path": str(resolved_draft_output) if write_draft else None,
+        "entry_id": prepared["entry_id"],
+        "context_version": prepared["context_version"],
+        "diff": prepared["diff"]["counts"],
+        "entry_text": prepared["entry_text"],
+    }
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False))
+        return
+    if write_draft:
+        print(f"Wrote journal draft to {resolved_draft_output}")
+        print(
+            "Review/edit the draft, then finalize with: "
+            f"python local_tool/query.py journal-entry-finalize --draft {resolved_draft_output}"
+        )
+    else:
+        print("Journal entry draft preview (not saved):\n")
+        print(prepared["entry_text"])
+        print("\nTo save draft for editing:")
+        print(f"python local_tool/query.py journal-entry-kickoff --write-draft --draft-output {resolved_draft_output}")
+
+
+def cmd_journal_entry_finalize(
+    draft_path: str,
+    journal_path: str,
+    tasks_path: str,
+    snapshot_output: str,
+    as_json: bool,
+) -> None:
+    resolved_draft_path = _resolve_repo_relative_or_abs(draft_path)
+    resolved_journal_path = _resolve_repo_relative_or_abs(journal_path)
+    resolved_tasks_path = _resolve_repo_relative_or_abs(tasks_path)
+    resolved_snapshot_output = _resolve_repo_relative_or_abs(snapshot_output)
+
+    draft_text = resolved_draft_path.read_text(encoding="utf-8")
+    entry_text = _extract_entry_text_from_draft(draft_text)
+    if not entry_text:
+        raise SystemExit(f"Could not find journal entry body in draft: {resolved_draft_path}")
+
+    validation_errors = _validate_journal_entry_text(entry_text)
+    if validation_errors:
+        raise SystemExit("Draft validation failed:\n- " + "\n- ".join(validation_errors))
+
+    if resolved_journal_path.exists():
+        existing = resolved_journal_path.read_text(encoding="utf-8").rstrip()
+        updated = f"{existing}\n\n---\n\n{entry_text}\n" if existing else f"{entry_text}\n"
+    else:
+        updated = f"{entry_text}\n"
+    resolved_journal_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_journal_path.write_text(updated, encoding="utf-8")
+
+    snapshot_payload = _write_snapshot_file(resolved_tasks_path, resolved_snapshot_output)
+
+    payload = {
+        "ok": True,
+        "journal_path": str(resolved_journal_path),
+        "snapshot_path": str(resolved_snapshot_output),
+        "snapshot_task_count": snapshot_payload["task_count"],
+    }
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False))
+        return
+    print(f"Finalized journal entry into {resolved_journal_path}")
+    print(f"Updated task snapshot at {resolved_snapshot_output} ({snapshot_payload['task_count']} tasks)")
+
+
+def cmd_journal_from_task_diff(
+    snapshot_path: str,
+    tasks_path: str,
+    journal_path: str,
+    summary: Optional[str],
+    focus: Optional[str],
+    time_spent: str,
+    blockers: str,
+    next_action: str,
+    dry_run: bool,
+    as_json: bool,
+) -> None:
+    resolved_snapshot_path = _resolve_repo_relative_or_abs(snapshot_path)
+    resolved_tasks_path = _resolve_repo_relative_or_abs(tasks_path)
+    resolved_journal_path = _resolve_repo_relative_or_abs(journal_path)
+
+    snapshot_payload = json.loads(resolved_snapshot_path.read_text(encoding="utf-8"))
+    snapshot_tasks = snapshot_payload.get("tasks_by_id")
+    if not isinstance(snapshot_tasks, dict):
+        raise SystemExit(f"Invalid snapshot format in {resolved_snapshot_path}: missing tasks_by_id object.")
+    snapshot_tasks = {str(key): value for key, value in snapshot_tasks.items() if isinstance(value, dict)}
+
+    raw_current_payload = _read_tasks_payload(resolved_tasks_path)
+    current_tasks = _tasks_map(_extract_tasks(raw_current_payload))
+    diff_payload = _build_task_diff(snapshot_tasks, current_tasks)
+
+    now = _now_local()
+    context_date = now.strftime("%Y-%m-%d")
+    date_key = now.strftime("%Y%m%d")
+    journal_text = resolved_journal_path.read_text(encoding="utf-8") if resolved_journal_path.exists() else ""
+    entry_id = _next_journal_entry_id(journal_text, date_key)
+    context_version = _next_context_version(journal_text, context_date)
+
+    summary_line = summary or (
+        "Captured task-state delta from snapshot: "
+        f"{diff_payload['counts']['status_changes']} status changes, "
+        f"{diff_payload['counts']['field_changes']} non-status field changes, "
+        f"{diff_payload['counts']['added']} additions, "
+        f"{diff_payload['counts']['removed']} removals."
+    )
+    focus_line = focus or "Task status and parameter delta tracking from non-canonical snapshot."
+    task_updates_line = _render_task_update_line(diff_payload)
+
+    entry_lines = [
+        f"Entry ID: {entry_id}  ",
+        f"Date/Time: {now.strftime('%Y-%m-%d %H:%M %Z')}  ",
+        f"Context Date: {context_date}  ",
+        f"Context Version: {context_version}  ",
+        f"Summary: {summary_line}  ",
+        f"Focus: {focus_line}  ",
+        f"Task Updates: {task_updates_line}  ",
+        f"Time Spent (h): {time_spent}  ",
+        f"Blockers: {blockers}  ",
+        f"Next Action: {next_action}",
+    ]
+    entry_text = "\n".join(entry_lines)
+
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "dry_run": dry_run,
+                    "snapshot_path": str(resolved_snapshot_path),
+                    "tasks_path": str(resolved_tasks_path),
+                    "journal_path": str(resolved_journal_path),
+                    "entry_id": entry_id,
+                    "context_version": context_version,
+                    "diff": diff_payload["counts"],
+                    "entry_text": entry_text,
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
+
+    if dry_run:
+        print("Dry run only. Journal entry preview:\n")
+        print(entry_text)
+        return
+
+    if resolved_journal_path.exists():
+        existing = resolved_journal_path.read_text(encoding="utf-8").rstrip()
+        if existing:
+            updated = f"{existing}\n\n---\n\n{entry_text}\n"
+        else:
+            updated = f"{entry_text}\n"
+    else:
+        updated = f"{entry_text}\n"
+    resolved_journal_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_journal_path.write_text(updated, encoding="utf-8")
+
+    print(f"Appended journal entry {entry_id} to {resolved_journal_path}")
+    print(
+        "Diff summary: "
+        f"status_changes={diff_payload['counts']['status_changes']}, "
+        f"field_changes={diff_payload['counts']['field_changes']}, "
+        f"added={diff_payload['counts']['added']}, "
+        f"removed={diff_payload['counts']['removed']}"
+    )
 
 
 def resolve_data_path(name: str) -> Path:
@@ -1359,6 +1921,159 @@ def main() -> None:
         help="Disable XLSX export even when openpyxl is installed.",
     )
 
+    snapshot_task_state_p = sub.add_parser("snapshot-task-state")
+    snapshot_task_state_p.add_argument(
+        "--tasks-path",
+        default=str(CANONICAL_TASKS_PATH),
+        help="Path to source tasks JSON (default: canonical src_tasks.json).",
+    )
+    snapshot_task_state_p.add_argument(
+        "--output",
+        default=str(DEFAULT_TASK_SNAPSHOT_PATH),
+        help="Output snapshot path (non-canonical artifact).",
+    )
+    snapshot_task_state_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
+    journal_from_diff_p = sub.add_parser("journal-from-task-diff")
+    journal_from_diff_p.add_argument(
+        "--snapshot",
+        default=str(DEFAULT_TASK_SNAPSHOT_PATH),
+        help="Snapshot JSON created by snapshot-task-state.",
+    )
+    journal_from_diff_p.add_argument(
+        "--tasks-path",
+        default=str(CANONICAL_TASKS_PATH),
+        help="Path to current tasks JSON (default: canonical src_tasks.json).",
+    )
+    journal_from_diff_p.add_argument(
+        "--journal-path",
+        default=str(CANONICAL_JOURNAL_PATH),
+        help="Path to journal markdown (default: canonical src_user_journal.md).",
+    )
+    journal_from_diff_p.add_argument(
+        "--summary",
+        default=None,
+        help="Optional summary override.",
+    )
+    journal_from_diff_p.add_argument(
+        "--focus",
+        default=None,
+        help="Optional focus override.",
+    )
+    journal_from_diff_p.add_argument(
+        "--time-spent",
+        default="0.5",
+        help="Time spent field value for generated journal entry.",
+    )
+    journal_from_diff_p.add_argument(
+        "--blockers",
+        default="None noted.",
+        help="Blockers field value for generated journal entry.",
+    )
+    journal_from_diff_p.add_argument(
+        "--next-action",
+        default="Continue task execution and refresh snapshot before the next journal update.",
+        help="Next Action field value for generated journal entry.",
+    )
+    journal_from_diff_p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview generated journal entry without writing to journal.",
+    )
+    journal_from_diff_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
+    journal_kickoff_p = sub.add_parser("journal-entry-kickoff")
+    journal_kickoff_p.add_argument(
+        "--snapshot",
+        default=str(DEFAULT_TASK_SNAPSHOT_PATH),
+        help="Snapshot JSON created by snapshot-task-state.",
+    )
+    journal_kickoff_p.add_argument(
+        "--tasks-path",
+        default=str(CANONICAL_TASKS_PATH),
+        help="Path to current tasks JSON (default: canonical src_tasks.json).",
+    )
+    journal_kickoff_p.add_argument(
+        "--journal-path",
+        default=str(CANONICAL_JOURNAL_PATH),
+        help="Path to canonical journal markdown.",
+    )
+    journal_kickoff_p.add_argument(
+        "--draft-output",
+        default=str(DEFAULT_JOURNAL_DRAFT_PATH),
+        help="Path to writable draft markdown file.",
+    )
+    journal_kickoff_p.add_argument(
+        "--write-draft",
+        action="store_true",
+        help="Write draft file; if omitted, kickoff only prints draft preview.",
+    )
+    journal_kickoff_p.add_argument(
+        "--summary",
+        default=None,
+        help="Optional summary override.",
+    )
+    journal_kickoff_p.add_argument(
+        "--focus",
+        default=None,
+        help="Optional focus override.",
+    )
+    journal_kickoff_p.add_argument(
+        "--time-spent",
+        default="0.5",
+        help="Time spent field value for generated draft entry.",
+    )
+    journal_kickoff_p.add_argument(
+        "--blockers",
+        default="None noted.",
+        help="Blockers field value for generated draft entry.",
+    )
+    journal_kickoff_p.add_argument(
+        "--next-action",
+        default="Continue task execution and finalize this entry after review.",
+        help="Next Action field value for generated draft entry.",
+    )
+    journal_kickoff_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
+    journal_finalize_p = sub.add_parser("journal-entry-finalize")
+    journal_finalize_p.add_argument(
+        "--draft",
+        default=str(DEFAULT_JOURNAL_DRAFT_PATH),
+        help="Draft markdown path produced by journal-entry-kickoff.",
+    )
+    journal_finalize_p.add_argument(
+        "--journal-path",
+        default=str(CANONICAL_JOURNAL_PATH),
+        help="Path to canonical journal markdown.",
+    )
+    journal_finalize_p.add_argument(
+        "--tasks-path",
+        default=str(CANONICAL_TASKS_PATH),
+        help="Path to current tasks JSON (default: canonical src_tasks.json).",
+    )
+    journal_finalize_p.add_argument(
+        "--snapshot-output",
+        default=str(DEFAULT_TASK_SNAPSHOT_PATH),
+        help="Snapshot file to refresh after finalizing journal entry.",
+    )
+    journal_finalize_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON output.",
+    )
+
     build_index_p = sub.add_parser("build-index")
     build_index_p.add_argument(
         "--output",
@@ -1436,6 +2151,47 @@ def main() -> None:
         return
     if args.cmd == "initialize":
         cmd_initialize(args.json)
+        return
+    if args.cmd == "snapshot-task-state":
+        cmd_snapshot_task_state(args.tasks_path, args.output, args.json)
+        return
+    if args.cmd == "journal-from-task-diff":
+        cmd_journal_from_task_diff(
+            snapshot_path=args.snapshot,
+            tasks_path=args.tasks_path,
+            journal_path=args.journal_path,
+            summary=args.summary,
+            focus=args.focus,
+            time_spent=args.time_spent,
+            blockers=args.blockers,
+            next_action=args.next_action,
+            dry_run=args.dry_run,
+            as_json=args.json,
+        )
+        return
+    if args.cmd == "journal-entry-kickoff":
+        cmd_journal_entry_kickoff(
+            snapshot_path=args.snapshot,
+            tasks_path=args.tasks_path,
+            journal_path=args.journal_path,
+            draft_output=args.draft_output,
+            summary=args.summary,
+            focus=args.focus,
+            time_spent=args.time_spent,
+            blockers=args.blockers,
+            next_action=args.next_action,
+            write_draft=args.write_draft,
+            as_json=args.json,
+        )
+        return
+    if args.cmd == "journal-entry-finalize":
+        cmd_journal_entry_finalize(
+            draft_path=args.draft,
+            journal_path=args.journal_path,
+            tasks_path=args.tasks_path,
+            snapshot_output=args.snapshot_output,
+            as_json=args.json,
+        )
         return
 
     entities, relationships, tasks = load_all()

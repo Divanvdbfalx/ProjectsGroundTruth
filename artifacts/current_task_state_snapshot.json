@@ -1,37 +1,11 @@
 {
-  "source_id": "src_tasks",
-  "schema_version": "2.0",
-  "source_file": "/Users/divanvanderbank/Downloads/2026-04-08T14_05_57.516Z FALX - Product Development - P ZERO.csv",
-  "export_captured_at": "2026-04-08T14:05:57.516Z",
-  "generated_from_csv_on": "2026-04-08",
-  "columns": [
-    "Task ID",
-    "Task Name",
-    "Parent ID",
-    "Parent Name",
-    "Parent URL",
-    "Assignee",
-    "👨‍🎓 Contractor (users)",
-    "Points Estimate",
-    "Time Estimate",
-    "Time Estimate Rolled Up",
-    "Due Date",
-    "Priority",
-    "Sprints",
-    "Item Type (drop down)",
-    "📚 Progress (Auto) (automatic progress)",
-    "Task Category",
-    "Category",
-    "Subcategory",
-    "Status"
-  ],
-  "task_categories": {
-    "Active": "Tasks not yet complete",
-    "Archived": "Completed tasks moved out of active queue"
-  },
-  "category_rule": "Archived when auto progress >= 100 or explicit done/completed/closed/resolved status; otherwise Active.",
-  "tasks": [
-    {
+  "snapshot_type": "current_task_state",
+  "generated_at": "2026-04-09T16:43:05.647608+02:00",
+  "generated_at_local": "2026-04-09 16:43:05 SAST",
+  "source_tasks_path": "/Users/divanvanderbank/Falx/repos/ProjectsGroundTruth/knowledge_base/raw/sources/src_tasks.json",
+  "task_count": 122,
+  "tasks_by_id": {
+    "86c2g1fg4": {
       "Task ID": "86c2g1fg4",
       "Task Name": "Meeting Time",
       "Parent ID": "",
@@ -52,7 +26,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1k5cpn": {
       "Task ID": "86c1k5cpn",
       "Task Name": "Maintenance/Availability Funcationlity",
       "Parent ID": "",
@@ -73,7 +47,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c7d0b35": {
       "Task ID": "86c7d0b35",
       "Task Name": "Review custom widgets with Thingsboard for a maintenance calendar",
       "Parent ID": "86c1k5cpn",
@@ -94,7 +68,7 @@
       "Category": "cat_monitoring",
       "Subcategory": "sub_monitoring_dashboards"
     },
-    {
+    "86byndtbh": {
       "Task ID": "86byndtbh",
       "Task Name": "System Deployment Development - Ian",
       "Parent ID": "",
@@ -115,7 +89,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c0qymbb": {
       "Task ID": "86c0qymbb",
       "Task Name": "Fall back ability for unavailable weather data",
       "Parent ID": "86byndtbh",
@@ -136,7 +110,7 @@
       "Category": "cat_infra",
       "Subcategory": "sub_aws_lambda"
     },
-    {
+    "86c1jkftv": {
       "Task ID": "86c1jkftv",
       "Task Name": "Training Pipeline Development",
       "Parent ID": "",
@@ -157,7 +131,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c95fkcj": {
       "Task ID": "86c95fkcj",
       "Task Name": "Experiment with different training architectures and combinations for accuracy improvements",
       "Parent ID": "86c1jkftv",
@@ -178,7 +152,7 @@
       "Category": "cat_experiment",
       "Subcategory": "sub_cross_site_exp"
     },
-    {
+    "86c30q3wb": {
       "Task ID": "86c30q3wb",
       "Task Name": "Monitoring System - Future features",
       "Parent ID": "",
@@ -199,7 +173,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c5mbu95": {
       "Task ID": "86c5mbu95",
       "Task Name": "PZERO Watson",
       "Parent ID": "",
@@ -220,7 +194,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c5yvc19": {
       "Task ID": "86c5yvc19",
       "Task Name": "P-ZERØ Deployment/platform Pipeline Rebuild",
       "Parent ID": "",
@@ -241,7 +215,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c6d8t17": {
       "Task ID": "86c6d8t17",
       "Task Name": "Redesign pipeline with improvements",
       "Parent ID": "86c5yvc19",
@@ -262,7 +236,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c6d8vez": {
       "Task ID": "86c6d8vez",
       "Task Name": "Design a mock deployment testing script for the new pipeline",
       "Parent ID": "86c5yvc19",
@@ -283,7 +257,7 @@
       "Category": "cat_infra",
       "Subcategory": "sub_aws_lambda"
     },
-    {
+    "86c95fndw": {
       "Task ID": "86c95fndw",
       "Task Name": "Design conceptual frontend of pzero platform",
       "Parent ID": "86c5yvc19",
@@ -304,7 +278,7 @@
       "Category": "cat_monitoring",
       "Subcategory": "sub_monitoring_dashboards"
     },
-    {
+    "86c95fqtj": {
       "Task ID": "86c95fqtj",
       "Task Name": "Recon existing pzero tools and design them into pzero platform",
       "Parent ID": "86c5yvc19",
@@ -325,7 +299,7 @@
       "Category": "cat_tooling",
       "Subcategory": "sub_datalake_tools"
     },
-    {
+    "86c7d00v0": {
       "Task ID": "86c7d00v0",
       "Task Name": "NTCSA Delivery Mechanism - IPP Sites",
       "Parent ID": "",
@@ -346,7 +320,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxy7v": {
       "Task ID": "86c8jxy7v",
       "Task Name": "Forecast Evaluation",
       "Parent ID": "",
@@ -367,7 +341,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxz6a": {
       "Task ID": "86c8jxz6a",
       "Task Name": "Frontend to download and match data",
       "Parent ID": "86c8jxy7v",
@@ -388,7 +362,7 @@
       "Category": "cat_performance",
       "Subcategory": "sub_eval_tool"
     },
-    {
+    "usr20260409edf1": {
       "Task ID": "usr20260409edf1",
       "Task Name": "Follow up with David on EDF Phez and Coleskop site data",
       "Parent ID": "86c8jxy7v",
@@ -409,7 +383,7 @@
       "Category": "cat_business",
       "Subcategory": "sub_customers"
     },
-    {
+    "86c97uumq": {
       "Task ID": "86c97uumq",
       "Task Name": "PZERØ Product Health Application",
       "Parent ID": "",
@@ -430,7 +404,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_product_health_app"
     },
-    {
+    "86c97uxnv": {
       "Task ID": "86c97uxnv",
       "Task Name": "Initialize persistent knowledge-base structure",
       "Parent ID": "86c97uumq",
@@ -451,7 +425,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_knowledge"
     },
-    {
+    "86c97uy64": {
       "Task ID": "86c97uy64",
       "Task Name": "Test Agent integration",
       "Parent ID": "86c97uumq",
@@ -472,7 +446,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_validation"
     },
-    {
+    "86c97uya4": {
       "Task ID": "86c97uya4",
       "Task Name": "Develop frontend leading towards platform",
       "Parent ID": "86c97uumq",
@@ -493,7 +467,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_platform"
     },
-    {
+    "86c97uynt": {
       "Task ID": "86c97uynt",
       "Task Name": "Review mindmap structure and software",
       "Parent ID": "86c97uumq",
@@ -514,7 +488,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_knowledge"
     },
-    {
+    "usr20260409gh1": {
       "Task ID": "usr20260409gh1",
       "Task Name": "Evaluate GitHub integrations for Product Health tooling",
       "Parent ID": "86c97uumq",
@@ -535,7 +509,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_integrations"
     },
-    {
+    "86c3kyazx": {
       "Task ID": "86c3kyazx",
       "Task Name": "Internal Dashboard Site Config Update Capability",
       "Parent ID": "",
@@ -556,7 +530,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8thzd8": {
       "Task ID": "86c8thzd8",
       "Task Name": "Validate forecasts with actuals application",
       "Parent ID": "",
@@ -577,7 +551,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86cbsaw01": {
       "Task ID": "86cbsaw01",
       "Task Name": "SAWEM Market Readiness",
       "Parent ID": "",
@@ -589,7 +563,7 @@
       "Time Estimate": "",
       "Time Estimate Rolled Up": "",
       "Due Date": "",
-      "Priority": "high",
+      "Priority": "none",
       "Sprints": "[]",
       "Item Type (drop down)": "Epic",
       "📚 Progress (Auto) (automatic progress)": "0",
@@ -598,7 +572,7 @@
       "Category": "Business Layer",
       "Subcategory": "SAWEM Market Readiness"
     },
-    {
+    "86cbsaw02": {
       "Task ID": "86cbsaw02",
       "Task Name": "Define SAWEM market-entry strategy",
       "Parent ID": "86cbsaw01",
@@ -619,7 +593,7 @@
       "Category": "cat_business",
       "Subcategory": "sub_sawem_readiness"
     },
-    {
+    "86cbsaw03": {
       "Task ID": "86cbsaw03",
       "Task Name": "Quantify SAWEM value capture and benefit model",
       "Parent ID": "86cbsaw01",
@@ -631,7 +605,7 @@
       "Time Estimate": "",
       "Time Estimate Rolled Up": "",
       "Due Date": "",
-      "Priority": "high",
+      "Priority": "",
       "Sprints": "[]",
       "Item Type (drop down)": "User Story",
       "📚 Progress (Auto) (automatic progress)": "0",
@@ -640,7 +614,7 @@
       "Category": "cat_business",
       "Subcategory": "sub_sawem_readiness"
     },
-    {
+    "86cbsaw04": {
       "Task ID": "86cbsaw04",
       "Task Name": "Draft SAWEM execution plan and pilot milestones",
       "Parent ID": "86cbsaw01",
@@ -652,7 +626,7 @@
       "Time Estimate": "",
       "Time Estimate Rolled Up": "",
       "Due Date": "",
-      "Priority": "high",
+      "Priority": "",
       "Sprints": "[]",
       "Item Type (drop down)": "User Story",
       "📚 Progress (Auto) (automatic progress)": "0",
@@ -661,7 +635,7 @@
       "Category": "cat_business",
       "Subcategory": "sub_sawem_readiness"
     },
-    {
+    "usr20260409gh2": {
       "Task ID": "usr20260409gh2",
       "Task Name": "Map Product Health GitHub use-cases to available connector tools",
       "Parent ID": "usr20260409gh1",
@@ -682,7 +656,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_integrations"
     },
-    {
+    "usr20260409gh3": {
       "Task ID": "usr20260409gh3",
       "Task Name": "Run GitHub integration PoC for PR, checks, and comment flows",
       "Parent ID": "usr20260409gh1",
@@ -703,7 +677,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_integrations"
     },
-    {
+    "usr20260409gh4": {
       "Task ID": "usr20260409gh4",
       "Task Name": "Document recommended GitHub integration pattern and implementation backlog",
       "Parent ID": "usr20260409gh1",
@@ -724,7 +698,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_integrations"
     },
-    {
+    "usr20260409infra1": {
       "Task ID": "usr20260409infra1",
       "Task Name": "Plan the development of a unified repo for training, tooling, deploying, and experimenting",
       "Parent ID": "",
@@ -745,7 +719,7 @@
       "Category": "cat_infra",
       "Subcategory": "sub_github_management"
     },
-    {
+    "usr20260409ph1": {
       "Task ID": "usr20260409ph1",
       "Task Name": "Move the knowledge base to AWS",
       "Parent ID": "86c97uumq",
@@ -766,7 +740,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_platform"
     },
-    {
+    "86c97uy06": {
       "Task ID": "86c97uy06",
       "Task Name": "Add repository context snapshot analysis",
       "Parent ID": "86c97uumq",
@@ -787,7 +761,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_knowledge"
     },
-    {
+    "86c7d0302": {
       "Task ID": "86c7d0302",
       "Task Name": "Deploy the changes to production",
       "Parent ID": "86c7d00v0",
@@ -808,7 +782,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c7d02vj": {
       "Task ID": "86c7d02vj",
       "Task Name": "Deploy the changes to dev",
       "Parent ID": "86c7d00v0",
@@ -829,7 +803,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c30qbp0": {
       "Task ID": "86c30qbp0",
       "Task Name": "Add site cards with live site weather info",
       "Parent ID": "86c30q3wb",
@@ -850,7 +824,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c5yv47t": {
       "Task ID": "86c5yv47t",
       "Task Name": "Implement Wattson weather forecast for Castle and interface with Jason",
       "Parent ID": "86c5mbu95",
@@ -871,7 +845,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c47409m": {
       "Task ID": "86c47409m",
       "Task Name": "Transfer P-ZERØ training pipeline to Clear ML",
       "Parent ID": "86c1jkftv",
@@ -892,7 +866,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byndthh": {
       "Task ID": "86byndthh",
       "Task Name": "Create a site specification database in AWS for scaling",
       "Parent ID": "86byndtbh",
@@ -913,7 +887,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byya9tu": {
       "Task ID": "86byya9tu",
       "Task Name": "Create the site specification attributes in AWS - Ian",
       "Parent ID": "86byndtbh",
@@ -934,7 +908,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byyr0mj": {
       "Task ID": "86byyr0mj",
       "Task Name": "Create and finalise Dev vs Prod pipelines",
       "Parent ID": "86byndtbh",
@@ -955,7 +929,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byyr0u2": {
       "Task ID": "86byyr0u2",
       "Task Name": "Implement a system for change management for code",
       "Parent ID": "86byndtbh",
@@ -976,7 +950,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byyr16y": {
       "Task ID": "86byyr16y",
       "Task Name": "Standardisation of data tables",
       "Parent ID": "86byndtbh",
@@ -997,7 +971,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byyr4zu": {
       "Task ID": "86byyr4zu",
       "Task Name": "Set-up monitoring/alert system",
       "Parent ID": "86byndtbh",
@@ -1018,7 +992,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1k4gnb": {
       "Task ID": "86c1k4gnb",
       "Task Name": "Front End Development",
       "Parent ID": "",
@@ -1039,7 +1013,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86byyr23p": {
       "Task ID": "86byyr23p",
       "Task Name": "Push additional data to Thingsboard",
       "Parent ID": "86c1k4gnb",
@@ -1060,7 +1034,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c30qz8f": {
       "Task ID": "86c30qz8f",
       "Task Name": "Work on Thingsboard in a trial environment",
       "Parent ID": "86c1k4gnb",
@@ -1081,7 +1055,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c3znyra": {
       "Task ID": "86c3znyra",
       "Task Name": "Fix Layout bug for different screen sizes Thingsboard",
       "Parent ID": "86c1k4gnb",
@@ -1102,7 +1076,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c48f84x": {
       "Task ID": "86c48f84x",
       "Task Name": "Fix MWh units on thingsboard",
       "Parent ID": "86c1k4gnb",
@@ -1123,7 +1097,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4jta18": {
       "Task ID": "86c4jta18",
       "Task Name": "Add Total/EIMS customers",
       "Parent ID": "86c1k4gnb",
@@ -1144,7 +1118,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4mw00y": {
       "Task ID": "86c4mw00y",
       "Task Name": "Configure Total Cortex Met Station table and entity alias",
       "Parent ID": "86c1k4gnb",
@@ -1165,7 +1139,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c0h33bz": {
       "Task ID": "86c0h33bz",
       "Task Name": "Develop a scalable means of passing through calibrated met features",
       "Parent ID": "86c1jkftv",
@@ -1186,7 +1160,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1jkf0k": {
       "Task ID": "86c1jkf0k",
       "Task Name": "Set-up Experiment Tracking Instance in Comet ML",
       "Parent ID": "86c1jkftv",
@@ -1207,7 +1181,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1k50qj": {
       "Task ID": "86c1k50qj",
       "Task Name": "Connect model registry to Comet ML",
       "Parent ID": "86c1jkftv",
@@ -1228,7 +1202,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1k4nuv": {
       "Task ID": "86c1k4nuv",
       "Task Name": "General Bugs",
       "Parent ID": "",
@@ -1249,7 +1223,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c3xgpv2": {
       "Task ID": "86c3xgpv2",
       "Task Name": "Bug fix for daily updating of parque files",
       "Parent ID": "86c1k4nuv",
@@ -1270,7 +1244,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c1k4pg4": {
       "Task ID": "86c1k4pg4",
       "Task Name": "Datalake write failures due to random string outputs - investigate and feedback",
       "Parent ID": "86c1k4nuv",
@@ -1291,7 +1265,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c31uj24": {
       "Task ID": "86c31uj24",
       "Task Name": "Fix Mobile Layout for Monitoring Dashboard",
       "Parent ID": "86c1k4nuv",
@@ -1312,7 +1286,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c497qma": {
       "Task ID": "86c497qma",
       "Task Name": "Dashboard file updating bug",
       "Parent ID": "86c1k4nuv",
@@ -1333,7 +1307,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c30qb9c": {
       "Task ID": "86c30qb9c",
       "Task Name": "Add upload button to upload actual data from clients",
       "Parent ID": "86c30q3wb",
@@ -1354,7 +1328,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c30qdu8": {
       "Task ID": "86c30qdu8",
       "Task Name": "Add selectable colour pallettes for Cards Depending on site",
       "Parent ID": "86c30q3wb",
@@ -1375,7 +1349,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c3zqy0z": {
       "Task ID": "86c3zqy0z",
       "Task Name": "Add tabs for Forecast/Rmse",
       "Parent ID": "86c30q3wb",
@@ -1396,7 +1370,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c438g7k": {
       "Task ID": "86c438g7k",
       "Task Name": "Add overall forecast horizon selection",
       "Parent ID": "86c30q3wb",
@@ -1417,7 +1391,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c43cn9r": {
       "Task ID": "86c43cn9r",
       "Task Name": "Bug for graph layout on monitoring dashboard",
       "Parent ID": "86c30q3wb",
@@ -1438,7 +1412,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c443w42": {
       "Task ID": "86c443w42",
       "Task Name": "Hide/Show graph For forecast/Error graphs",
       "Parent ID": "86c30q3wb",
@@ -1459,7 +1433,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c443yar": {
       "Task ID": "86c443yar",
       "Task Name": "Add CSV file as upload option (with xlsx)",
       "Parent ID": "86c30q3wb",
@@ -1480,7 +1454,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c444tzr": {
       "Task ID": "86c444tzr",
       "Task Name": "Modal for File update History",
       "Parent ID": "86c30q3wb",
@@ -1501,7 +1475,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c48nvq7": {
       "Task ID": "86c48nvq7",
       "Task Name": "Add filter for Intra day and duplicate handling in datalake Forecast Processor",
       "Parent ID": "86c30q3wb",
@@ -1522,7 +1496,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c48q5pt": {
       "Task ID": "86c48q5pt",
       "Task Name": "Make a schedular for hourly datalake and S3 updates",
       "Parent ID": "86c30q3wb",
@@ -1543,7 +1517,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c498nkm": {
       "Task ID": "86c498nkm",
       "Task Name": "Plan Updated Pipeline",
       "Parent ID": "86c30q3wb",
@@ -1564,7 +1538,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4f0r94": {
       "Task ID": "86c4f0r94",
       "Task Name": "Update layouting (goes to next line)",
       "Parent ID": "86c30q3wb",
@@ -1585,7 +1559,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4f0rgw": {
       "Task ID": "86c4f0rgw",
       "Task Name": "Change position of update times",
       "Parent ID": "86c30q3wb",
@@ -1606,7 +1580,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c47mxwy": {
       "Task ID": "86c47mxwy",
       "Task Name": "PZero data monitoring and alerting system",
       "Parent ID": "",
@@ -1627,7 +1601,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c47my7h": {
       "Task ID": "86c47my7h",
       "Task Name": "Investigate which python package to use. Start with NannyML",
       "Parent ID": "86c47mxwy",
@@ -1648,7 +1622,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4m838z": {
       "Task ID": "86c4m838z",
       "Task Name": "Host a n8n service on hostinger",
       "Parent ID": "86c47mxwy",
@@ -1669,7 +1643,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4m83qw": {
       "Task ID": "86c4m83qw",
       "Task Name": "Design a high level monitoring flow for hydra as POC",
       "Parent ID": "86c47mxwy",
@@ -1690,7 +1664,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49fd05": {
       "Task ID": "86c49fd05",
       "Task Name": "Improving internal monitoring dashboard",
       "Parent ID": "",
@@ -1711,7 +1685,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49ferw": {
       "Task ID": "86c49ferw",
       "Task Name": "Create Dynamo Tables for customer live updates",
       "Parent ID": "86c49fd05",
@@ -1732,7 +1706,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49h04e": {
       "Task ID": "86c49h04e",
       "Task Name": "Add Dynamo DB and lambda function integration",
       "Parent ID": "86c49fd05",
@@ -1753,7 +1727,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49jmf3": {
       "Task ID": "86c49jmf3",
       "Task Name": "Alter datalake-forecast-processor to work off site rather than customer",
       "Parent ID": "86c49fd05",
@@ -1774,7 +1748,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49fgg6": {
       "Task ID": "86c49fgg6",
       "Task Name": "Move both dispatchers code to new step function",
       "Parent ID": "86c49fd05",
@@ -1795,7 +1769,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49gy6t": {
       "Task ID": "86c49gy6t",
       "Task Name": "Piece step function together & add schedular",
       "Parent ID": "86c49fd05",
@@ -1816,7 +1790,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49gu58": {
       "Task ID": "86c49gu58",
       "Task Name": "Set up webSocket step function",
       "Parent ID": "86c49fd05",
@@ -1837,7 +1811,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49guzp": {
       "Task ID": "86c49guzp",
       "Task Name": "Add Dynamic fetchs based on websocket payload (frontend) (live)",
       "Parent ID": "86c49fd05",
@@ -1858,7 +1832,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49gwhu": {
       "Task ID": "86c49gwhu",
       "Task Name": "Use DynamoDB table for update check (frontend) (between sessions)",
       "Parent ID": "86c49fd05",
@@ -1879,7 +1853,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49h2vm": {
       "Task ID": "86c49h2vm",
       "Task Name": "Add user profile presets to dynamoDB",
       "Parent ID": "86c49fd05",
@@ -1900,7 +1874,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c49kzud": {
       "Task ID": "86c49kzud",
       "Task Name": "Separate Performance metrics into site files",
       "Parent ID": "86c49fd05",
@@ -1921,7 +1895,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4a29ej": {
       "Task ID": "86c4a29ej",
       "Task Name": "Add Modal & API endpoints for customer/site addition",
       "Parent ID": "86c49fd05",
@@ -1942,7 +1916,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4a36de": {
       "Task ID": "86c4a36de",
       "Task Name": "Clean up Grid components",
       "Parent ID": "86c49fd05",
@@ -1963,7 +1937,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4b22q7": {
       "Task ID": "86c4b22q7",
       "Task Name": "Create Customer Config Page & routes",
       "Parent ID": "86c49fd05",
@@ -1984,7 +1958,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4dk419": {
       "Task ID": "86c4dk419",
       "Task Name": "Make customer config form user friendly",
       "Parent ID": "86c49fd05",
@@ -2005,7 +1979,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4dt68a": {
       "Task ID": "86c4dt68a",
       "Task Name": "Create lambda function that updates manifest table from config table",
       "Parent ID": "86c49fd05",
@@ -2026,7 +2000,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4e35fe": {
       "Task ID": "86c4e35fe",
       "Task Name": "Stress Testing Pipeline",
       "Parent ID": "86c49fd05",
@@ -2047,7 +2021,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4efgje": {
       "Task ID": "86c4efgje",
       "Task Name": "Ingest perm metrics jsons by site",
       "Parent ID": "86c49fd05",
@@ -2068,7 +2042,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4h97ht": {
       "Task ID": "86c4h97ht",
       "Task Name": "Fix Step function broadcast data delivery to websocket",
       "Parent ID": "86c49fd05",
@@ -2089,7 +2063,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4hpjeg": {
       "Task ID": "86c4hpjeg",
       "Task Name": "Resolve Amplify Deployment Bugs",
       "Parent ID": "86c49fd05",
@@ -2110,7 +2084,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4j1901": {
       "Task ID": "86c4j1901",
       "Task Name": "Add P-10 P-90, P-20- P-80, P-50 Shade differences",
       "Parent ID": "86c49fd05",
@@ -2131,7 +2105,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c4jt8zt": {
       "Task ID": "86c4jt8zt",
       "Task Name": "Fix lambda Bug no indexs bug",
       "Parent ID": "86c49fd05",
@@ -2152,7 +2126,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c5mbuwe": {
       "Task ID": "86c5mbuwe",
       "Task Name": "Implement AI monitoring agent for existing sites",
       "Parent ID": "86c5mbu95",
@@ -2173,7 +2147,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c5yvct9": {
       "Task ID": "86c5yvct9",
       "Task Name": "Hold first design planning session",
       "Parent ID": "86c5yvc19",
@@ -2194,7 +2168,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c6d8rq9": {
       "Task ID": "86c6d8rq9",
       "Task Name": "Investigate and map existing deployment pipeline",
       "Parent ID": "86c5yvc19",
@@ -2215,7 +2189,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c6d8rvu": {
       "Task ID": "86c6d8rvu",
       "Task Name": "Identify areads of improvement for the pipeline",
       "Parent ID": "86c5yvc19",
@@ -2236,7 +2210,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c7d01a1": {
       "Task ID": "86c7d01a1",
       "Task Name": "Review XML requirements and populate necessary fields",
       "Parent ID": "86c7d00v0",
@@ -2257,7 +2231,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c7d027u": {
       "Task ID": "86c7d027u",
       "Task Name": "Meet to discuss approach",
       "Parent ID": "86c7d00v0",
@@ -2278,7 +2252,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxtv1": {
       "Task ID": "86c8jxtv1",
       "Task Name": "Training pipeline frontend",
       "Parent ID": "",
@@ -2299,7 +2273,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxuza": {
       "Task ID": "86c8jxuza",
       "Task Name": "Settings, Data, Training, Testing Base",
       "Parent ID": "86c8jxtv1",
@@ -2320,7 +2294,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxv85": {
       "Task ID": "86c8jxv85",
       "Task Name": "Streamlit Frontend",
       "Parent ID": "86c8jxtv1",
@@ -2341,7 +2315,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8kkbuc": {
       "Task ID": "86c8kkbuc",
       "Task Name": "SAM local invoke test",
       "Parent ID": "86c8jxtv1",
@@ -2362,7 +2336,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxvt0": {
       "Task ID": "86c8jxvt0",
       "Task Name": "AWS integration and unit tests for formats",
       "Parent ID": "86c8jxtv1",
@@ -2383,7 +2357,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxu9q": {
       "Task ID": "86c8jxu9q",
       "Task Name": "Inference Analyzer Vesion 1",
       "Parent ID": "",
@@ -2404,7 +2378,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxwub": {
       "Task ID": "86c8jxwub",
       "Task Name": "Reproducable way of analysing the inference to decide whether to push to prod",
       "Parent ID": "86c8jxu9q",
@@ -2425,7 +2399,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxxdg": {
       "Task ID": "86c8jxxdg",
       "Task Name": "Standardize and package the tool",
       "Parent ID": "86c8jxu9q",
@@ -2446,7 +2420,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxxu0": {
       "Task ID": "86c8jxxu0",
       "Task Name": "Frontend for downloading inference results",
       "Parent ID": "86c8jxu9q",
@@ -2467,7 +2441,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8jxz0r": {
       "Task ID": "86c8jxz0r",
       "Task Name": "Reproducable software to automatically analyse actuals vs predictions",
       "Parent ID": "86c8jxy7v",
@@ -2488,7 +2462,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c97uxj9": {
       "Task ID": "86c97uxj9",
       "Task Name": "Research",
       "Parent ID": "86c97uumq",
@@ -2509,7 +2483,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_knowledge"
     },
-    {
+    "86c97uxy9": {
       "Task ID": "86c97uxy9",
       "Task Name": "Capture raw source manifests for all inputs",
       "Parent ID": "86c97uumq",
@@ -2530,7 +2504,7 @@
       "Category": "cat_product_health",
       "Subcategory": "sub_ph_knowledge"
     },
-    {
+    "86c8thyu1": {
       "Task ID": "86c8thyu1",
       "Task Name": "Meteomatics application",
       "Parent ID": "",
@@ -2551,7 +2525,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8thz4n": {
       "Task ID": "86c8thz4n",
       "Task Name": "Datalake visualizer application",
       "Parent ID": "",
@@ -2572,7 +2546,7 @@
       "Category": "",
       "Subcategory": ""
     },
-    {
+    "86c8tj14j": {
       "Task ID": "86c8tj14j",
       "Task Name": "Shap values for the forecasts",
       "Parent ID": "86c8thz4n",
@@ -2593,5 +2567,5 @@
       "Category": "",
       "Subcategory": ""
     }
-  ]
+  }
 }
