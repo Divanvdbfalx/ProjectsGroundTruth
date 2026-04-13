@@ -1,0 +1,336 @@
+
+
+=== PAGE 1 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Road to SAWEM 2026
+The Role of the
+Market Participant
+Prepared by:
+0
+
+=== PAGE 2 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Document Control
+Document Title SAWEM Concept Note: The Role of the Market
+Version 1.0
+Date of Latest Update 13 June 2025
+Prepared by Energy Council of South Africa
+Endorsed by NTCSA tbc
+Distribution For stakeholder consultation
+Document Status Final
+1
+
+=== PAGE 3 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+The Role of a Market Participant and Compliance Measures
+Balance Responsible Parties (BRPs) play a critical role in energy markets as they are
+tasked with maintaining a balance between energy production and schedules.
+1. The Role of a Market Participant in the Market
+According to the Market Code (MC), Market Participant means a Party that has elected and
+is compliant to participate in the Day Ahead and Intra-Day Markets within the SAWEM, and is
+a BRP for trades carried out on these platforms. This will include all such entities as
+generators, distributors, LPUs, and Traders, who will need to complete a number of steps in
+compliance with the SAWEM code (regulations). Entities opting not to be a MP will continue
+as either a Municipal customer or Eskom direct customer, under the Balancing control of
+Eskom Dx.
+In the phased market approach, the BRP and the MP are phased in successively, but they
+ultimately coincide in their roles in the market. The initial BRP role will extend to all generators
+of 10MW or greater capacity regardless of whether or not they elect to be a MP. All MP’s,
+however, must be BRPs. The benefit of being an MP is to gain access to lower cost and more
+flexible contracting available through the market and in the longer term to potentially offer
+ancillary or other services to support SO needs for balancing, capacity and green credits.
+An MP performs several key functions:
+• Sending generation or demand bids to the Market Operator (MO) for bid matching.
+• Receiving final schedules from the MO, which are shared with the SO for dispatch.
+• Monitoring schedule performance during delivery and reducing imbalances through
+intra-day market participation or ancillary services - although these functionalities may
+not be available at launch.
+• Handling after-the-fact accounting of imbalances and paying or receiving payments
+based on the MO's determinations.
+Market participants may or may not be eligible for regulation capacity payments from the MO.
+Such payments, outlined in Market Code 13, apply to generators eligible under the balancing
+mechanism. This will only apply once the balancing price mechanism is operationalised which
+2
+
+=== PAGE 4 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+likely will not happen from day one of market operations. Payments will apply to generators
+and loads that can be curtailed according to the Market Code’s definition.
+2. What Participants need to Perform as MPs in SAWEM
+a. Forecasting and Bidding Capability
+A number of MP activities will be directly related to balancing. In the day ahead market, each
+MP forecasts demand for each of the twenty-four (24) hours (Trading Periods) of the following
+day (Dispatch Day) commencing at hour ending 01:00 and terminating at hour ending 24:00
+(Market Code 9.4). Generators and/or traders declare their availability and prices for each of
+those hours together with unit flexibility capabilities (e.g. provision of reserves). They submit
+hourly bids for their available volumes (MW) and the prices (R/MWh) they are prepared to
+accept into the market.
+Buyers (LPUs and/or Traders) submit hourly bids with their required volumes and prices they
+are prepared to pay. These shall be submitted to the MO by 10:00 on the day before dispatch
+(delivery) day.
+Indicative schedules for six days following the dispatch day shall also be submitted (market
+code 9.0). The MO runs a bid matching process to discover an unconstrained clearing price
+and clearing volume at the crossing point of supply and demand curves.
+All matched participants will pay for their volumes at the market clearing price (MCP) and
+results are shared with bidders. When accepted, a schedule is shared by the MO with the SO
+for delivery the following day. Each seller and each buyer are bound by the dispatch schedule
+given to the SO to generate or withdraw power at the given rates (MW/MWh).
+MPs must build capacity for accurate forecasting and bidding procedures. Where necessary,
+and especially for distributors, load forecasting tools need to be procured, and staff get trained
+in their use. Generators (IPPs) and traders need accurate weather forecasting tools so that
+they are able to predict solar and wind capabilities for the following day. Other generating
+sources need access to accurate generation availability figures in order to limit mismatches
+between schedules and actual generation and reduce imbalance penalty charges.
+3
+
+=== PAGE 5 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+b. Information Exchange
+Effective communication and data exchange between MPs, MOs, and SOs are critical for
+smooth market operations and accurate scheduling, operational stability, and financial
+settlement. This is done accordance with Market Codes 7.3 to 7.6 and includes plant, network,
+metering, banking, trading identifiers of units and traders, trading unit capabilities, fuel
+resource position and unit production limitations amongst other data.
+When there are changes to such data, MPs are required to notify the MO. If this data is not
+exchanged in reasonable time an MP may not be able to trade in the market. Data exchange
+includes demand forecasts from their customers, coordinating generation and consumption
+positions to submit balanced bids, and exchanging operational data to reduce imbalance risks.
+c. Metering
+All MPs must have metering at all points of power exchange (Points of Delivery) so that power
+flows may be measured and the data collected and exchanged with all relevant parties that
+include the SO, MO, Traders etc. Each metering point must be registered with its locational
+coordinates. A procedure for registering and de-registering of meters must be established by
+the MO and MPs must comply with the procedure. They must register their meters.
+The metering standards must comply with grid code standards and must be certified for use.
+Main and check meters are normally required. MPs must ensure that their meters meet the
+required standards. Unavailability or wrong metering data leads to financial consequences as
+participants may be inaccurately billed.
+d. Contractual Agreements
+MPs must adhere to the Market Code and be bound to its requirements through the MP
+concluding a Market Participant Agreement with the Market Operator to facilitate trade with
+the MO (clause 3.4 of Market Code). MPs must complete application forms and be admitted
+before they can operate in the market. A fee may be charged for processing the application.
+e. Transaction Settlement Requirements
+4
+
+=== PAGE 6 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+MPs must open trading accounts at the transaction clearing bank (Market Bank) nominated
+by the MO to enable the MO to move funds and pay for transactions entered into.
+MPs must open both operating and collateral accounts and nominate a credit cover instrument
+acceptable to the MO as per item 6. 2 of the Market Code. The applicant shall nominate its
+credit cover instrument. The MO must be authorised to move funds to pay for transactions.
+MP must be ready to replenish security account when it has been drawn down lest it be
+prepared to be barred from trading.
+Each Party must open its operating and credit cover accounts before they may be allowed to
+trade. The quantum of credit cover still has to be decided by the MO.
+f. Trading Procedures
+MPs need to understand market rules and all trading procedures that include balance
+responsibility, bid submission and transaction settlement. Training on the rules and
+procedures is required to bring all participants to the same level of understanding and prepare
+them for performing their individual roles in the market. Without training there will be
+discordance in the market leading to inefficient trading, disputes and/or system instability.
+g. Trading Tools and Technology
+MPs must have systems that are compatible with the MO system, and they must be given
+trading codes for them to be able to enter bids and receive results.
+MPs need reliable telecommunications systems so that they may be able to trade without
+interruptions. Large MPs like distributors may need a good SCADA system for high system
+visibility and data collection. MPs need to review their systems for compliance and close all
+identified gaps.
+h. Capacity building and Trader certification
+MP staff needs to be trained on the functioning and requirements for SAWEM so that they are
+prepared for their role in a new market environment. They need to understand the roles and
+responsibilities of the entities they will be interacting with and their own roles, responsibilities
+5
+
+=== PAGE 7 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+and obligations. They will need to understand the market rules and procedures that apply to
+each entity. Traders will need to be certified before they can get trading codes that allow them
+to submit bids and receive results. Participants will be required to attend the Market School
+courses to prepare them for their roles.
+Next steps for entities to consider in preparation for becoming a Market Participant
+1. Each entity to decide on whether or not to qualify as a MP. If so, specify the role it will play
+in the market (e.g., generator, LPU, trader, not participate)
+2. 3. 4. 5. 6. 7. Submit required technical and company information (plant, units, fuel, identifiers, etc.)
+Conclude Market Participant and Balancing Agreements with the MO
+Traders to be trained, certified and receive trading codes from the Market Operator
+Register metering points and ensure compliance with Grid Code metering standards
+Set up operating and collateral accounts with the Market Bank
+Ensure forecasting and bidding systems are in place and compatible, including accurate
+weather forecasting.
+8. 9. Build capacity for effective information exchange and coordination with the MO and SO.
+Prepare and test day-ahead bids and participating in the market
+10. Prepare for the inclusion of intra-day markets to allow for adjustments in forecasts and
+capabilities during the delivery period.
+3. Summary of Risks and Readiness Chek List
+Category Risk Impact Readiness Check List
+LPUs IPP Trader
+Forecasting
+and Bidding
+Capability
+System
+instability
+and
+imbalance
+penalties due
+to poor or
+lack of
+capacity for
+accurate
+forecasting
+and bidding
+Market
+inefficiency
+with
+unnecessary
+costs
+Acquisition of
+generation and load
+forecasting tools
+Training of staff in
+accurate forecasting
+and bidding
+procedures
+Access to accurate
+generation
+availability figures
+Metering Inaccurate
+billing due to
+non-
+conforming
+meters
+Disputes and
+market
+distortions
+MPs adhere to
+specified metering
+standards
+Meter identification
+and registration
+6
+
+=== PAGE 8 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA Contractual
+Agreements
+Inability to
+trade if not
+admitted by
+MO
+Financial loss
+due to lost
+trading
+opportunities
+Transaction
+Settlement
+Inability to
+trade in the
+market if
+Party does
+not have
+requisite
+operating
+and collateral
+accounts
+Financial loss
+due to lost
+trading
+opportunities
+Trading
+Procedures
+Inefficient
+trading in the
+market
+Discordance in
+the market
+leading to
+inefficient
+trading,
+disputes
+and/or system
+instability
+Trading
+Tools and
+Technology
+Inefficient
+and
+inconsistent
+trading in the
+market
+Inability or
+unnecessary
+interruptions in
+trading
+Poor visibility
+and data
+collection from
+network
+Capacity
+Building
+Inability
+and/or
+inefficient
+trading
+Financial loss
+due to lost
+trading
+opportunities
+2025
+MP to conclude
+Market Participant
+Agreement with the
+MO
+Each MP must open
+its operating and
+credit cover
+accounts
+MO to decide on
+quantum of credit
+cover
+Mo to execute
+Training on market
+rules and
+procedures
+Attend market
+school
+Acquisition of
+systems that are
+compatible with the
+MO system
+Availability of
+reliable
+telecommunications
+systems
+Availability of
+SCADA system to
+Big MPs and data
+collection
+Review systems for
+compliance and
+close all identified
+gaps
+Training on roles
+and responsibilities
+of the entities they
+will be interacting
+with
+Training on
+understanding own
+roles,
+responsibilities and
+obligations
+Training on
+understanding of
+market rules and
+procedures
+Training for
+certification to trade
+7

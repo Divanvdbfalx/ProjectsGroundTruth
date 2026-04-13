@@ -1,0 +1,580 @@
+
+
+=== PAGE 1 ===
+
+Research Paper on
+The Contracts for Difference
+CAPACITIES FOR AN ENERGY TRANSITION
+August 2022
+
+=== PAGE 2 ===
+
+Contents Contents
+Abbreviations i
+1. Introduction 1
+1.1 Background 1
+1.2 Content 2
+2. The basics of Contracts for Difference and financial energy markets 3
+2.1 Contracts for Difference as regulated schemes 5
+2.2 Contracts for Difference as generic market products 6
+3. Potential applications of Contracts for Difference in a South African context 7
+4. Power Purchase Agreements / vesting contracts in South Africa 8
+5. Case studies 10
+5.1 CfD support schemes for renewable energy: UK and Finland 10
+5.2 CfDs as tools in market liberalization: Bulgaria 11
+5.3 Vesting contracts for curbing the exercise of market power: Singapore 11
+6. Conclusion 12
+7. Further reading 13
+Appendix I: A practical example of a Contract for Difference 14
+
+=== PAGE 3 ===
+
+Abbreviations
+CfD Contract for Difference
+CPA Central Purchasing Agency
+DAM Day Ahead Market
+FiT Feed-in-Tariffs
+GIZ Deutsche Gesellschaft für Internationale Zusammenarbeit
+IPP Independent power producer
+PPA Power Purchase Agreement
+RES Renewable Energy Sources
+SAGEN South African-German Energy Programme
+Contracts for Difference i
+
+=== PAGE 4 ===
+
+1. Introduction
+1.1 Background
+The South African–German Energy Programme (SAGEN), funded by the German government
+and implemented by the Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ),
+was approached by Eskom Transmission to provide further technical assistance and
+capacity building for the implementation of reforms in the power sector. This research
+paper has been developed under the project “Capacities for an Energy Transition” as an
+input to the power sector reform process, where the use of Contract for Difference is part of
+the planned implementation of the Central Purchasing Agency (CPA). Separate documents
+outline the overall expected high-level market design for South-Africa and the functions
+of the CPA. It is beneficial for readers of this document to also read these papers, as they
+are interlinked and provide insight into key aspects of how the future electricity market in
+South Africa could work. This report was prepared by Hans-Arild Bredesen from Bredesen
+Consulting, acting as a sub-contractor to Nord Pool Consulting.
+Contact
+Questions and comments on this Report can be directed to:
+Hans-Arild Bredesen
+Team Leader
+E: hans-arild.bredesen@bredesenconsulting.com
+Contracts for Difference 1
+
+=== PAGE 5 ===
+
+1.2 Content
+This research paper presents the underlying concepts and selected international
+examples of the use of a Contract for Difference (CfD) to support policy objectives, more
+specifically as:
+a) a financial mechanism
+b) a transitional measure
+c) a support mechanism, or
+d) a hedging tool.
+CfDs have many use cases in electricity markets such as incentivising investment to new
+production, for example, Feed-in-Tariffs (FiT) or similar; curbing the exercise of market power,
+for example, Singapore vesting contracts; and as a support mechanism for market reform. A
+significant positive effect of CfDs is the increased liquidity in the underlying physical short-
+term market by switching bilateral physical arrangements into the market. CfDs are also
+used to control risk; hedge electricity prices, for example, when introducing a wholesale
+market; and to support existing generation capacity. CfDs could therefore have significant
+potential use in the South African context.
+Contracts for Difference 2
+
+=== PAGE 6 ===
+
+2. The basics of Contracts for
+Difference and financial
+energy markets
+To understand the function of a Contract for Difference within an energy context, one must
+first make the distinction between a physical energy market / contract and a financial
+energy market / contract. In a physical energy market, such as a Day Ahead and intraday
+energy market, trading entails a commitment for the delivery and consumption of electricity.
+Generators enter bids for the volume of electricity they are willing to produce at a certain
+price and consumers enter bids as to how much they are willing to pay for a specified
+amount of electricity. A co-optimisation algorithm is then used to match generators and
+consumers, thereby determining a market price at which the electricity is sold. (For more
+details on these market mechanisms please see the Eskom Transmission research paper
+entitled “The South African Electricity Market”).
+In a financial energy market, parties do not have to hold or trade the underlying physical
+commodity itself (in this case electricity), but rather trade based on the changing value
+of the underlying commodity (the derivative) using the physical energy market as the
+reference point. A financial energy market thus functions in much the same way as a stock
+market. CfDs have a long history as a mechanism of trading in financial markets. A CfD is
+a financial derivative contract between two parties, where the parties settle based on the
+price difference between an agreed upon price (strike price) and the underlying market
+price in the reference market (reference price).
+This type of contract can be implemented as an agreement between
+•
+two market participants (on a bilateral basis as a substitute for a physical
+bilateral contract)
+•
+a market participant and a central counterparty / marketplace, or
+•
+two market participants via a central counterparty / marketplace.
+A common setup in energy transitions and government subsidy schemes is a central
+counterparty such as a government agency or a government fund acting as the counterparty
+to the CfD. This allows the other party to the contract to reduce exposure to the volatility of
+energy prices in short-term physical market(s).
+There are two categories of CfDs: two-way and one-way CfDs. A two-way CfD is a contract
+where the direction of payments within the CfD depends on whether the difference
+between the strike price and reference price is negative or positive. The effect is that in all
+circumstances, both the buyer and seller will pay or get paid the strike price. In practical
+terms, the parties to the CfD effectively agree on the strike price as the price to be paid
+Contracts for Difference 3
+
+=== PAGE 7 ===
+
+Figure 1. Example of payments under a CfD
+for the specified volume of the underlying entity within the contract. The effective outcome
+of CfDs is that after both the physical wholesale market and the CfD contract are settled,
+the combined amount both parties have paid / have been paid adds up to the strike price
+multiplied by the agreed volume. Such a mechanism creates security and stability in the
+form of a long-term fixed energy price for both parties, while increasing liquidity due to
+their participation in the short-term physical wholesale market. This is the most common
+implementation of CfDs and there are many examples of the implementation of financial
+derivative markets for electricity, where these contracts are offered as standardised
+products to trade.
+By comparison, in a one-way CfD payments are one-directional and in the case of the
+reference price being higher than the strike price, no payments are made. This ensures a
+minimum price for the seller and allows it to keep its profit if the reference price is higher
+than the strike price. As an example, in a certain support scheme for renewable energy
+sources (RES), a generator benefits if the market price exceeds the strike price.
+Price
+Price
+1 2 3 4 5 6 7
+Hour
+Two-way CfD
+1 2 3 4 5 6 7
+Hour
+One-way CfD
+Generator income from market
+Shortfall covered by CfD
+Generator payback under CID
+Strike price
+Market price
+Figure 1. Example of payments under a CID
+Figure 1 illustrates how the payments in these two types of CfDs will be facilitated from
+the point of view of a generation company. The left side diagram of the figure presents a
+scenario with a two-way CfD. In this scenario, if the market price is lower than the strike price
+Contracts for Difference 4
+
+=== PAGE 8 ===
+
+(hours 1–3 and 7), the generator receives income from the market (dark blue) according
+to the market price (lime green), and the CfD counterparty pays the generator for the
+difference between the strike price (yellow) and the market price (dark green). If the market
+price is above the strike price (hours 4 and 5), the generator must pay back the difference
+between the strike price and the market price. If the market closing price is equal to the
+strike price, no payments outside of the market are made (hour 6). Appendix 1 presents a
+practical numerical example of how the turnover from a two-way CfD would be calculated
+compared to a Power Purchase Agreement (PPA).
+The right-hand-side diagram in Figure 1 presents a one-way CfD, where the difference to
+a two-way CfD is that when the market price exceeds the strike price, the generator gets
+to keep this difference between strike price and market price as extra revenue from the
+wholesale market. It should be noted that CfDs can be settled either at the same time
+resolution as the underlying market or less frequently and based on either hourly market
+prices or average prices. In the examples of Figure 1 the settlement is on hourly market
+prices.
+2.1 Contracts for Difference as regulated
+schemes
+The length of CfD regulated schemes can vary greatly. Support schemes for renewable
+energy generally last from 10 to 20 years. In some cases, support schemes may be tied
+to regular (for example, biannual) reviews, where the regulator determines if the CfD is still
+appropriate based on new developments in the market. A CfD can cover a specified amount
+of energy produced or consumed, or all the energy the generator is able to produce. In
+transitory measures for market deregulation and energy transitions, the CfD might be tailored
+so that the energy contracted decreases annually to give the parties a smooth transition into
+a fully competitive market and pricing.
+Depending on the purpose of the CfD, there are several ways the strike price can be set
+or agreed upon. A government can administratively determine a strike price based on
+benchmark values such as an estimated cost of new electricity generation and the price
+of carbon emissions. Arranging an auction to get the best competitive strike price is also
+common in schemes that are intended to incentivise new capacity. Alternatively, the parties
+to a bilateral CfD can agree on a price based on their expectation of future developments
+in the market price.
+CfDs are an effective way to move trade from bilateral physical contracts onto a short-term
+wholesale physical market. Typically, when introducing CfD schemes to support market
+opening, some concerns are raised as to whether the contracted parties distort the market
+with the guaranteed price from the CfD (which might be seen to disincentivise bidding in a
+competitive way). Despite CfD covered generators being compensated for their production,
+there are several reasons why the incentive to bid competitively still exists.
+Contracts for Difference 5
+
+=== PAGE 9 ===
+
+Firstly, the CfD premium will cover only the shortfall between the market price and strike
+price. In other words, in a case where a CfD covered generator bids an artificially low price,
+they would get compensated based only on the overall market closing price and thus
+wouldn’t gain from bidding artificially low (or high). Secondly, in competitive power markets
+the generators always aim to maximise their profits. Bidding on artificially high prices might
+result in the generator not being scheduled, missing any profit from that day. Thirdly, and
+most importantly, bidding at a considerably lower price level than what is justified, without
+a clear need to do so, amounts to market manipulation, which is prohibited in market rules.
+2.2 Contracts for Difference as generic market
+products
+The implementation of a financial electricity derivatives market is well-used and proven
+internationally. The main purpose of this is to allow buyers and sellers to hedge their price
+risk in the short-term physical market. In short-term physical wholesale markets, the goal is
+to produce marginal prices based on choosing the cheapest generation resources to meet
+the demand. Based on this, the short-term physical wholesale market normally produces
+a volatile short-term electricity price (reference price) which represents the underlying
+situation in the power system hour by hour. The benefit of a volatile reference price is that it
+creates incentives for investing in new production or transmission in areas with high prices
+or where access to cheap electricity is limited (often called a price signal). The downside
+of volatile prices is that they cause significant uncertainty and risk for market participants
+and investors in terms of their return on investment. An electricity derivate market can be
+introduced as a means to manage this price risk and provide hedging opportunities. This
+is typically implemented as an open marketplace with a central counterpart or as pure
+bilateral arrangements.
+Contracts for Difference 6
+
+=== PAGE 10 ===
+
+3. Potential applications of
+Contracts for Difference in
+a South African context
+CfDs are used for various purposes, and the design parameters of the contracts can be
+tailored to suit policy needs. Table 1 presents various common applications of CfDs.
+Table 1. Different applications of Contracts for Difference
+Application Explanation Main benefit
+Tool used by
+government in energy
+market liberalisation
+When a wholesale electricity market is newly
+established, CfDs can be set up solely for the
+purpose of hedging the prices for an initial period
+for the generators and retailers who are not yet
+accustomed to the mechanics of the wholesale
+market. When imposed at the time of deregulation
+or transition, this is often referred to as vesting
+contracts.
+Introducing participants to
+the market without exposing
+them to the full risk of volatile
+prices from the start, while
+retaining price signal from the
+market
+Tool used by
+government
+to incentivise
+investment
+into desirable
+technologies
+Emergent technologies are typically more
+expensive as the value chain is not yet fully
+developed. Many renewable energy support
+schemes around the world rely on CfDs or similar
+mechanisms to guarantee prices for newly installed
+renewable energy capacity.
+Incentivising investment into
+desirable technologies and
+increasing market liquidity
+Curbing the exercise
+of market power
+A government can enforce mandatory CfD schemes
+on dominant market participants, to reduce their
+market power. Guaranteeing a price with a CfD,
+for a certain amount of production during scarce
+supply, will discourage a producer from misusing
+its market power, to withhold capacity.
+Reducing incentives to use
+market power
+Replacing physical
+bilateral contracts
+A CfD can be used instead of a physical bilateral
+contract. Instead of paying an agreed upon price for
+an agreed upon volume of electricity, the parties to
+the contract sell and procure their electricity on the
+organised markets, with the CfD providing financial
+certainty.
+Increasing market liquidity,
+introducing participants to the
+market without exposing them
+to the full risk of volatile prices
+from the start, revealing the
+marginal price of the system
+Contracts for Difference 7
+
+=== PAGE 11 ===
+
+4. Power Purchase Agreements /
+vesting contracts in
+South Africa
+South Africa is currently aiming to create a new scheme where a CPA is established as a
+market support entity. The CPA will then be the counterpart to PPAs signed with Eskom
+Generation’s power plants. This structure of the proposed PPAs is illustrated in Figure 2.
+Wholesale, cost
+reflective
+electricity prices
+Volumes sold
+based on energy
++ reserve capacity hedge
+Volumes sold on the market
+Capacity payment + payment for additional
+ancillary services
+Regulated phase Transition phase Market phase
+Figure 2. South African Power Purchase Agreement / vesting contract scheme
+One main difference to the other international examples provided here is that this scheme
+has a physical part through capacity payments. The PPAs (vesting contracts) consist of
+three integral parts:
+1. Capacity payment. This part will be applicable to the PPA holder for the
+lifetime of the plant. Based on the contract specifics, the contracted power
+station is paid for available capacity for each hour of the month. The
+available capacity is then declared in the Day Ahead Market (DAM). The
+CPA will pay for the declared available capacity at an availability rate that
+is calculated based on predetermined formula, and takes into account
+capital recovery, annual fixed maintenance recovery, annual fixed operating
+cost and effective availability. Penalty rates will apply when the contracted
+power station does not have a metered availability equal to their declared
+availability.
+Contracts for Difference 8
+
+=== PAGE 12 ===
+
+2. Ancillary services capacity payment. This part will cover ancillary services
+such as starting a unit without external grid support (black starting),
+continuing to power an area without external grid support (islanding) and
+voltage regulation. Ancillary service terms in the contract may not apply
+for the full life of plant. Some of the payments may apply to technical
+adjustments or investments made to the plant and would incorporate a
+longer term pay-back (for example, islanding and black starting) whereas
+others could be more dynamic and have an initial capacity component that
+terminates before the contract expiry.
+3. Energy hedge. Generally, the energy production is expected in the long
+run to be compensated in the DAM. However, in the medium term it is
+expected that specified volumes will be hedged against an average energy
+rate applicable in the year. This energy rate should cover the fuel costs
+of the generator as well as variable operations and management costs.
+The volumes associated with the hedge shall reduce annually, allowing
+for gradual exposure for the power stations to market prices. Participation
+in the market, as well as the price that is offered into the market, are
+requirements of the PPA. These prices should reflect the average energy
+rate for the year, allowing for a cone of 15% deviation to accommodate
+short-term changes in incremental cost.
+For more information, please read the Eskom Transmission research paper entitled “The
+Role of the Central Purchasing Agency”.
+Contracts for Difference 9
+
+=== PAGE 13 ===
+
+5. Case studies
+5.1 CfD support schemes for renewable
+energy: UK and Finland
+The main mechanism of the UK government for renewable energy support is a CfD support
+scheme that is targeted at supporting low carbon energy project implementation. The UK
+CfD is a contract between a low carbon electricity generator and the government-owned
+Low Carbon Contracts Company (LCCC) and is a textbook example of a renewable energy
+support scheme. The UK CfD requires the generators to sell their energy to the wholesale
+market and offers a guaranteed price for 15 years. The strike price is determined in an auction
+where the prospective generators bid their strike price and compete for the contracts. The
+UK CfD is a two-way contract, therefore when the market price exceeds the strike price, the
+generator is required to pay back the difference. CfDs are awarded under the scheme in
+auctions, held in periodical allocation rounds, where a number of projects that fit in a pre-
+determined budget are accepted. Four allocation rounds have been completed to date,
+with the latest ending in July 2022. Prior to the fourth round, the scheme had supported
+projects of differing low-carbon technologies totalling to 15,5 GW. The budget for the CfD
+scheme is funded by payments from electricity suppliers under a CfD Supplier Obligation
+Levy. The levy is two-way in the same sense as a CfD: if the reference price is higher than
+the strike price, Low Carbon Contracts Company returns payments to suppliers.
+The Finnish CfD based Feed-in-Tariff (FiT) support scheme represents a slightly different
+approach to support renewable energy sources development. The Finnish scheme was
+introduced in 2011 and the issuing of new contracts stopped in 2017 when the limit of
+2 500 MW of new wind power projects was reached. The main differences to the UK
+CfD are twofold. Firstly, instead of an auction, the strike price was administratively set to
+83,5 EUR / MWh for all eligible producers. Secondly, the contract is a one-way type CfD
+– if the reference price exceeds the strike price, the generator does not pay back the
+difference. Within the Finnish FiT, the producers are paid the difference between the strike
+price and the three-month average market price according to the electricity produced.
+Energy Authority, the Finnish National Regulatory Authority acts as the counterpart to the
+CfD. The contract length is 12 years. The support scheme targeted wind power plants,
+biogas plants and wood-based fuel plants that fulfilled certain criteria and was offered to
+new projects up to a certain capacity threshold. There is a floor condition to the strike price,
+where, if the market price remains under 30 EUR / MWh during the three months settlement
+period, the strike price for that period is reduced by 30 EUR to 53,5 EUR / MWh.
+Contracts for Difference 10
+
+=== PAGE 14 ===
+
+5.2 CfDs as tools in market liberalization:
+Bulgaria
+Bulgaria is currently undergoing energy market liberalisation and in a 2016 report the World
+Bank recommended CfDs as one of the tools to target specific parts of the electricity sector
+to introduce the transition. The main aim of the recommended CfDs is to increase the
+liquidity of the Bulgarian Day Ahead wholesale market by integrating independent power
+producers into the market. The recommendation includes replacing long-term PPAs, off-
+taker agreements, and fixed feed-in tariffs with CfDs that force the producers to trade in
+the organised markets, while respecting their earlier contract terms. A stepwise rollout is
+recommended, so that the CfDs would be imposed on different producer groups gradually.
+The Bulgarian Electricity Security Service fund would act as the counterparty to the CfDs.
+The report also proposes that CfDs could act as a support mechanism for liberalising the
+regulated sector.
+5.3 Vesting contracts for curbing the exercise
+of market power: Singapore
+The National Electricity Market of Singapore has had a vesting contract scheme in place
+since 2004 that applies to both the generation and retail segments. The eligible power
+producers are guaranteed a price (vested) for a percentage of their production, and on
+the retail side the vesting contracts cover the non-contestable load (meaning not part of
+the market) and part of the contestable load (part of the market). The vesting contract is
+a two-way CfD issued by the governing body, the Energy Market Authority, covering a
+specified quantity of electricity. The quantity allocated follows a calendar that sets a different
+hedge proportion or hedge quantity based on the day of the week and the time of day,
+to vest more electricity during peak consumption. The purpose of the Singapore vesting
+contract scheme is to curb the exercise of market power, more specifically to incentivise
+the dominant producers to not artificially increase prices by withholding capacity. The
+Energy Market Authority revises the scheme biannually and determines the vesting level
+and strike price (vesting price) based on comprehensive reviews. The vesting price is tied
+to an administratively calculated Long Run Marginal Cost of the most efficient generation
+technology that at the time of the review covered at least 25% of the electricity consumption.
+The national market support service company, SP Services, is the counterpart to the CfDs.
+The dominant producers see the scheme as financial support to maintain existing capacity,
+but the governing body maintains that the purpose is to reduce market power and are
+gradually reducing the vesting level.
+Contracts for Difference 11
+
+=== PAGE 15 ===
+
+6. Conclusion
+In conclusion, CfDs are an extensively used financial tool in which both parties to the
+contract agree on a price or a minimum price for a specified volume of the underlying asset
+(in this case electricity). The fact that one does not have to physically own the underlying
+asset means that the parties can trade on the short-term physical energy market, while
+benefiting from the long-term price stability created by the contract. These contracts can
+therefore be used to create desirable market conditions such as increased liquidity on the
+short-term physical energy market and investment in new capacity when price signals are
+insufficient to meet system needs.
+Contracts for Difference 12
+
+=== PAGE 16 ===
+
+7. Further reading
+Contracts for Difference (n.d.) What is the Contracts for Difference Scheme? Available at:
+https://www.cfdallocationround.uk/about
+DMRE (Department of Mineral Resources and Energy) (2022) Electricity Regulation
+Amendment Bill. Government Gazette 45898, 10 February. Available at:
+https://www.gov.za/sites/default/files/gcis_document/202203/45898gon1746.pdf
+DMRE (2022) Electricity Pricing Policy Review. Government Gazette 45899, 10 February.
+Available at:
+https://www.gov.za/sites/default/files/gcis_document/202203/45899gon1747.pdf
+DPE (Department of Public Enterprises) (2019) Roadmap for Eskom in a Reformed Electricity
+Supply Industry. Available at:
+https://www.gov.za/sites/default/files/gcis_document/201910/roadmap-eskom.pdf
+Energy Market Authority of Singapore: Vesting Contracts. Available at:
+https://www.ema.gov.sg/Licensees_Electricity_Vesting_Contracts.aspx
+Open Electricity Market (n.d.) Understanding Vesting Contract Calculations. Available at:
+https://www.openelectricitymarket.sg/business/resources/vesting-contracts/
+understanding-vesting-contract-calculations
+The World Bank (2016) Bulgaria Power Sector: Making the Transition to Financial Recovery
+and Market Liberalization Summary Report: Reimbursable Technical Assistance.
+Available at: https://www.me.government.bg/files/useruploads/files/wb_ras_i__
+summary_report_en.pdf
+Contracts for Difference 13
+
+=== PAGE 17 ===
+
+Appendix I: A practical example
+of a Contract for Difference
+In this practical example, we compare the turnover of an Independent Power Producer
+under a PPA and a CfD for 24 hours. In the example, both the PPA contract price and the
+strike price of the CfD are 52€ / MWh and cover a volume of electricity of 7 MW. The Day
+Ahead Market (DAM) price fluctuates during the day. The price difference between the
+strike price and the DAM price is calculated as follows
+While the turnover is calculated as
+Price difference = Strike price – DAM price
+While turnover is calculated as
+Turnover = Price × volume × time
+€ =
+€
+MWh
+× MW × h
+Table 2 indicates the resultant turnover for the DAM, CfD and PPA.
+Table 2. Sample prices for a Power Purchase Agreement versus Contract for Difference
+Hour Strike
+price
+DAM
+price
+Price
+Difference
+Volume Turnover
+in DAM
+CfD
+Transfer
+Turnover
+with CfD
+Turnover
+with PPA
+Units € /
+MWh
+€ /
+MWh
+€ /
+MWh
+MW € € € €
+1 52 26,87 25,13 7 188,09 175,91 364 364
+2 52 26,97 25,03 7 188,79 175,21 364 364
+3 52 26,8 25,2 7 187,6 176,4 364 364
+4 52 26,17 25,83 7 183,19 180,81 364 364
+5 52 27,3 24,7 7 191,1 172,9 364 364
+6 52 28,22 23,78 7 197,54 166,46 364 364
+7 52 38,75 13,25 7 271,25 92,75 364 364
+8 52 51,31 0,69 7 359,17 4,83 364 364
+9 52 54,05 -2,05 7 378,35 -14,35 364 364
+10 52 50,24 1,76 7 351,68 12,32 364 364
+11 52 45,2 6,8 7 316,4 47,6 364 364
+12 52 46,01 5,99 7 322,07 41,93 364 364
+Hour Strike
+price
+DAM
+price
+Price
+Difference
+Volume Turnover
+in DAM
+CfD
+Transfer
+Turnover
+with CfD
+Turnover
+with PPA
+Contracts for Difference 14
+
+=== PAGE 18 ===
+
+Units € /
+MWh
+€ /
+MWh
+€ /
+MWh
+MW € € € €
+13 52 41,47 10,53 7 290,29 73,71 364 364
+14 52 42,9 9,1 7 300,3 63,7 364 364
+15 52 44,9 7,1 7 314,3 49,7 364 364
+16 52 49,72 2,28 7 348,04 15,96 364 364
+17 52 60,07 -8,07 7 420,49 -56,49 364 364
+18 52 71,45 -19,45 7 500,15 -136,15 364 364
+19 52 67,87 -15,87 7 475,09 -111,09 364 364
+20 52 52,85 -0,85 7 369,95 -5,95 364 364
+21 52 42,5 9,5 7 297,5 66,5 364 364
+22 52 37,62 14,38 7 263,34 100,66 364 364
+23 52 32,95 19,05 7 230,65 133,35 364 364
+24 52 29,24 22,76 7 204,68 159,32 364 364
+The money transfer required by the CfD is calculated based on the price difference.
+•
+When the DAM price is below the strike price, the independent power producer (IPP)
+gets paid less in the DAM compared to the PPA. Thus, the CfD pays the difference
+needed to cover the shortfall.
+•
+When the DAM price is above the strike price, the IPP gets paid more in the DAM
+compared to the PPA. Thus, the IPP has pay to back to the CfD counterpart the
+difference to compensate this.
+The CfD transfer is calculated as CfD transfer = Price difference × volume × time
+The total net turnover will be the sum of the revenue received from the DAM and the
+money transfer carried out with the CfD counterparties.
+Turnover with PPA = Turnover in DAM + CfD transfer
+The conclusion to this example is that for all hours the total turnover of the CfD is exactly
+the same as the turnover of the PPA.
+Contracts for Difference 15

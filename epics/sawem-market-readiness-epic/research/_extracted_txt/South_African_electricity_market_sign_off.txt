@@ -1,0 +1,635 @@
+
+
+=== PAGE 1 ===
+
+Research Paper on
+The South African
+Electricity Market
+CAPACITIES FOR AN ENERGY TRANSITION
+August 2022
+
+=== PAGE 2 ===
+
+Contents
+Abbreviations i
+1. Introduction 1
+1.1 Background 1
+1.2 Content 2
+2. The South African electricity supply industry 3
+3. Market concepts 5
+3.1 Day Ahead and intraday markets 7
+3.2 Balance responsibility and ancillary services 9
+3.3 Co-optimisation of energy and reserves 9
+4. Central Purchasing Agency 11
+5. Governance and regulatory structures 13
+6. International trade 14
+7. Conclusion 16
+8. Further reading 17
+
+=== PAGE 3 ===
+
+Abbreviations
+BRP Balance responsible party
+CPA Central Purchasing Agency
+DMRE Department of Mineral Resources and Energy
+ESI Electricity Supply Industry
+IPP Independent power producer
+NERSA National Energy Regulator of South Africa
+PPA Power Purchase Agreements
+SAPP Southern African Power Pool
+SMP System marginal price
+TSMO Transmission System and Market Operator
+The South African Electricity Market i
+
+=== PAGE 4 ===
+
+1. Introduction
+1.1 Background
+The South African-German Energy Programme (SAGEN), funded by the German government
+and implemented by the Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ),
+was approached by Eskom Transmission to provide further technical assistance and
+capacity building for the implementation of reforms in the power sector. This research paper
+has been developed under the project “Capacities for an Energy Transition” as an input to
+the power sector reform process. It serves as a high-level description of the market model
+and describes the various market segments and how the market is intended to work. The
+two other research papers created under this support project give further details on the
+role of the Central Purchasing Agency (CPA) within the South African market and the use
+of Contracts for Difference within the industry. It is beneficial for readers of this document
+to also read these papers as they are interlinked and provide insight into key aspects of
+how the future electricity market in South Africa could work. This report was prepared by
+Hans-Arild Bredesen from Bredesen Consulting acting as a sub-contractor to Nord Pool
+Consulting.
+Contact
+Questions and comments on this Report can be directed to:
+Hans-Arild Bredesen
+Team Leader
+E: hans-arild.bredesen@bredesenconsulting.com
+The South African Electricity Market 1
+
+=== PAGE 5 ===
+
+1.2 Content
+This research paper presents the underlying concepts of the market model, more
+specifically as:
+a) The South African electricity supply industry
+b) Market concept and the key market features
+c) Regulatory structures
+d) International markets
+The description is based on the existing presentations of the current model as well as
+the ongoing development of the future South African Market Code. This code (under
+development) shall become the regulation document for the South African market model.
+Disclaimer: The development of the South African Market Code is a work in
+progress where the described market model, including the detailed rules, are
+being developed in parallel to this paper (and will continue to evolve over time).
+The final market model will also be influenced by the final changes to the Energy
+Regulation Amendment Bill (ERA) and potentially other governmental decisions.
+The South African Electricity Market 2
+
+=== PAGE 6 ===
+
+2. The South African electricity
+supply industry
+The South African government has outlined its intention to move to a competitive electricity
+market, eventually allowing all consumers choice of electricity supplier. The transition to a
+competitive market model will be based on a stepwise implementation of various market
+segments, as well as a phased introduction of participants to the South African power
+market. To understand the processes required within an electricity market, it is valuable to
+outline the relevant stakeholders and how they participate in the industry. Figure 1 shows a
+schematic of an electricity supply industry (ESI) with a competitive market.
+Eskom is currently structured as a vertically integrated, state-owned enterprise but is
+in the process of unbundling into separate generation, transmission and distribution
+entities. The unbundling does not necessarily mean full legal separation but will at least
+incorporate functional unbundling. Approximately 95% of the electricity produced in South
+Africa is currently produced by Eskom Generation, primarily through coal-fired thermal
+power stations. Additional capacity produced by independent power producers (IPPs)
+is purchased by Eskom through contracts in the form of Power Purchase Agreements
+(PPAs), which specify the price at which electricity will be bought for a set number of years
+through a single buyer. The requirements for additional power are based on a ministerial
+determination by the Department of Mineral Resources and Energy (DMRE) in line with the
+Integrated Resource Plans of 2010 and 2019. In contrast to a centrally planned environment,
+a competitive environment will allow eligible IPPs to enter the market as they choose, with
+price signals determining when new capacity is created; if investors think that they will
+make a profit selling electricity they invest in new generation facilities.
+The South African Electricity Market 3
+
+=== PAGE 7 ===
+
+Contract price
+Contract price
+Brokers, traders, retailers
+Market price
+Market price
+Market price
+Market operator
+Market price (used in settlement)
+PPA Contract price
+PPA Contract price
+Central
+purchasing agency
+Use-of-system
+charges
+Use-of-system
+charges
+Households
+ESKOM Gx
+System operator
+Legacy IPPs Communities/
+businesses
+Transmission Distribution
+New IPPs
+Bilateral agreements –
+contract price
+Power intensive
+users
+Flow of money, determined by the market
+Flow of money, determined by the contracts
+Flow of electricity
+Generators
+Consumers
+Figure 1. Participants in the South African electricity supply industry
+Where these market mechanisms are deemed to be insufficient to ensure security of supply,
+contracts can be entered into with a special purpose vehicle called the Central Purchasing
+Agency (CPA), which performs a supporting role within the market (detailed in Section 5).
+The South African Electricity Market 4
+
+=== PAGE 8 ===
+
+While competition will be allowed between generators, the transmission and distribution
+networks must be operated and regulated as monopolies independent of the market. This
+is because access to these networks is required by all participants and therefore non-
+discriminatory third-party access must be ensured as a prerequisite to competition. To cover
+the costs of owning, operating and expanding the network, an unbundled use-of-system
+tariff (sometimes referred to as a wheeling tariff) is applied to all electricity transferred
+on the network. This charge is paid to the System Operator, who is responsible for the
+metering of all market participants, the real-time balancing of supply and demand on the
+integrated power system and the iswsuing of dispatch instructions. In a competitive market
+environment, the System Operator will use trades reported from the Market Operator to
+manage the real-time processes required for the physical balance of the power system.
+The consumers (often represented by traders, brokers and/or resellers) will buy electricity
+from a chosen supplier that will utilise the various trading opportunities through the markets
+to buy the required electricity to meet the requirements from the consumers. The Market
+Operator is the body responsible for managing the markets created to facilitate this choice
+and for ensuring that financial settlements between buyers and sellers are settled in a
+transparent manner.
+3. Market concepts
+In a perfectly balanced system, the amount of electricity produced equates to the amount
+of electricity consumed at any given time. The benefit of a market is not only that it allows
+consumers to choose products that best suit them but that in doing so, this system balance
+occurs at a price that is acceptable to everyone (defined as market clearing).
+Given the coordination required to achieve this balance, different market mechanisms are
+used to facilitate it. These include market platforms in which:
+a) predicted supply and demand are traded by participants ahead of time, to allow for
+system planning and coordination = short-term physical markets such as the Day
+Ahead markets and in the future, intraday markets
+b) any imbalances created due to the difference between real and predicted supply
+and demand are reconciled to ensure system security = balance responsibility,
+reserve markets and ancillary services.
+c) contracts can be entered into to provide capacity for longer term supply security =
+capacity remuneration schemes
+d) the market model allows for longer-term bilateral trades (both physical and
+financial) to be traded directly between a buyer and seller outside the short-term
+physical markets to allow for hedging against price risk.
+The South African Electricity Market 5
+
+=== PAGE 9 ===
+
+The short-term physical energy market, where electricity is paid for as consumed, consists
+of a commitment to the delivery and consumption of power. A future financial energy
+market allows for trading to occur on contracts, with an underlying reference to the short-
+term market. This market can be used for derivative trading, to support risk management
+strategies by participants. (For more details on these contracts please see the Eskom
+Transmission research paper entitled “Contracts for Difference”).
+Eskom has already established the Eskom Dynamic Energy Market (EDEM), which can form
+the basis of the required platforms for a competitive electricity market. These platforms,
+operated by the Transmission Market Operator are illustrated in Figure 2.
+Energy market
+(Day ahead)
+Carried across
+wires today
+Energy reserve market
+(Day ahead reserve)
+Available but held
+back for reserve
+margin
+Capacity market
+Firm power can be
+called on when needed
+Balancing market
+Real time delivery
+of power
+Other services
+Anything that can
+manage supply/demand
+in real time
+Ancillary services
+Network support
+services
+Figure 2. Overview of Eskom’s Dynamic Energy Market (EDEM) model
+Eligible buyers and sellers are also able to conclude physical and financial bilateral contracts
+outside this market. The physical contracts, incorporating the commitment for delivery and
+consumption of power, will result in declarations to the Market Operator by the end of each
+day’s trading on the Day Ahead market (gate closure). Intraday variations will be permitted
+as approved by the System Operator (after accounting for network constraints).
+The South African Electricity Market 6
+
+=== PAGE 10 ===
+
+3.1 Day Ahead and intraday markets
+A Day Ahead market is normally where most energy is traded. As the name suggests, the
+Day Ahead market is run one day ahead of real time and attempts to establish a provisional
+hour-by-hour balance between electricity supply and consumption. Generators submit
+a bid to the Market Operator for each of their power producing units, declaring their
+capacity, availability and price for each hour of the following day. These unit-based bids
+are referred to as complex orders, as they include technical parameters (start-up or shut-
+down times, how fast a unit can change its output, minimum generation) and the prices
+associated with production as a capacity-dependent curve. Retailers, brokers and traders
+representing the consumers (households, businesses and power-intensive industries)
+submit their predicted consumption levels per hour as demand orders to the Market
+Operator. Once generators have offered their capacity, expressed with different volumes
+at different prices, and consumers have indicated their willingness to pay for energy at a
+set of given prices, the Market Operator matches generators and consumers on an hour-
+by-hour basis. Matching generators and consumers in this way results in a provisional
+balance point, as indicated in Figure 3, at which electricity is sold at a system marginal
+price (SMP) for all parties. The power generation units are activated in an ascending order
+of their respective offer price, and as a result, the most economically efficient production
+units will be chosen first (energy optimisation).
+Price (EUR/MWh)
+Supply
+System
+Marginal
+Price
+Demand
+Turnover
+Volume (MWh)
+Figure 3. System Marginal Price and power volumes
+for both supply and demand curves
+The South African Electricity Market 7
+
+=== PAGE 11 ===
+
+This initial market balance point is an unconstrained result, independent of any physical
+network constraints. However, the inclusion of network constraints is necessary to ensure
+the physical viability of the dispatch orders. Therefore, the volumes of power to be produced
+by each generator are recalculated to incorporate network constraints (called a constrained
+result). If a party’s unconstrained schedule is reduced due to this re-calculation, it will be
+allowed to keep its “lost opportunity payment” for the constrained volume.
+Example to demonstrate lost opportunity payment
+a) A generator offers a generating unit at a price of R500 for a given hour.
+b) The unconstrained market result is that this generator should produce 50 MWh
+at a SMP of R700.
+c) However, due to network constraints, its production schedule is reduced to 45
+MWh.
+The generator’s financial settlement for that specific hour would then be:
+Total payment = production payment + lost opportunity payment
+= (electricity produced SMP) + (lost opportunity generator
+offer price)
+Total payment = (45 MWh R700) + [(50MWh – 45MWh) (R700 – R500)]
+= R31 500 + R1 000
+= R32 500
+The constrained result is then used by the System Operator to formulate dispatch
+instructions for the next day. In addition to a Day Ahead market, in the future, intraday
+markets can be used throughout the day to balance production and consumption. These
+markets function in the same way as Day Ahead markets but within a shorter timeframe (for
+example, auctions take place every four hours). However, the shorter time frames do create
+more onerous requirements and, while there is an ambition to create this type of market in
+the future, it will not be created within the initial model.
+The South African Electricity Market 8
+
+=== PAGE 12 ===
+
+3.2 Balance responsibility and ancillary
+services
+If all parties adhere to their predicted production and consumption, the system remains
+in balance. However, there are inevitably deviations from predicted production and con-
+sumption and these imbalances are addressed through balance responsibility, Day Ahead
+reserve markets and ancillary services.
+Balance responsibility is defined as a participant’s obligation to pay the costs associated
+with any imbalance caused due to the difference between real and predicted supply or
+demand; if a generator produces less power than predicted or consumers consume more
+power than predicted, the participant is required to pay the costs associated with procuring
+additional power and coordinating the balancing of the system in real time.
+The power required to balance the system in real time can be procured through ancillary
+services and Day Ahead reserve markets, where generators declare that they are available
+at specified times to produce a certain amount of power, if there is a shortfall. These
+generators are compensated both for making themselves available on standby and for any
+electricity produced during this timeframe. Due to the higher dispatchability and system
+coordination requirement for this type of generation, the price of electricity on this market
+is also higher; a cost that is borne by the balance responsible party (BRP). Consumers can
+also declare that they are available at specified times to reduce consumption by a specified
+amount (demand response), for which they will be compensated for. The requirement for
+the amounts and types of reserves is a calculation that is done by the System Operator
+to ensure system security (reserve optimisation). The Market Operator is responsible
+for procuring these ancillary services on behalf of the System Operator. These balancing
+mechanisms create a cost incentive for all parties to predict and declare their power
+production or requirements accurately and adhere to their predictions.
+3.3 Co-optimisation of energy and
+reserves
+To facilitate the trading for each market, the Market Operator uses individual unit-based
+complex orders from BRPs (on both the consumption and generation side) in different
+markets, to optimise for both cost and system security. This is split into two main processes:
+Energy optimisation and reserve optimisation. The energy optimisation, represented by
+the energy balance between supply and demand is solved using the Day Ahead and
+future intraday markets, while the reserve optimisation, according to the System Operator’s
+requirements, is solved in the reserve market.
+The South African Electricity Market 9
+
+=== PAGE 13 ===
+
+Both the energy and reserves optimisations are solved in one algorithm. This algorithm will
+be run by the Market Operator, using the same unit-based complex orders on both markets.
+The algorithm will calculate the optimal results for both the energy balance between supply
+and demand, and the System Operator’s requirement for reserves as part of one process.
+Thereby the name co-optimisation, as it optimises both the energy balance and the reserve
+requirement as part of one process or algorithm. This co-optimisation is one of the key
+features that distinguishes the proposed South African market model from, for example, its
+European counterpart.
+Example to demonstrate co-optimisation
+This is a simplified example based on one inflexible demand-side requirement
+of 600 MW and one reserve requirement (in reality, there will be three) from the
+System Operator of 150 MW. There are no network constraints in this example.
+Three generating units (GU) with the following (simplified) parameters are offered
+to the market:
+GU1 (1) 300 MW, priced at R400/MW, non-flexible
+(2) 100 MW, priced at R500/MW, flexible
+GU2 (1) 100 MW, priced at R600/MW, flexible
+GU3 (1) 200 MW, priced at R550/MW, non-flexible
+(2) 100 MW, priced at R700/MW, flexible
+If you do a pure energy market calculation, the result would be:
+GU 1: All its output would be taken (400 MW),
+GU 2: None of its output would be taken,
+GU 3: 200 MW would be taken (Order 1),
+and the SMP would be R550 (the price of the last unit used in a merit-order
+selection).
+However, the co-optimisation will also need to consider the reserve requirement
+from the SO.
+The South African Electricity Market 10
+
+=== PAGE 14 ===
+
+Based on the orders on the previous page, the selection process would therefore be:
+Reserves (this requires flexible generation):
+GU 1: 100 MW from Order (2)
+GU 2: 50 MW from Order (1)
+Energy (both flexible and non-flexible generation can be used):
+GU 1: 300 MW from Order (1)
+GU 2: 50 MW of its Order (1) (remaining after reserve selection)
+GU 3: 200 MW of its Order (1) and 50 MW of Order (2)
+Resulting in a SMP for energy of R700/MW (the price of the last unit used in a
+merit-order selection) and a SMP for reserves of R300/MW (based on the lost
+opportunity cost from being kept outside the energy market calculated as the
+difference between the lowest cost offered – R400 for order 1 for GU 1 and the SMP –
+calculated at R700/MW).
+Payments would then end up as:
+GU1 Energy 300 MW * R700 = R210.000
+Reserve 100 MW * R400 = R40 000
+GU2 Energy 50 MW * R700 = R35 000
+Reserve 50 MW * R400 = R20 000
+GU3 Energy 250 MW * R700 = R175 000
+No reserve payment
+4. Central Purchasing Agency
+A Central Purchasing Agency (CPA) is a market support entity that will be created to fulfil
+the role of counterpart to contracts necessary to facilitate the transition to a competitive
+market as well as a special purpose vehicle managing non-market agreements or services
+aligned with the competitive market.
+It will be financially responsible for the existing Power Purchase Agreements with IPPs
+(legacy contracts) and will participate as a balance responsible party in the market for the
+electricity produced under these agreements. It can also enter into new PPAs with IPPs to
+enhance system stability.
+The South African Electricity Market 11
+
+=== PAGE 15 ===
+
+In addition to contracts with IPPs, the CPA will serve as the financial counterpart for electricity
+generated by Eskom Generation (vesting contracts). These contracts are signed with each
+power plant and typically consist of two parts; the first applied over the lifetime of the plant
+and the second expiring over time. The first section specifies an agreed upon payment
+to cover the fixed capital, operational and maintenance costs required by the plant and
+special ancillary services such as black starting and islanding. The second section specifies
+a fixed energy and reserve capacity price (hedge price) to be applied at the start of the
+contract and the process by which this fixed price will gradually transition to the market
+price over time. When applying a hedge price, power is first bought or sold in a competitive
+market then hedged back to the agreed upon fixed price. Eskom Generation will be the
+BRP for all its generation. (For more details on the CPA please refer to Eskom Transmission
+research paper entitled “The Role of the Central Purchasing Agency”.)
+Balance Responsible Parties (Generators, Retailers, Traders, Consumers)
+Central purchasing agency
+Market Operator
+System Operator
+Availability
+payment
+(capacity)
+Energy hedge
+(Energy)
+Day-ahead
+(Energy)
+(future)
+Intraday
+(Energy)
+Day-ahead
+Reserves
+(Capacity)
+Balancing
+activations
+(Energy)
+Ancillary
+services
+Common financial settlement services
+Balance Responsible Parties (Generators, Retailers, Traders, Consumers)
+Figure 4. Organisational aspects of the market model
+Figure 4 illustrates the resultant organisational aspects of the market model. The existing
+Eskom Dynamic Energy Market and PPAs form part of a regulatory “sandbox” environment.
+This means that the market is already being used as designed, with prices determined
+according to the market. Similarly, the PPAs with Eskom Generation and Eskom Distribution
+are applied as per the agreed calculations and principles in these contracts. However,
+once these payments are determined according to the market, they are hedged back to a
+regulated revenue determination made by the National Energy Regulator of South Africa
+(NERSA). The “sandbox” operation means that the parties are not subject to the financial
+effect of the payments and charges but are able to learn how these processes will work in
+the future market.
+The South African Electricity Market 12
+
+=== PAGE 16 ===
+
+Figure 5. Regulatory and legislative environment for the South African
+supply industry and market (adapted from the Electricity Pricing Policy)
+5. Governance and regulatory
+structures
+Figure 5 illustrates the regulatory and legislative environment for the South African
+electricity supply industry.
+National Policy
+Papers
+Sector Policy
+Implementation
+Documents
+Discussion
+Green paper
+White paper
+e.g. White paper on
+Energy Policy
+Directions
+Principles
+Metering
+Financial settlement
+Dispute settlement
+Investigation of
+noncompliance
+National Parliament
+National Executive
+DMRE
+DMRE
+NERSA
+Market Operator
+System Operator
+NERSA
+Legislation
+Regulations
+Bills
+Acts
+e.g. Electricity
+Regulation Act
+e.g. National
+Energy Act
+Licenses
+Codes
+Rules
+Guidelines
+Methodologies
+e.g. SA Market Code
+DMRE
+NERSA
+DMRE
+NERSA
+Transmission System
+and Market Operator
+(TSMO)
+Market Committee
+Figure 5. Regulatory and legislative environment for the South African electricity
+supply industry and market (adapted from the Electricity Pricing Policy)
+At the highest level of governance are national documents and discussions by the National
+Parliament or the Executive. These address priority multisectoral issues, for example,
+the National Development Plan 2030 and State of the Nation addresses. White or green
+papers and legislation provide high-level guidance within the sector and are therefore
+the responsibility of the Department of Mineral Resources and Energy (DMRE). These
+documents include the 1998 “White Paper on the Energy Policy of the Republic of South
+The South African Electricity Market 13
+
+=== PAGE 17 ===
+
+Africa”, which introduced several reforms and market liberalisation measures, and the
+Electricity Regulation Act 4 of 2006, which is currently being amended to address the
+ESI’s market structure, the establishment of a Transmission System Operator and different
+stakeholder’s regulatory responsibilities within the reformed sector. The subsequent level
+of regulatory framework consists of sector policy and regulations; these are documents with
+detailed specifications for how elements of ESI and market would operate. The new South
+African Market Code would fit within this level and could be maintained by the Transmission
+System and Market Operator (TSMO) as the secretariat. In addition, it is expected that a
+Market Committee will be formed by industry stakeholders and ultimately approved by
+NERSA. The Market Committee will play a supporting role in maintaining and updating the
+market rules. The details of the foundation, rules and operation of this committee shall be
+defined in the Market Code.
+On an implementation level, the Market Operator is responsible for managing the
+markets, balancing mechanism and financial settlements. The System Operator manages
+the real-time balancing of supply and demand and performs the function of metering
+agent for the Market Operator and market participants. NERSA is responsible for the
+settling of disputes and the investigation of alleged discrimination regarding tariffs,
+conditions of access, as well as alleged failure to abide by licensing conditions.
+6. International trade
+In addition to the intra South African markets, the market model also needs to take into
+account how trading is conducted in the Southern African Power Pool (SAPP). The
+international trade concept is still under development and thus the following presents
+the most recent version of the concept. International trade covers both bilateral trading
+with the regional counterparts and the trade in the organised markets governed by SAPP.
+The objective of the concept is to ensure that the regional trade is performed in such
+a manner that it brings benefit to the South African power sector, ensuring participation
+based on sound economics.
+A generic requirement for all parties that shall be trading on SAPP is that they hold an
+export license in South Africa and that they are a market participant in the SAPP markets.
+Any party participating or interacting in the SAPP markets will be under SAPP governance
+as well as the South African Market Code. The CPA shall manage and maintain the
+historical regional bilateral contracts and schedule these according to the SAPP Market
+Book of Rules. The following Parties will interact with SAPP markets:
+The South African Electricity Market 14
+
+=== PAGE 18 ===
+
+System Operator
+•
+Provides the available transmission capacities for all international interconnections from
+South Africa to the SAPP markets
+•
+Acts as a Transmission System Operator under the SAPP regulations
+•
+Nominates the total scheduled flows to the Market Operator
+•
+Acts as the balance responsible party towards SAPP.
+Market Operator
+•
+Represents (trading proxy) the South African market participants for those volumes that
+are traded through the South African market
+•
+For the Day Ahead market, creates a Net Export Curve representing the aggregated
+purchase and sales offers from the orders in the South African Day Ahead market, using
+the order information from the different market participants, including adjusting for any
+capacity payments
+•
+For the SAPP intraday and balancing markets, makes available national orders according
+to a set of detailed rules
+•
+Takes the scheduled flows from the SAPP markets as a deemed flow in the market
+clearing in the South African market.
+South African market participant with a capacity payment agreement
+with the CPA
+•
+Shall always offer their full capability to the national market of South Africa and will not
+be allowed to participate directly in the SAPP regional markets
+•
+Will indirectly be participating through the Market Operator, which will use its orders in
+the short-term markets (Day Ahead market, intraday market and balance market) and
+thereby have implicit access to the regional markets.
+South African market participant without a capacity payment agreement
+with the CPA
+Has a choice regarding who it will buy from or sell its requirement to in a market, and thus
+can buy or sell power through the following channels:
+•
+A bilateral physical contract with a South African counterpart: In this event, the participant
+will have to nominate its planned schedule to the Market Operator to be considered in
+the South African market. The bilateral contract will be settled between the parties.
+•
+A bilateral financial contract with a South African (or regional) counterpart: In this event, it
+should participate in the South African market to secure a physical position. This financial
+bilateral contract will be settled between the parties.
+The South African Electricity Market 15
+
+=== PAGE 19 ===
+
+•
+•
+•
+Subject to being a SAPP market participant: Participate in the SAPP organised physical
+markets. If successful, nominate its schedule to the System Operator to be considered
+in the management of the transmission capacity towards SAPP. The settlement of this
+trade will be towards SAPP.
+Participate in the South African short-term physical market as a market participant under
+the South African Market Code; or
+Any combination of the above.
+A regional bilateral physical contract with an international counterpart will not be allowed
+in the future.
+7. Conclusion
+In conclusion, the proposed liberalisation and ongoing unbundling of Eskom represents
+a significant change in the historic landscape of the South African ESI. To manage this
+transition to a competitive wholesale market, the introduction of market platforms (such as
+the Day Ahead, intraday, reserve and ancillary services market) and participants will need
+to occur gradually over time. In addition, the Market Operator, System Operator and CPA
+will have critical roles to play, to facilitate the functioning of a market.
+The South African Electricity Market 16
+
+=== PAGE 20 ===
+
+8. Further reading
+DMRE (Department of Mineral Resources and Energy) (2022) Electricity Regulation
+Amendment Bill. Government Gazette 45898, 10 February. Available at:
+https://www.gov.za/sites/default/files/gcis_document/202203/45898gon1746
+DPE (Department of Public Enterprises) (2019) Roadmap for Eskom in a Reformed
+Electricity Supply Industry. Available at: https://dpe.gov.za/wp-content/
+uploads/2019/10/ROADMAP-FOR-ESKOM_0015_29102019_FINAL1.pdf
+The South African Electricity Market 17

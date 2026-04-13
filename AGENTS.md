@@ -65,6 +65,8 @@ When handling user workspace journaling/task prompts, treat product graph JSON (
 
 Mandatory rule: every new journal entry must be reflected in task tracking by updating task statuses (and relevant task fields) in `knowledge_base/raw/sources/src_tasks.json`.
 
+Mandatory rule: when adding or updating tasks, always assign a best-fit `Subcategory` (assume it when not provided) and ensure `Category` aligns with that `Subcategory`. In the user response, explicitly state which subcategory each changed task was linked to.
+
 Allowed file targets for journal/task-only flows:
 
 - `knowledge_base/raw/sources/src_user_journal.md`

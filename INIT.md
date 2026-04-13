@@ -28,6 +28,8 @@ Initialize yourself for this repository before doing any edits.
      - Update status for impacted tasks.
      - Update relevant task metadata fields present in the JSON task schema.
      - Add or adjust follow-up tasks if the journal entry introduces new actionable work.
+     - Assume and assign the best-fit `Subcategory` for each changed task when not explicitly given, and keep `Category` consistent with that `Subcategory`.
+     - Explicitly report to the user which `Subcategory` each changed task was linked to.
    - Keep journal/task-only edits within allowed targets:
      - `knowledge_base/raw/sources/src_user_journal.md`
      - `knowledge_base/raw/sources/src_tasks.json`

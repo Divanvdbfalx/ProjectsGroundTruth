@@ -1,0 +1,237 @@
+
+
+=== PAGE 1 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Road to SAWEM 2026
+The Role of
+Bilateral Contracts
+Prepared by:
+0
+
+=== PAGE 2 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Document Control
+Document Title SAWEM Concept Note Bilateral Contracts
+Version 1.0
+Date of Latest Update 13 June 2025
+Prepared by Energy Council of South Africa
+Endorsed by NTCSA tbc
+Distribution For stakeholder consultation
+Document Status Final
+1
+
+=== PAGE 3 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Driving Efficiency in SAWEM and Bilateral Electricity Contracts
+Streamlining Electricity Market Operations
+Bilateral agreements enable flexibility in terms, pricing, and risk allocation but must be
+carefully aligned with system and market rules to avoid imbalance and operational disruptions.
+1. Bilateral Contracts
+Eskom bilateral contracts are termed Legacy contracts under section 34 public procurement.
+These will be hedged to the Power Purchase Agreements (PPAs) pricing and balancing
+addressed through the Central Purchasing Agency (CPA). Bilateral contracts (PPAs) for IPP’s,
+LPU’s and Traders can initially be kept outside of SAWEM, unless one or both of the
+counterparties qualifies to be a MP and choose to participate in the Market. Migrating private
+bilaterals into SAWEM may optimise returns and assist the SO in balancing the system.
+a. Trading Excess Capacity
+Independent Power Producers (IPPs) and Traders selling capacity or energy directly to
+customers can trade any excess in SAWEM. This excess capacity could also be used for
+supplying regulating ancillary services or battery storage services. Large Power Users (LPUs)
+may participate in demand management programmes.
+b. Making Bilateral Contracts and SAWEM Work Together
+Reviewing existing contracts is essential to ensure that bilateral agreements align with
+SAWEM without creating market or system imbalances. A Balance Responsible Party (BRP)
+is required for all generators above 10 MW and for all market participants. Offtakers outside
+the market are not BRPs themselves, but their appointed suppliers will assume BRP
+responsibility on their behalf when purchasing from the market.
+2. What Needs to be Done to Make Complementarity of The Two Markets (Bilateral
+and SAWEM) More Efficient
+a. Review of Existing Contracts
+2
+
+=== PAGE 4 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Independent Power Producers (IPPs) should assess their current bilateral contracts to identify
+clauses that may limit their ability to participate in SAWEM — particularly regarding the sale
+of excess energy or provision of ancillary services. Many Power Purchase Agreements (PPAs)
+include take-or-pay conditions linked to fixed load factors, which may pose operational
+constraints. For instance, IPPs facing minimum generation challenges could benefit from
+selling surplus energy into SAWEM, thereby improving plant efficiency, stabilising operations,
+and accessing additional revenue streams.
+Distributors that have entered into Energy Supply Agreements (ESAs) with offtakers should
+review those contracts to ensure they do not inhibit market participation. Where offtakers wish
+to buy power through SAWEM, contractual amendments may be needed to allow direct market
+access. In such cases, offtakers must become Market Participants (MPs) and Balance
+Responsible Parties (BRPs) or appoint a third-party BRP — including potentially the distributor
+— to fulfil that role.
+PPAs containing "first right of refusal" clauses can restrict the flexibility of IPPs, LPUs, and
+Traders. These clauses require prior negotiation before power can be sold elsewhere, making
+it harder to shift volumes in response to favourable SAWEM prices. These provisions should
+be reviewed and possibly removed to allow greater responsiveness to market signals.
+Any party wishing to supply into the market must ensure balancing responsibility is
+appropriately assigned — either by registering as a BRP or contracting BRP services — to
+support the System Operator (SO) in maintaining grid stability.
+b. Wheeling Arrangements
+Wheeling agreements need to be reviewed to be aligned to the SAWEM Market Code
+requirements such as conformance to the approved wheeling methodology, capacity
+declaration processes, wheeling pricing, any pertinent congestion management and
+compensation for losses.
+Policy clarity is required to address unresolved challenges related to wheeling power to
+customers on municipal networks that are not in good financial standing with Eskom.
+Furthermore, the unbundling of the wholesale tariff will introduce changes to wheeling that are
+outside the scope of the SAWEM but could materially impact the cost structure of bilateral
+trades.
+3
+
+=== PAGE 5 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+3. New Market Opportunities
+IPPs and their off takers (LPUs and Traders) may agree to find opportunities for optimisation
+of supply through sourcing power in the market to fulfil their contractual obligations if market
+liquidity and prices are advantageous. Such arrangements may need risk cover through back-
+up supply arrangements.
+4. Market Contractual Agreements
+Even where bilateral arrangements remain outside SAWEM, generators above 10 MW must
+ensure they meet balancing obligations — either directly as Balance Responsible Parties
+(BRPs) or via an aggregator. This is essential for maintaining system stability and compliance
+with the Market Code.
+Offtakers are only required to assume balancing responsibilities if they actively participate in
+SAWEM by purchasing directly from the market. Those continuing to procure power through
+a distributor or bilateral arrangement will not be BRPs.
+To enter SAWEM, market-facing entities — including IPPs, Traders, and LPUs opting in —
+must:
+• Sign a Market Participation Agreement and a Balancing Agreement with the Market
+Operator (MO).
+• Establish a trading and collateral reserve account.
+• Adhere to the scheduling, dispatch, and settlement processes outlined in the Market
+Code.
+There is currently no defined mechanism for settling imbalances related to bilateral trades
+outside the market. This gap is not addressed in the Market Code and may require additional
+clarification through the System Operations Code or regulatory amendments.
+Actions to support efficient Bilaterals
+• Conduct a thorough review of all existing bilateral contracts to identify inefficiencies or
+opportunities for integration with SAWEM.
+• Update IPP and ESA agreements to allow participation in SAWEM, ensuring they align
+with market rules and operational needs.
+4
+
+=== PAGE 6 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+• Evaluate and remove restrictive clauses such as first right of refusal in PPAs to
+enhance flexibility and market adaptability.
+• Collaborate with the SO to optimise the balance between supply and demand across
+bilateral contracts and SAWEM.
+5
+
+=== PAGE 7 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+5. Summary of Risks and Readiness Check List
+Category Risk Impact Readiness Check List
+LPU
+s
+IP
+P
+Trade
+r
+Review of
+Existing
+Contracts
+Inefficient
+complementarit
+y of bilateral
+contracts and
+SAWEM
+Lost opportunities
+for increasing
+efficiency/revenue
+s if not participating
+in SAWEM.
+Misalignment with
+SAWEM
+requirements.
+Review PPAs to
+seek opportunities
+to offer energy and
+ancillary services
+in the market
+Review ESAs and
+allow offtakers to
+be able to directly
+participate in the
+market.
+Sign agreements
+with MO to become
+MPs and BRPs or
+contract BRP
+services with
+others
+Wheeling
+Arrangement
+s
+Misalignment of
+bilateral and
+SAWEM
+wheeling
+provisions
+Inefficient or
+dispute prone
+trading
+Review wheeling
+agreements to
+align with Market
+Code
+Eskom/Municipalit
+y wheeling issue to
+be resolved
+NERSA
+New Market
+Opportunities
+Inefficient
+trading
+Loss of
+opportunities for
+optimising trade
+due to reliance on
+inflexible contracts
+Proactively
+prepare for
+optimising supply
+through
+displacement of
+PPA power with
+market sourced
+power
+Loss of trade
+improvement
+Sign the Market
+Participant
+6
+
+=== PAGE 8 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Market
+Contractual
+Agreements
+Inability to
+participate in the
+market
+opportunities and
+increased revenue
+Agreement and a
+Balancing
+Agreement with
+the MO.
+Open trading and
+collateral reserve
+accounts as
+required by the
+MO.
+7

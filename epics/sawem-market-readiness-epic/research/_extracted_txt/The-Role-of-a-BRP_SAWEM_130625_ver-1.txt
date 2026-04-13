@@ -1,0 +1,350 @@
+
+
+=== PAGE 1 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Road to SAWEM 2026
+The Role of
+Balancing (BRP)
+Prepared by:
+0
+
+=== PAGE 2 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Document Control
+Document Title SAWEM Concept Note The Role of a BRP in the Market
+Version 1.0
+Date of Latest Update 13 June 2025
+Prepared by Energy Council of South Africa
+Endorsed by NTCSA tbc
+Distribution For stakeholder consultation
+Document Status Final
+1
+
+=== PAGE 3 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+The Role of a Balance Responsible Party and
+Compliance Measures
+Balance Responsible Parties (BRPs) play a critical role in energy markets as they are tasked
+with maintaining a balance between energy production and consumption within their
+contracted scope. This responsibility ensures the stability of the energy grid and the
+functionality of market operations.
+1. The Role of a BRP in the Market
+The System Operator (SO) is ultimate responsibility for maintaining real-time balancing of the
+electricity system through the use of contracted ancillary services. Embedded generators can
+cause system imbalance if their loading behaviours are not properly coordinated and
+controlled. These generators and battery storage systems supply energy and ancillary
+services which are used for balancing through up or down adjustments of output as required
+by the SO for balancing purposes. These services must be compensated for through approved
+market mechanisms. It is crucial that these generators are visible to both transmission and
+distribution SOs. Properly coordinated operations are essential, and this visibility requires
+regulated rules, formalised market mechanisms, and commercial incentives to encourage
+behaviour that supports the SO in planning and delivering a stable grid
+A Balance Responsible Party (BRP) is an entity that will be held responsible for ensuring
+adherence to forecasted supply and/ or demand in the Day Ahead Market (DAM) and thus
+maintaining balance between supply and demand to enable system balance.
+The BRP must perform the function of forecasting and scheduling generation and/or demand
+and then exchanges this data/information with the SO for dispatch. The BRP continues to
+monitor performance of its schedules during delivery so that it may reduce imbalances through
+rescheduling by participating in intra-day markets – when available, or calling on its ancillary
+services, or incur penalties for imbalance as prescribed by the Market Operator.
+Initially, balance responsibility will be placed on all generators greater than 10MW and all
+registered Market Participants, and then progressively expand to include loads, distributors,
+and the balancing of trader portfolios. Ultimately, the balancing mechanism will operate within
+the ancillary services market. This will establish learnings and preparation for all other Market
+Participants.
+2
+
+=== PAGE 4 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+In a future development, the inclusion of an Intra-day Market will allow for intraday adjustments
+to schedules and offered capabilities.
+2. What Participants need to Perform as BRPs in SAWEM
+a. Forecasting and Bidding Capability
+In the day ahead market, each BRP forecasts demand for each of the twenty-four (24) hours
+(Trading Periods) of the following day (Dispatch Day) commencing at hour ending 01:00.
+Generators and/or traders declare their availability and loads declare their demand for each
+of those hours. Accepted market results are exchanged with the SO for delivery the following
+day. Each seller and buyer is bound by the dispatch schedule issued by the System Operator
+(SO), which specifies the expected generation or consumption levels. Where network
+constraints arise, the SO may execute a constrained re-dispatch process. This results in a
+revised dispatch schedule that differs from the original unconstrained schedule, based on
+localised system limitations.
+BRPs must build capacity for accurate forecasting and bidding procedures. Where necessary,
+and especially for distributors, load forecasting tools need to be procured, and staff trained in
+their use. Generators (IPPs) and traders need accurate whether forecasting tools so that they
+are able to predict solar and wind capabilities for the following day. Other generating sources
+need access to accurate generation availability figures to limit mismatches between schedules
+and actual generation and reduce imbalance penalty charges.
+b. Balance Responsibility
+At the day ahead trading stage, balance is arrived at through accurate scheduling of
+generation and consumption i.e. trading into balance. Initially, due to inexperience, high levels
+of inaccuracy are likely with some imbalance penalties being incurred. This may be more
+pronounced at LPUs as generators and Traders may have some experience already with their
+current bilateral contracts. However, with training and experience, scheduling accuracy will
+improve, limiting imbalances and financial risk.
+When an intra-day market exists, traders/participants will be able to adjust their schedules a
+few hours ahead of delivery and reschedule with the SO. Where a balancing market exists,
+traders/participants may also get a last chance to reschedule using locked market prices of
+3
+
+=== PAGE 5 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+unmatched capacities. Rescheduling reduces the amount of imbalance before it occurs.
+These two areas of market functionality will be established progressively in future in SAWEM.
+It is assumed that balancing will initially operate with a 5% schedule error tolerance and a
+fixed penalty tariff will apply, but this will change in future to a market driven penalty tariff.
+Generators of 10MW and above, that elect to remain out of the SAWEM, must still be a BRP
+that must be approved by the MO and will be liable for imbalance compensation or penalties.
+However, their imbalance payment mechanism is not defined at present, so clarity is required
+from the MO.
+c. Metering
+All BRPs must have metering at all points of power exchange so that power flows may be
+measured and the data collected and exchanged with all relevant parties that include the SO,
+MO, Traders etc. Each metering point must be registered with its locational coordinates. A
+procedure for registering and de-registering of meters must be established by the MO and
+BRPs must comply with the procedure. They must register their meters.
+Network operators (Tx and Dx) are the custodians of metering data as they are the ones who
+commission these meters and ensure their conformance to standards. The expectation is that
+all the metering data will be exchanged with the MO by network operators. However, the BRPs
+must confirm that their meter data is accurate. MO should ask each BRP to do this
+confirmation. Unavailability or wrong metering data leads to financial consequences as
+participants may be inaccurately billed.
+d. Contractual Agreements
+BRPs must adhere to the Market Code and be bound to its requirements through the BRP
+concluding a Balancing Agreement with the MO (clause 3.4 of Market Code). BRPs must
+complete application forms and be admitted before they can operate in the market. A fee may
+be charged for processing the application.
+e. Transaction Settlement Requirements
+BRPs must open trading accounts at the transaction clearing bank nominated by the MO to
+enable the MO to move funds and pay for transactions entered into.
+4
+
+=== PAGE 6 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+A Collateral Reserve Account or Trading Clearing Account must be established for Credit
+Cover purposes as per item 6. 2 of the Market Code. The applicant shall nominate its credit
+cover instrument. The MO must be authorised to move funds to pay for transactions. BRP
+must be ready to replenish security account when it has been drawn down lest it be prepared
+to be barred from trading.
+Each Party must open its operating and credit cover accounts before they may be allowed to
+trade. The quantum of credit cover still has to be decided by the MO.
+f. Trading Procedures
+BRPs need to understand market rules and all trading procedures that include balance
+responsibility, and availability submission. Training on the rules and procedures is required to
+bring all BRPs to the same level of understanding and prepare them for performing their
+individual roles in the market. Without training there will be discordance in the market leading
+to disputes and/or system instability. BRPs will be required to attend the Market School
+courses to prepare them for their roles.
+g. Trading Tools and Technology
+BRPs must have systems that are compatible with the MO system, and they must be given
+trading codes for them to be able to declare capacities and receive results.
+BRPs need reliable telecommunications systems so that they may be able to make
+declarations without interruptions. Big BRPs like distributors may need a good SCADA system
+for high system visibility and data collection. BRPs need to review their systems for compliance
+and close all identified gaps.
+h. Capacity building and Trader certification
+BRP staff needs to be trained on the functioning and requirements for SAWEM so that they
+are prepared for their role in a new market environment. They need to understand the roles
+and responsibilities of the entities they will be interacting with and their own roles,
+responsibilities and obligations. They will need to understand the market rules and procedures
+that apply to each entity. Traders will need to be certified before they can get trading codes
+that allow them to submit bids and receive results.
+5
+
+=== PAGE 7 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA 2025
+Actions to Support BRP Implementation
+• Conclude Market Balancing Agreements with the MO
+• BPR’s to be trained, certified and receive trading codes from the Market Operator
+• Register metering points and ensure compliance with Grid Code metering standards.
+• Set up operating and collateral accounts with the Market Bank
+• Ensure forecasting and bidding systems are in place and compatible, including
+accurate weather forecasting.
+• Confirm initial penalty tariff to encourage behaviour that supports system stability and
+grid planning.
+• Initiate the balancing mechanism through the CPA and Section 34 IPPs to launch
+balancing in the Market. Include all other IPP generators above 10MW capacity later.
+• Progressively expand to other Market Participants and Distributors.
+• Prepare for the inclusion of intra-day markets to allow for adjustments in schedules
+and capabilities during the delivery period.
+3. Summary of Risks and Readiness Check List
+Category Risk Impact Readiness Check List
+LPUs IPP Trader
+Forecasting
+and Bidding
+Capability
+System
+instability
+and
+imbalance
+penalties
+due to poor
+or lack of
+capacity for
+accurate
+forecasting
+and bidding
+Market
+inefficiency
+with
+unnecessary
+costs
+Acquisition of
+generation and
+load forecasting
+tools
+Training of staff in
+accurate
+forecasting and
+bidding procedures
+Access to accurate
+generation
+availability figures
+Metering Inaccurate
+billing due
+to non-
+conforming
+meters
+Disputes and
+market
+distortions
+BRPs adhere to
+specified metering
+standards
+Meter identification
+and registration
+checks
+Contractual
+Agreements
+Inability to
+trade if not
+admitted by
+MO
+Financial loss
+due to lost
+trading
+opportunities
+BRP to conclude
+Balancing
+Agreement with
+the MO
+Transaction
+Settlement
+Inability to
+trade in the
+market if
+Party does
+Financial loss
+due to lost
+trading
+opportunities
+Each BRP must
+open its operating
+and credit cover
+accounts
+6
+
+=== PAGE 8 ===
+
+ENERGY COUNCIL OF SOUTH AFRICA not have
+requisite
+operating
+and
+collateral
+accounts
+Trading
+Procedures
+Inefficient
+trading in
+the market
+Discordance
+in the market
+leading to
+inefficient
+trading,
+disputes
+and/or system
+instability
+Trading
+Tools and
+Technology
+Inefficient
+and
+inconsisten
+t trading in
+the market
+Inability or
+unnecessary
+interruptions in
+trading
+Poor visibility
+and data
+collection from
+network
+Capacity
+Building
+Inability
+and/or
+inefficient
+trading
+Financial loss
+due to lost
+trading
+opportunities
+MO to decide on
+quantum of credit
+cover
+Training on market
+rules and
+procedures
+Attend market
+school
+Acquisition of
+laptops that are
+compatible with the
+MO system
+Availability of
+reliable
+telecommunication
+s systems
+Availability of
+SCADA system to
+Big BRPs and data
+collection
+Review systems
+for compliance and
+close all identified
+gaps
+Training on roles
+and responsibilities
+of the entities they
+will be interacting
+with
+Training on
+understanding own
+roles,
+responsibilities and
+obligations
+Training on
+understanding of
+market rules and
+procedures
+Training for
+certification to
+trade
+2025
+MO to
+execute
+MO to
+execute
+MO to
+execute
+Yes Yes Yes
+7

@@ -1,0 +1,495 @@
+
+
+=== PAGE 1 ===
+
+Research Paper on
+The Role of the Central
+Purchasing Agency
+CAPACITIES FOR AN ENERGY TRANSITION
+August 2022
+
+=== PAGE 2 ===
+
+Contents
+Abbreviations i
+1. Introduction 1
+1.1 Background 1
+1.2 Content 2
+2. The South African electricity supply industry 3
+3. Central Purchasing Agency 4
+3.1 Eskom Generation Vesting Contracts 5
+3.1.1 Availability or capacity payment 7
+3.1.2 Energy hedge 7
+3.1.3 Reserve capacity and other ancillary services 8
+3.2 Independent power producer legacy contracts 9
+3.3 Concluding sales agreements with qualifying customers 9
+3.3.1 Qualifying customers 9
+3.3.2 Energy charge and hedging arrangements 10
+3.3.3 Capacity charge 10
+3.4 Future capacity assessment and procurement 10
+3.5 Potential future additions 11
+4. Conclusion 11
+5. Further reading 12
+Appendix I: Capacity remuneration mechanisms 13
+
+=== PAGE 3 ===
+
+Abbreviations
+CCGT Combined cycle gas turbine
+CRM Capacity Remuneration Mechanism
+CPA Central Purchasing Agency
+DMRE Department of Mineral Resources and Energy
+ERA Electricity Regulation Act
+ESI Electricity supply industry
+GIZ Deutsche Gesellschaft für Internationale Zusammenarbeit
+IPP Independent power producer
+NERSA National Energy Regulator of South Africa
+PPAs Power Purchase Agreements
+REIPPP Renewable Independent Power Producer Programme
+SMP System marginal price
+The Role of the Central Purchasing Agency i
+
+=== PAGE 4 ===
+
+1. Introduction
+1.1 Background
+The South African–German Energy Programme (SAGEN), funded by the German government
+and implemented by the Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ),
+was approached by Eskom Transmission to provide further technical assistance and capacity
+building for the implementation of reforms in the power sector. This research paper has
+been developed under the project “Capacities for an Energy Transition” as an input to the
+power sector reform process. It serves as a high-level description of the Central Purchasing
+Agency (CPA) and how it is intended to function. Separate documents created under this
+support project outline the overall expected high-level market design for South-Africa and
+how a Contract for Difference works. It is beneficial for readers of this document to also
+read these papers as they are interlinked and provide insight into key aspects of how the
+future electricity market in South Africa could work. This report was prepared by Hans-Arild
+Bredesen from Bredesen Consulting acting as a sub-contractor to Nord Pool Consulting.
+Contact
+Questions and comments on this Report can be directed to:
+Hans-Arild Bredesen
+Team Leader
+E: hans-arild.bredesen@bredesenconsulting.com
+The Role of the Central Purchasing Agency 1
+
+=== PAGE 5 ===
+
+1.2 Content
+This research paper presents the underlying concepts of the market model, more
+specifically as:
+a) The South African electricity supply industry
+b) The key functions of the Central Purchasing Agency (CPA)
+c) Appendix 1 on capacity remuneration mechanisms (CRM)
+Disclaimer: The development of the South African market is a work in
+progress, where the described market model and the Central Purchasing
+Agency, including its detailed rules, are being developed in parallel
+with this paper (and will continue to evolve over time). The final market will
+also be influenced by the final changes to the Energy Regulation Amendment
+Bill (ERA) and potentially other governmental decisions.
+The Role of the Central Purchasing Agency 2
+
+=== PAGE 6 ===
+
+2. The South African electricity
+supply industry
+As detailed in the Eskom Transmission research paper, “The South African Electricity Market”, the
+South African government is in the process of establishing a competitive electricity market. The
+transition to a competitive market model will be based on a stepwise implementation of various
+market segments, as well as a phased introduction of participants to the South African power market.
+Figure 1 shows a schematic of an electricity supply industry with a competitive market.
+Contract price
+Contract price
+Brokers, traders, retailers
+Market price
+Market price
+Market price
+Market operator
+Market price (used in settlement)
+PPA Contract price
+PPA Contract price
+Central
+purchasing agency
+Use-of-system
+charges
+Use-of-system
+charges
+Households
+ESKOM Gx
+System operator
+Legacy IPPs Communities/
+businesses
+Transmission Distribution
+New IPPs
+Bilateral agreements –
+contract price
+Power intensive
+users
+Flow of money, determined by the market
+Flow of money, determined by the contracts
+Flow of electricity
+Generators
+Consumers
+Figure 1. Participants in the South African electricity supply industry
+The Role of the Central Purchasing Agency 3
+
+=== PAGE 7 ===
+
+In a fully-fledged market, a generator can sell electricity to eligible consumers while the
+transmission and distribution networks operate independently of the market to provide
+non-discriminatory access to all stakeholders.
+To facilitate this process, Eskom is currently functionally unbundling into separate gene-
+ration, transmission and distribution entities. A use-of-system tariff will be paid to the System
+Operator, to cover all costs associated with owning, operating and expanding the network.
+The System Operator is responsible for the processes required to deliver electricity to
+consumers (dispatch instructions, metering, balancing), while the Market Operator is
+responsible for managing the market platforms and all transactions that occur on it. As
+the delivery of electricity is intrinsically linked to the market within this system, the Market
+Operator and System Operator work in close collaboration, at all times. In contrast to a
+centrally planned environment, a competitive environment allows eligible generators to
+enter the market and create new capacity based on price signals indicating when it would
+be most profitable to invest.
+Where these market mechanisms are deemed to be insufficient to ensure security of supply
+and/or market liquidity, contracts for additional capacity can be entered into with a special
+purpose vehicle as part of the CPA, which performs a supporting role within the market.
+3. Central Purchasing Agency
+The market structure outlined in the Article 32 of the Draft Electricity Regulation Act
+Amendment Bill (March 2022) defines the CPA as an entity that will be created within the
+Transmission System Operator to fulfil the role of counterpart to contracts necessary to
+facilitate the transition to a competitive market, as well as managing non-market agreements
+or services aligned with the competitive market. Its activities will include
+a) Concluding Power Purchase Agreements (PPAs) with Eskom Generation power
+stations (vesting contracts)
+b) Becoming the counterpart to existing PPAs with independent power producers
+(legacy contracts)
+c) Trading all energy purchased under PPAs into the Day Ahead Market (DAM)
+d) Concluding sales agreements with distributors
+e) Procuring the ancillary services required by the System Operator.
+PPAs are bilateral agreements that specify the price at which the electricity produced
+would be bought at for a set number of years. The existing internal Eskom Dynamic Energy
+Market and PPAs form part of a regulatory “sandbox” environment. This means that the
+market is already being used as designed, with prices determined according to the market.
+The Role of the Central Purchasing Agency 4
+
+=== PAGE 8 ===
+
+Similarly, the PPAs with Eskom Generation and Eskom Distribution are applied as per the
+agreed calculations and principles in these contracts. However, once these payments
+are determined according to the market, they are hedged back to a regulated revenue
+determination made by the National Energy Regulator of South Africa (NERSA). The
+“sandbox” operation means that the parties are not subject to the financial effect of the
+payments and charges but are able to learn how these processes will work in the future
+market.
+Given that the CPA effectively serves as an intermediary between the market and several
+key participants, the extent of the shortfall experienced by the CPA on a monthly or annual
+basis is determined predominantly by the market price in the DAM for energy. A higher
+market price would reduce the shortfall with the agreed upon price and a lower price would
+increase it.
+One proposal within the tariff unbundling process at the wholesale level is to create a legacy
+charge that would be payable by all consumers connected to the Eskom Transmission
+network, and by extension passed on by Distribution to customers connected to the
+Distribution network. The legacy charge could be applied either as a variable charge (c/kWh)
+dependent on energy consumed on the network, or as a fixed charge (R/kVA) dependent
+on either a notified maximum demand or actual maximum demand. A key component of
+calculating an expected legacy charge (which would be approved by the regulator as part
+of the Transmission network charges) would be to estimate the market price up front and
+adjust the legacy charge as part of an annual process. In the event that the market price
+deviates from the projected market price the CPA would experience cash-flow risk.
+The costs of the CPA could therefore be recovered by:
+•
+Calculation of a wholesale tariff, against which downstream market participants will
+be hedged
+•
+Separation out of the legacy charge contribution from all consumers.
+3.1 Eskom Generation Vesting Contracts
+At present approximately 95% of the electricity produced in South Africa is produced by
+Eskom Generation, primarily through coal-fired thermal power stations. If a competitive
+market were declared fully operational today, Eskom Generation would have such
+dominant market power that they would effectively have the ability to determine the
+price of electricity. Concluding PPAs between the CPA and Eskom-owned power plants
+serves three purposes; firstly, to curb the power Eskom Generation would otherwise have
+in the market, secondly to ensure the financial viability of these existing plants for the
+remainder of the plant life and thirdly to provide revenue for key services to support the
+South African grid.
+The Role of the Central Purchasing Agency 5
+
+=== PAGE 9 ===
+
+Figure 2. Schematic overview of the Eskom GX Power Purchase Ag
+The contracts are based on a standard agreement signed with each power plant, with
+specific regulations based on the technologies and cost structure of the respective
+generation facilities. The agreements shall be structured based on the assumption that the
+parties will not be part of the same company structure and will thereby fulfil all the legal
+requirements for a bilateral agreement between two independent entities.
+The contracts typically consist of two parts; the first applied over the lifetime of the plant and
+the second expiring over time. The first part specifies an agreed upon capacity payment
+to cover the fixed capital, operational and maintenance costs required by the plant and a
+payment for special ancillary services such as black starting and islanding. The second part
+specifies a fixed energy and reserve capacity price (hedge price) to be applied at the start
+of the contract and the process by which this fixed price might gradually transition to the
+market price over time. The power stations are obliged to offer all their output to the South
+African market (existing and future) and this power is first bought or sold in the competitive
+market then hedged back to the agreed upon fixed price. Eskom Generation will be the
+balance responsible party for all its generation.
+Wholesale, cost
+reflective
+electricity prices
+Volumes sold
+based on energy
++ reserve capacity hedge
+Volumes sold on the market
+Capacity payment + payment for additional
+ancillary services
+Regulated phase Transition phase Market phase
+Figure 2. Schematic overview of the Eskom GX Power Purchase Agreements
+A schematic overview of the PPAs with Eskom Generation power stations is illustrated in
+Figure 2. These PPAs will cover the following standard components:
+•
+•
+•
+A capacity payment covering the fixed capital, operational and maintenance cost of the
+individual power station.
+An energy hedge that will (for a proposed stepwise period of five years) level the market
+price to an agreed upon energy price for a specified output. The stepwise period will
+progressively expose Eskom Generation to the market prices.
+A reserve capacity hedge that is similar to the energy hedge; agreeing on fixed prices
+from the start but moving towards market prices in the end. This hedge is a payment for
+capacity to be made available at short notice.
+The Role of the Central Purchasing Agency 6
+
+=== PAGE 10 ===
+
+Required additional ancillary services that cover special technical services for the System
+Operator such as black starting, islanding and other agreed pass-through costs.
+In the following sections, further details on these components are defined.
+3.1.1 Availability or capacity payment
+The key component of the availability or capacity payment will be an Availability Rate.
+The inputs to this are based on a set of key parameters:
+•
+Nominal Annual Capital recovery (in Rand/annum)
+•
+Nominal Annual Fixed Maintenance recovery (in Rand/annum)
+•
+Nominal Annual Fixed Operating Cost recovery (in Rand/annum)
+•
+Nominal Annual Fixed Fuel Cost recovery (in Rand/annum)
+•
+Expected Energy Availability Factor (EAF), based on an agreed annual availability factor
+for the power station’s combined set of generating units measured monthly.
+These figures are based on an individual assessment per power plant and are agreed
+upon by the CPA and the power plant. The parameters will be used to calculate a monthly
+Availability Rate expressed as a R/MW/h applicable to the power plant.
+In addition to these direct input parameters, there are two more risk management elements
+that are used to calculate the Availability Rate:
+•
+An Availability Cone, a specified allowable variation of the EAF due to over and under
+generation, to reduce risk for both parties and ensure a more stable financial output
+•
+An Availability Penalty, applied when power plants do not adhere to their declared
+availability in the market.
+For more details on generic CRMs see Appendix 1.
+3.1.2 Energy hedge
+The energy hedge is based on an agreed upon annual average marginal cost for the
+energy output of the units of the power plant, called an Energy Rate. The power plants are
+allowed to bid an incremental cost curve in the DAM, where the volume-weighted average
+price of the cost curve cannot deviate more than 30% up or down from the Energy Rate.
+The power plant will be paid (or will pay) the difference between the Energy Rate and the
+average system marginal price (SMP) from the DAM. As with the availability payment, there
+is an upper and lower band of the payments covered by the energy hedge. This shall be
+specified as a monthly value in the agreement.
+This is a way to agree on a fixed price (for example, based on a contract such as the
+PPA between the CPA and Eskom Generation), where the power is bought or sold in a
+competitive market and then hedged back to the agreed price. A generic mechanism that
+The Role of the Central Purchasing Agency 7
+
+=== PAGE 11 ===
+
+is employed in a lot of markets to facilitate such a hedge, also in energy markets, is called a
+Contract for Difference (CfD). For more details, see the Eskom Transmission research paper
+entitled “Contracts for Difference”.
+3.1.3 Reserve capacity and other ancillary services
+The reserve capacity hedge (Instantaneous, Regulating, and Ten-Minute Reserves), is
+applied in a similar way to the energy hedge. The requirements, selection and pricing of
+these reserves is done in the competitive market, but the PPA administers a hedge back to
+an agreed price for this service that is related to the Energy Rate.
+In addition, a PPA typically covers various ancillary services with different technical require-
+ments and different kinds of remuneration. Most of the ancillary services require various
+forms of prequalification such as required testing and certifications that are defined in
+detail. These ancillary services may include
+•
+Black start: starting a unit without external grid support
+•
+Unit islanding: continuing to power an area without external grid support
+•
+Reactive power and voltage control: power plants suppling or absorbing reactive
+power as necessary to maintain voltage and stability on the transmission grid.
+Last, but not least, the PPA covers the respective power plant costs incurred in starting up a
+generating unit when it has been placed in cold reserve mode by the System Operator, or
+due to market conditions until called up by the System Operator or in the market.
+From time to time, some power stations could become a consumer. This could, for instance,
+happen when the plant is out for maintenance, but still has commitments to generate
+power. If so, their consumption is included as negative generation in the calculation of the
+energy sales covered under the energy hedge in section 3.1.2. The power station could
+also, in certain circumstances, consume energy for the purposes of auxiliary supply and
+other supply requirements. This energy may be purchased from a distributor through the
+customer billing system, or from the CPA. If this is under the PPA, the consumption points
+must be identified in the contract and the power station will pay the CPA for the power
+consumed per month at the same Energy Rate as agreed in this agreement.
+The Role of the Central Purchasing Agency 8
+
+=== PAGE 12 ===
+
+3.2 Independent power producer legacy contracts
+Additional capacity of 6.5 GW has been procured from 34 independent power producers
+(IPPs) through multiple rounds of the Renewable Independent Power Producer Programme
+(REIPPP). The capacity requirements for this procurement programme were based on
+a ministerial determination by the Department of Mineral Resources and Energy, in line
+with the Integrated Resource Plans of 2010 and 2019. The counterparty to the contracts
+entered into by the IPPs was Eskom. However, in a market environment, Eskom would
+no longer be the single buyer of electricity and would in fact be a competitor. Moreover,
+the price specified in these contracts is likely to be non-competitive on an open market,
+as it ensured a guaranteed rate of return for IPPs that created new capacity in a risky
+investment environment. Nonetheless, the obligation to honour the terms negotiated within
+those contracts remains.
+The CPA will therefore incorporate the role of the IPP office, to manage and be financially
+responsible for the existing PPAs with IPPs (legacy contracts). The CPA will participate in the
+DAM on behalf of these generators for all the electricity produced under these agreements.
+The CPA will then become a market participant, but because of its central position during
+the transition it should not be able to be an active trading participant. Instead, the forecasts
+from the REIPPP and the dispatch costs will be submitted to the DAM and the CPA will
+effectively become a price-taker in the market. The IPPs will remain balance responsible for
+the forecasted output that will be sold via the CPA. This will ensure a managed migration to
+a fair and effective competitive market.
+3.3 Concluding sales agreements with qualifying
+customers
+3.3.1 Qualifying customers
+Initially Eskom Distribution would be the only customer eligible to conclude a sales
+agreement in the form of a hedging contract. However, as this agreement is a complete
+bilateral agreement it can be used for any qualifying customer in the future. This contract
+has the same general structure as the Power Purchase Agreements for Eskom Generation.
+The Role of the Central Purchasing Agency 9
+
+=== PAGE 13 ===
+
+3.3.2 Energy charge and hedging arrangements
+A qualifying customer (initially Eskom Distribution) will pay for the power they consume at
+the SMP established in the market, based on their own demand forecast. As with the Eskom
+Generation PPAs, there is a hedge in place, where the buyer will have to pay the difference
+between the active energy charge of the wholesale energy prices (agreed upon price)
+and the weighted average SMP in that time-of-use period (market price). The wholesale
+energy price is currently the agreed tariff approved by NERSA. The qualifying customer will
+also be subject to imbalance charges (or payments) per the market rules. Lastly, this PPA
+also covers management of load shedding activities by Eskom Transmission, under system
+emergency conditions declared by the National System Operator.
+3.3.3 Capacity charge
+In addition to the energy charge outlined in the previous section, a capacity charge is applied.
+A qualified customer is charged a capacity charge based on their maximum consumption in
+any hour of the previous 12 months (essentially a maximum demand charge). The charge is
+the maximum demand rate (currently set as the amortised hourly fixed cost of a combined
+cycle gas turbine plant) number of hours in the month. There is also a capacity rebate
+applicable where load shedding events have been issued.
+3.4 Future capacity assessment and procurement
+The CPA is also tasked to develop indicative generation expansion plans, which are
+published to inform market participants. The CPA will monitor the market for capacity delivery
+against these plans and embark on procurement if projected capacity requirements are not
+being realised by the market. It is expected that over time, supply and demand will become
+more closely aligned and that there will be no need for the CPA to manage this, but this
+function will likely be needed in the short to medium term. It provides a fall-back position,
+to ensure the System Operator has resources to meet real-time demand at any point in the
+medium- to long-term view.
+Once the generation expansion plan is agreed upon, there are two generic options to
+procure this capacity:
+•
+A form of Capacity Remuneration Mechanism (CRM)
+•
+An energy hedge contract (Contract for Difference)
+The main difference between these two support mechanisms is that in a CRM (see
+Appendix 1), you pay for the capacity to be available, while in an energy hedge (or Contract
+for Difference) you are guaranteeing a price for the power that is being sold in the markets.
+In addition to the procurement of future energy capacity, the CPA is tasked to perform the
+required long-term ancillary services on behalf of the System Operator, either incorporated
+into capacity contracts or as stand-alone ancillary service agreements.
+The Role of the Central Purchasing Agency 10
+
+=== PAGE 14 ===
+
+3.5 Potential future additions
+It is expected that the functions of the CPA could be extended to other tasks over time.
+A potential addition to the function of the CPA is that it could serve as the procurer of
+power for vulnerable customers (that is, non-paying). This would have to be funded through
+governmental support, but then the CPA could act as a buyer of this power in the market,
+ensuring that the generators and distribution network operators (DSOs) or transmission
+system operators (TSOs) that provide the service get paid.
+4. Conclusion
+In conclusion, the CPA is envisaged as a vital market support entity that facilitates transition
+to a competitive market and supports the nonmarket functions required to create a stable
+electricity supply industry. By entering into various contractual arrangements with market
+participants, the CPA can serve as an intermediary to encourage market participation and
+mitigate the risk and market power of dominant market participants.
+The Role of the Central Purchasing Agency 11
+
+=== PAGE 15 ===
+
+5. Further reading
+DMRE (Department of Mineral Resources and Energy) (2022) Draft Electricity Regulation
+Amendment Bill. Government Gazette 45898, 10 February. Available at:
+https://www.gov.za/sites/default/files/gcis_document/202203/45898gon1746
+DPE (Department of Public Enterprises) (2019) Roadmap for Eskom in a Reformed
+Electricity Supply Industry. Available at: https://dpe.gov.za/wp-content/
+uploads/2019/10/ROADMAP-FOR-ESKOM_0015_29102019_FINAL1.pdf
+The Role of the Central Purchasing Agency 12
+
+=== PAGE 16 ===
+
+Appendix I: Capacity
+remuneration mechanisms
+Generally, capacity payments is a term that encompasses a lot of different potential
+measures. Therefore, these are more generically referred to as capacity remuneration
+mechanisms (CRM). The market-wide capacity mechanism for South Africa has not yet
+been decided. Typically, capacity mechanisms are based on a requirement to solve a
+specific issue. For instance, the capacity payments (or availability payments) that are part
+of the Eskom Generation PPAs are simple capacity payment solutions, where they intend
+to cover for the PPA holders’ fixed capital, operational and maintenance costs. Based on a
+declared availability, Eskom Generation will get paid for these costs through the PPAs.
+This type of trading activity is used to ensure electricity supply on a longer-term basis.
+The determination of the requirements to ensure supply stability is performed by the
+System Operator, who calculates the requirements for both the total capacity and strategic
+reserve. Market participants can then agree to make existing capacity available for a fee
+(capacity payments and strategic reserve schemes) or enter into contracts to build new
+energy infrastructure for an agreed upon price (capacity auction schemes), with the cost of
+remuneration for the capacity market borne by the consumer.
+Capacity payments can be made to both consumers who reduce their demand and
+generators who increase their supply of electricity. A wide spectrum of options exists for
+these payments, categorised according to several factors, including the kind of capacity
+being made available, how far in the future the obligations span and how the payment
+costs are determined and allocated. In a strategic reserve scheme, some generation
+capacity is set aside to ensure security of supply in exceptional circumstances, which can
+be signalled by prices in the Day Ahead, intraday or balancing markets increasing above a
+certain threshold level. The capacity to be set-aside is procured and the payments to the
+generators determined through a (typically year-ahead) tender. The security of supply can
+also be addressed through capacity obligation schemes, which places an obligation on big
+generators or consumers to make capacity available at certain times or face penalties. Lastly,
+availability of existing capacity can be addressed through a reliability option, a mechanism
+in which contracted generators agree to cap the price at which they sell electricity. This
+effective cap is implemented by generators paying the System Operator the difference if
+the market electricity price exceeds a reference price. Importantly, the difference between
+the agreed upon price and reference price has to be paid by the generator, whether they
+are producing electricity at that time or not. This creates an incentive for the generator
+to produce electricity at times of scarcity when the price of electricity is high, because if
+they didn’t, they would have to pay the difference without any revenue from the sale of
+electricity. In return, the generator benefits from a guaranteed stable income stream.
+The Role of the Central Purchasing Agency 13
+
+=== PAGE 17 ===
+
+In capacity auction schemes, participants bid for contracts to build new energy infrastructure
+at a price determined through an auction process. Potential investors benefit from both a
+guaranteed return on investment and an upfront payment, while the market benefits from
+ensured capacity and stabilised prices. Without this type of CRM, price signals would dictate
+when generators invest in new energy infrastructure; when there is limited electricity supply,
+prices go up and it becomes more profitable to sell electricity. In this scenario, generators
+take on more risk, because if the price of electricity goes down while they are still building
+new capacity, they stand to make a loss. However, the potential reward is also higher,
+because if the price of electricity becomes very high, they stand to make more profit. In
+either scenario the cost is borne by consumers; CRMs spread these costs out over time to
+reduce price volatility but may result in a higher overall payment.
+The Role of the Central Purchasing Agency 14
